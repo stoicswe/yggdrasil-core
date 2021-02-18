@@ -1,0 +1,6 @@
+# Ignore inelij project files
+.idea
+*.iml
+
+# Ignore builds
+target
