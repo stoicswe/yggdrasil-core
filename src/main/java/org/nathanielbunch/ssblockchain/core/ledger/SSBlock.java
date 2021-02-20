@@ -1,15 +1,15 @@
-package org.nathanielbunch.ssblockchain.core;
+package org.nathanielbunch.ssblockchain.core.ledger;
 
-import org.apache.commons.lang3.SerializationUtils;
+import org.nathanielbunch.ssblockchain.core.utils.SSHasher;
 
 import java.io.Serializable;
-import java.security.MessageDigest;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 public final class SSBlock implements Serializable {
 
     // Make the different fields of the block immutable
-    private final Integer index;
+    private final UUID index;
     private final LocalDateTime timestamp;
     private final Object data;
     private final byte[] previousBlockHash;
@@ -20,10 +20,10 @@ public final class SSBlock implements Serializable {
         this.timestamp = blockBuilder.timestamp;
         this.data = blockBuilder.data;
         this.previousBlockHash = blockBuilder.previousBlock;
-        this.blockHash = hashSSBlock(this);
+        this.blockHash = SSHasher.hash(this);
     }
 
-    public Integer getIndex() {
+    public UUID getIndex() {
         return index;
     }
 
@@ -45,28 +45,12 @@ public final class SSBlock implements Serializable {
 
     @Override
     public String toString() {
-        StringBuilder hexString = new StringBuilder(2 * blockHash.length);
-        for (int i = 0; i < blockHash.length; i++) {
-            String hex = Integer.toHexString(0xff & blockHash[i]);
-            if(hex.length() == 1) {
-                hexString.append('0');
-            }
-            hexString.append(hex);
-        }
-        return hexString.toString();
-    }
-
-    private byte[] hashSSBlock(SSBlock ssBlock) throws Exception {
-        return MessageDigest.getInstance("SHA3-512").digest(SerializationUtils.serialize(ssBlock));
+        return SSHasher.humanReadableHash(blockHash);
     }
 
     public static class BBuilder {
-
-        // Unique index for each block
-        private static int count = 0;
-
         // Block properties
-        private Integer index = 0;
+        private UUID index;
         private LocalDateTime timestamp;
         private Object data;
         private byte[] previousBlock;
@@ -89,7 +73,7 @@ public final class SSBlock implements Serializable {
 
         // Build a block
         public SSBlock build() throws Exception {
-            this.index = count++;
+            this.index = UUID.randomUUID();
             timestamp = LocalDateTime.now();
             return new SSBlock(this);
         }
