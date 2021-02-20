@@ -43,7 +43,7 @@ See also other contributors, if there are more by the time you check out this pr
 
 ## License
 
-This project is licensed under the GNU GPL v3 - see the [LICENSE.md](LICENSE.md) file for details.
+This project is licensed under the MIT - see the [LICENSE.md](LICENSE.md) file for details.
 
 ## Acknowledgements
 
