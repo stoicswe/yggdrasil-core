@@ -1,13 +1,16 @@
 package org.nathanielbunch.ssblockchain;
 
-import org.nathanielbunch.ssblockchain.core.SSBlock;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-import java.util.ArrayList;
-import java.util.List;
-
+@SpringBootApplication
 public class Application {
 
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] args) {
+        SpringApplication.run(Application.class, args);
+    }
+
+    /*public static void main(String[] args) throws Exception {
 
         System.out.println("Hello World, welcome to the SSBlockchain.");
 
@@ -26,7 +29,7 @@ public class Application {
             newBlock = nextBlock(prevBlock);
             blockchain.add(newBlock);
             prevBlock = newBlock;
-            System.out.println(String.format("Block #%d has been added to the SS chain", newBlock.getIndex()));
+            System.out.println(String.format("Block #%s has been added to the SS chain", newBlock.getIndex()));
             System.out.println(String.format("Hash: %s", newBlock.toString()));
         }
 
@@ -35,12 +38,12 @@ public class Application {
     public static SSBlock nextBlock(SSBlock lastBlock) throws Exception {
         return SSBlock.BBuilder.newSSBlockBuilder()
                 .setPreviousBlock(lastBlock.getBlockHash())
-                .setData(String.format("I am block #%d", lastBlock.getIndex()+1))
+                .setData(String.format("I am block: #%s", lastBlock.getIndex()))
                 .build();
     }
 
     public static String printSSBlock(SSBlock block) {
-        return String.format("[%s :: %s :: ID#%d :: %s ]", block.toString(), block.getTimestamp().toString(), block.getIndex(), block.getData().toString());
-    }
+        return String.format("[%s :: %s :: ID#%s :: %s ]", block.toString(), block.getTimestamp().toString(), block.getIndex(), block.getData().toString());
+    }*/
 
 }
