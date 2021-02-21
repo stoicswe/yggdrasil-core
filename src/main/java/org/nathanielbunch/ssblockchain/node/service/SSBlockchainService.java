@@ -20,9 +20,9 @@ import java.util.List;
  * @author nathanielbunch
  */
 @Service
-public class SSBlockChainService {
+public class SSBlockchainService {
 
-    private Logger logger = LoggerFactory.getLogger(SSBlockChainService.class);
+    private Logger logger = LoggerFactory.getLogger(SSBlockchainService.class);
 
     private List<SSTransaction> transactions;
 

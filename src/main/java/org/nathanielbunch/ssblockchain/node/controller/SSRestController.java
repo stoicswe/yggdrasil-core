@@ -4,7 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.nathanielbunch.ssblockchain.core.ledger.SSTransaction;
-import org.nathanielbunch.ssblockchain.node.service.SSBlockChainService;
+import org.nathanielbunch.ssblockchain.node.service.SSBlockchainService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,7 +29,7 @@ public class SSRestController {
     private ObjectMapper objectMapper;
 
     @Autowired
-    SSBlockChainService service;
+    SSBlockchainService service;
 
     @PostConstruct
     private void init() {
