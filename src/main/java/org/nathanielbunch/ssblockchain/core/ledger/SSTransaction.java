@@ -3,7 +3,6 @@ package org.nathanielbunch.ssblockchain.core.ledger;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import org.nathanielbunch.ssblockchain.core.deserialization.SSTransactionDeserializer;
 import org.nathanielbunch.ssblockchain.core.utils.SSHasher;
 
@@ -13,6 +12,17 @@ import java.security.NoSuchAlgorithmException;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+/**
+ * Every SSBlock is made of n number of SSTransactions. SSTransactions contain
+ * information used for identifying a transaction (index), a timestamp for
+ * sorting and managing transactions in a block, an origin address, a
+ * destination address, an amount of coin transmitted, a transaction note, and
+ * the identifying transaction hash. Transactions can be queried for by their
+ * hash or their index and timestamp.
+ *
+ * @since 0.0.1
+ * @author nathanielbunch
+ */
 @JsonInclude
 @JsonDeserialize(using = SSTransactionDeserializer.class)
 public class SSTransaction implements Serializable {
@@ -68,7 +78,10 @@ public class SSTransaction implements Serializable {
         return SSHasher.humanReadableHash(transactionHash);
     }
 
-    @JsonPOJOBuilder(buildMethodName = "build", withPrefix = "")
+    /**
+     * TBuilder class is the SSTransaction builder. This is to ensure some level
+     * of data protection by enforcing non-direct data access and immutable data.
+     */
     public static class TBuilder {
 
         protected UUID index;

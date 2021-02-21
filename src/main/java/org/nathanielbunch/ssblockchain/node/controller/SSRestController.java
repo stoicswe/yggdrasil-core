@@ -1,9 +1,10 @@
-package org.nathanielbunch.ssblockchain.node;
+package org.nathanielbunch.ssblockchain.node.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.nathanielbunch.ssblockchain.core.ledger.SSTransaction;
+import org.nathanielbunch.ssblockchain.node.service.SSBlockChainService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +15,12 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.PostConstruct;
 
+/**
+ * Provides the rest interface for interacting with the SSBlockchain.
+ *
+ * @since 0.0.1
+ * @author nathanielbunch
+ */
 @RestController
 public class SSRestController {
 
