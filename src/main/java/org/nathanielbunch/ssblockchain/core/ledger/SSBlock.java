@@ -6,6 +6,15 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+/**
+ * The SSBlock is the main unit of data in the SSBlockchain. SSBlocks contain
+ * an identifier known as the index, a timestamp for data management / sorting,
+ * an object that contains transactions, a link to a previous block (previousBlockHash)
+ * and the current block hash (blockHash). Blocks can be queried by hash or index.
+ *
+ * @since 0.0.1
+ * @author nathanielbunch
+ */
 public final class SSBlock implements Serializable {
 
     // Make the different fields of the block immutable
@@ -48,8 +57,12 @@ public final class SSBlock implements Serializable {
         return SSHasher.humanReadableHash(blockHash);
     }
 
+    /**
+     * BBuilder class is the SSBlock builder. This is to ensure some level
+     * of data protection by enforcing non-direct data access and immutable data.
+     */
     public static class BBuilder {
-        // Block properties
+
         private UUID index;
         private LocalDateTime timestamp;
         private Object data;
@@ -71,7 +84,6 @@ public final class SSBlock implements Serializable {
             return this;
         }
 
-        // Build a block
         public SSBlock build() throws Exception {
             this.index = UUID.randomUUID();
             timestamp = LocalDateTime.now();

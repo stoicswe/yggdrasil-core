@@ -13,10 +13,28 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.security.NoSuchAlgorithmException;
 
+/**
+ * Provides the necessary functionality to correctly deserialize incoming
+ * transactions by the rest endpoint.
+ *
+ * @since 0.0.1
+ * @author nathanielbunch
+ */
 public class SSTransactionDeserializer extends JsonDeserializer<SSTransaction> {
 
     Logger logger = LoggerFactory.getLogger(SSTransactionDeserializer.class);
 
+    /**
+     * Accepts a JSON payload in the form of a JsonParser then pulls values
+     * and passes to the SSTransaction builder to create a new transaction
+     * object in memory.
+     *
+     * @param jsonParser
+     * @param deserializationContext
+     * @return
+     * @throws IOException
+     * @throws JsonProcessingException
+     */
     @Override
     public SSTransaction deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException, JsonProcessingException {
         JsonNode node = jsonParser.getCodec().readTree(jsonParser);

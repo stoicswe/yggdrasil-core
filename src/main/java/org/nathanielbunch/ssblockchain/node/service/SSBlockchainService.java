@@ -1,4 +1,4 @@
-package org.nathanielbunch.ssblockchain.node;
+package org.nathanielbunch.ssblockchain.node.service;
 
 import org.nathanielbunch.ssblockchain.core.ledger.SSTransaction;
 import org.slf4j.Logger;
@@ -11,10 +11,18 @@ import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Handles lower-level operation with the SSBlockchain. Used
+ * to serve functionality to the rest endpoint.
+ *
+ * @since 0.0.1
+ * @see org.nathanielbunch.ssblockchain.node.controller.SSRestController
+ * @author nathanielbunch
+ */
 @Service
-public class SSBlockChainService {
+public class SSBlockchainService {
 
-    private Logger logger = LoggerFactory.getLogger(SSBlockChainService.class);
+    private Logger logger = LoggerFactory.getLogger(SSBlockchainService.class);
 
     private List<SSTransaction> transactions;
 
@@ -23,6 +31,12 @@ public class SSBlockChainService {
         this.transactions = new ArrayList<>();
     }
 
+    /**
+     * Returns a transaction given a set of identifying parameters.
+     *
+     * @return
+     * @throws NoSuchAlgorithmException
+     */
     public SSTransaction getTransaction() throws NoSuchAlgorithmException {
         return SSTransaction.TBuilder.newSSTransactionBuilder()
                 .setOrigin("TestAddress")
@@ -32,6 +46,11 @@ public class SSBlockChainService {
                 .build();
     }
 
+    /**
+     * Adds a new transaction to execute on the blockchain.
+     *
+     * @param transaction
+     */
     public void addNewTransaction(SSTransaction transaction){
         logger.info("New transaction: {} [{} -> {} = {}]", transaction.toString(), transaction.getOrigin(), transaction.getDestination(), transaction.getAmount());
         this.transactions.add(transaction);
