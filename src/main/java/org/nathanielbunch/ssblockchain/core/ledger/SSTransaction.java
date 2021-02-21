@@ -1,34 +1,35 @@
 package org.nathanielbunch.ssblockchain.core.ledger;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
+import org.nathanielbunch.ssblockchain.core.deserialization.SSTransactionDeserializer;
 import org.nathanielbunch.ssblockchain.core.utils.SSHasher;
-import org.nathanielbunch.ssblockchain.node.config.serialization.TransactionDeserializer;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.security.NoSuchAlgorithmException;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
 @JsonInclude
-@JsonDeserialize(using = TransactionDeserializer.class)
+@JsonDeserialize(using = SSTransactionDeserializer.class)
 public class SSTransaction implements Serializable {
 
     private final UUID index;
     private final LocalDateTime timestamp;
     private final String origin;
     private final String destination;
-    private final Double amount;
+    private final BigDecimal amount;
     private final String note;
     private final byte[] transactionHash;
 
-    @JsonCreator
-    private SSTransaction(TBuilder builder) throws NoSuchAlgorithmException {
+    protected SSTransaction(TBuilder builder) throws NoSuchAlgorithmException {
         this.index = builder.index;
         this.timestamp = builder.timestamp;
-        this.origin = builder.originAddress;
-        this.destination = builder.destinationAddress;
+        this.origin = builder.origin;
+        this.destination = builder.destination;
         this.amount = builder.amount;
         this.note = builder.note;
         this.transactionHash = SSHasher.hash(this);
@@ -50,7 +51,7 @@ public class SSTransaction implements Serializable {
         return destination;
     }
 
-    public Double getAmount() {
+    public BigDecimal getAmount() {
         return amount;
     }
 
@@ -67,43 +68,34 @@ public class SSTransaction implements Serializable {
         return SSHasher.humanReadableHash(transactionHash);
     }
 
+    @JsonPOJOBuilder(buildMethodName = "build", withPrefix = "")
     public static class TBuilder {
 
-        private UUID index;
-        private LocalDateTime timestamp;
-        private String originAddress;
-        private String destinationAddress;
-        private Double amount;
-        private String note;
+        protected UUID index;
+        protected LocalDateTime timestamp;
+        protected String origin;
+        protected String destination;
+        protected BigDecimal amount;
+        protected String note;
 
         private TBuilder(){}
 
-        public TBuilder setIndex(UUID index) {
-            this.index = index;
+        public TBuilder setOrigin(@JsonProperty("origin") String origin) {
+            this.origin = origin;
             return this;
         }
 
-        public TBuilder setTimestamp(LocalDateTime timestamp) {
-            this.timestamp = timestamp;
+        public TBuilder setDestination(@JsonProperty("destination") String destination) {
+            this.destination = destination;
             return this;
         }
 
-        public TBuilder setOrigin(String originAddress) {
-            this.originAddress = originAddress;
+        public TBuilder setValue(@JsonProperty("value") BigDecimal value) {
+            this.amount = value;
             return this;
         }
 
-        public TBuilder setDestination(String destinationAddress) {
-            this.destinationAddress = destinationAddress;
-            return this;
-        }
-
-        public TBuilder setAmountValue(Double amountValue) {
-            this.amount = amountValue;
-            return this;
-        }
-
-        public TBuilder setNote(String note) {
+        public TBuilder setNote(@JsonProperty("note") String note) {
             this.note = note;
             return this;
         }
@@ -113,13 +105,10 @@ public class SSTransaction implements Serializable {
         }
 
         public SSTransaction build() throws NoSuchAlgorithmException {
-            if(this.index == null) {
-                this.index = UUID.randomUUID();
-            }
-            if(this.timestamp == null) {
-                timestamp = LocalDateTime.now();
-            }
+            this.index = UUID.randomUUID();
+            timestamp = LocalDateTime.now();
             return new SSTransaction(this);
         }
     }
+
 }
