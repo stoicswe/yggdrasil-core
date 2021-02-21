@@ -1,42 +1,45 @@
 package org.nathanielbunch.ssblockchain.node;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.nathanielbunch.ssblockchain.core.ledger.SSTransaction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.PostConstruct;
-import java.util.ArrayList;
-import java.util.List;
 
 @RestController
 public class SSRestController {
 
     Logger logger = LoggerFactory.getLogger(SSRestController.class);
 
-    private List<SSTransaction> transactions;
+    private ObjectMapper objectMapper;
+
+    @Autowired
+    SSBlockChainService service;
 
     @PostConstruct
     private void init() {
-        transactions = new ArrayList<>();
+        this.objectMapper = new ObjectMapper();
     }
 
-    @PutMapping("/transaction")
-    public void putSSTransaction(SSTransaction transaction) {
-        logger.debug("New transaction: {} [{} -> {} = {}]", transaction.toString(), transaction.getOrigin(), transaction.getDestination(), transaction.getAmount());
-        this.transactions.add(transaction);
+    @RequestMapping(value = "/transaction", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<SSTransaction> putSSTransaction(@RequestBody JsonNode data) throws JsonProcessingException {
+        logger.trace("Received new data: {}", data);
+        SSTransaction transaction = objectMapper.treeToValue(data, SSTransaction.class);
+        this.service.addNewTransaction(transaction);
+        return new ResponseEntity<>(transaction, HttpStatus.CREATED);
     }
 
-    @GetMapping("/transaction")
-    public SSTransaction getSStransaction() throws Exception {
-        return SSTransaction.TBuilder.newSSTransactionBuilder()
-                .setOrigin("TestAddr")
-                .setDestination("TestAddr2")
-                .setAmountValue(5.0)
-                .setNote("Test")
-                .build();
+    @RequestMapping(value = "/transaction", produces = MediaType.APPLICATION_JSON_VALUE)
+    public SSTransaction getSSTransaction() throws Exception {
+        return this.service.getTransaction();
     }
 
 }
