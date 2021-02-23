@@ -3,6 +3,7 @@ package org.nathanielbunch.ssblockchain.core.utils;
 import org.apache.commons.lang3.SerializationUtils;
 import org.nathanielbunch.ssblockchain.core.ledger.SSBlock;
 import org.nathanielbunch.ssblockchain.core.ledger.SSTransaction;
+import org.nathanielbunch.ssblockchain.core.ledger.SSWallet;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -41,6 +42,17 @@ public class SSHasher {
      */
     public static byte[] hash(SSTransaction ssTransaction) throws NoSuchAlgorithmException {
         return MessageDigest.getInstance(_HASH_ALGORITHM).digest(SerializationUtils.serialize(ssTransaction));
+    }
+
+    /**
+     * Hashes a SSWallet.
+     *
+     * @param ssWallet
+     * @return
+     * @throws NoSuchAlgorithmException
+     */
+    public static byte[] hash(SSWallet ssWallet) throws NoSuchAlgorithmException {
+        return MessageDigest.getInstance(_HASH_ALGORITHM).digest(SerializationUtils.serialize(ssWallet));
     }
 
     /**

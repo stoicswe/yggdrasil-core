@@ -1,4 +1,4 @@
-package org.nathanielbunch.ssblockchain.core.deserialization;
+package org.nathanielbunch.ssblockchain.core.serialization;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
