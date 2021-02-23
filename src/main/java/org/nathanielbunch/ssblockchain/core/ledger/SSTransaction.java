@@ -3,7 +3,7 @@ package org.nathanielbunch.ssblockchain.core.ledger;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import org.nathanielbunch.ssblockchain.core.deserialization.SSTransactionDeserializer;
+import org.nathanielbunch.ssblockchain.core.serialization.SSTransactionDeserializer;
 import org.nathanielbunch.ssblockchain.core.utils.SSHasher;
 
 import java.io.Serializable;

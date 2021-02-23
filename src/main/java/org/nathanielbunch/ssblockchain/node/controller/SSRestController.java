@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.nathanielbunch.ssblockchain.core.ledger.SSTransaction;
+import org.nathanielbunch.ssblockchain.core.ledger.SSWallet;
 import org.nathanielbunch.ssblockchain.node.service.SSBlockchainService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,6 +48,11 @@ public class SSRestController {
     @RequestMapping(value = "/transaction", produces = MediaType.APPLICATION_JSON_VALUE)
     public SSTransaction getSSTransaction() throws Exception {
         return this.service.getTransaction();
+    }
+
+    @RequestMapping(value = "/wallet", produces = MediaType.APPLICATION_JSON_VALUE)
+    public SSWallet getSSWallet() throws Exception {
+        return this.service.getWallet();
     }
 
 }

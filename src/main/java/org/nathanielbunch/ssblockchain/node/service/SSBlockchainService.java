@@ -1,12 +1,18 @@
 package org.nathanielbunch.ssblockchain.node.service;
 
 import org.nathanielbunch.ssblockchain.core.ledger.SSTransaction;
+import org.nathanielbunch.ssblockchain.core.ledger.SSWallet;
+import org.nathanielbunch.ssblockchain.core.utils.SSHasher;
+import org.nathanielbunch.ssblockchain.core.utils.SSKeyGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
+import javax.security.auth.DestroyFailedException;
 import java.math.BigDecimal;
+import java.security.KeyPair;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
@@ -23,6 +29,9 @@ import java.util.List;
 public class SSBlockchainService {
 
     private Logger logger = LoggerFactory.getLogger(SSBlockchainService.class);
+
+    @Autowired
+    private SSKeyGenerator keyGenerator;
 
     private List<SSTransaction> transactions;
 
@@ -51,9 +60,23 @@ public class SSBlockchainService {
      *
      * @param transaction
      */
-    public void addNewTransaction(SSTransaction transaction){
+    public void addNewTransaction(SSTransaction transaction) {
         logger.info("New transaction: {} [{} -> {} = {}]", transaction.toString(), transaction.getOrigin(), transaction.getDestination(), transaction.getAmount());
         this.transactions.add(transaction);
+    }
+
+    /**
+     * Returns the currently loaded wallet.
+     *
+     * @return
+     * @throws NoSuchAlgorithmException
+     */
+    public SSWallet getWallet() throws NoSuchAlgorithmException, DestroyFailedException {
+        logger.info("Generating new wallet...");
+        KeyPair newKeyPair = keyGenerator.generatePublicPrivateKeys();
+        SSWallet newWallet = SSWallet.WBuilder.newSSWalletBuilder().setPublicKey(newKeyPair.getPublic()).build();
+        logger.info("New wallet generated with the private key: {}", SSHasher.humanReadableHash(newKeyPair.getPrivate().getEncoded()));
+        return newWallet;
     }
 
 }
