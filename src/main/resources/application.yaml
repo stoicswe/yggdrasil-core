@@ -1,6 +1,4 @@
 spring:
-  application:
-    name: "SSBlockchain Core"
-    title: "SSBlockchain Core"
+  application: "SSBlockchain Core"
 server:
   port: 9000
