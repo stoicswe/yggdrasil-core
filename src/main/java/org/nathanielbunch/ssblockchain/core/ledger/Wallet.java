@@ -1,7 +1,7 @@
 package org.nathanielbunch.ssblockchain.core.ledger;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import org.nathanielbunch.ssblockchain.core.utils.SSHasher;
+import org.nathanielbunch.ssblockchain.core.utils.BCOHasher;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -18,7 +18,7 @@ import java.util.UUID;
  * @author nathanielbunch
  */
 @JsonInclude
-public class SSWallet implements Serializable {
+public class Wallet implements Serializable {
 
     // Add details here.
     // Should include balance, address, etc...
@@ -29,16 +29,16 @@ public class SSWallet implements Serializable {
     private final BigDecimal balance;
     private final byte[] walletHash;
 
-    private SSWallet(WBuilder builder) throws NoSuchAlgorithmException {
+    private Wallet(WBuilder builder) throws NoSuchAlgorithmException {
         this.publicKey = builder.publicKey;
         this.index = builder.index;
         this.creationDate = builder.creationDate;
         this.address = builder.address;
         this.balance = BigDecimal.ZERO;
-        this.walletHash = SSHasher.hash(this);
+        this.walletHash = BCOHasher.hash(this);
     }
 
-    private SSWallet(PublicKey publicKey, UUID index, LocalDateTime creationDate, byte[] address, BigDecimal balance, byte[] walletHash) {
+    private Wallet(PublicKey publicKey, UUID index, LocalDateTime creationDate, byte[] address, BigDecimal balance, byte[] walletHash) {
         this.publicKey = publicKey;
         this.index = index;
         this.creationDate = creationDate;
@@ -63,14 +63,14 @@ public class SSWallet implements Serializable {
         return balance;
     }
 
-    protected SSWallet updateBalance(BigDecimal delta, boolean isNegative) {
+    protected Wallet updateBalance(BigDecimal delta, boolean isNegative) {
         BigDecimal newBalance;
         if(isNegative){
             newBalance = this.balance.subtract(delta);
         } else {
             newBalance = this.balance.add(delta);
         }
-        return new SSWallet(this.publicKey, this.index, this.creationDate, this.address, newBalance, walletHash);
+        return new Wallet(this.publicKey, this.index, this.creationDate, this.address, newBalance, walletHash);
     }
 
     public byte[] getWalletHash() {
@@ -78,12 +78,12 @@ public class SSWallet implements Serializable {
     }
 
     public String getHumanReadableAddress() {
-        return "0x" + SSHasher.humanReadableHash(address);
+        return "0x" + BCOHasher.humanReadableHash(address);
     }
 
     @Override
     public String toString() {
-        return SSHasher.humanReadableHash(walletHash);
+        return BCOHasher.humanReadableHash(walletHash);
     }
 
     /**
@@ -108,11 +108,11 @@ public class SSWallet implements Serializable {
             return this;
         }
 
-        public SSWallet build() throws NoSuchAlgorithmException {
+        public Wallet build() throws NoSuchAlgorithmException {
             this.index = UUID.randomUUID();
             this.creationDate = LocalDateTime.now();
             this.address = this.buildWalletAddress(publicKey.getEncoded());
-            return new SSWallet(this);
+            return new Wallet(this);
         }
 
         private byte[] buildWalletAddress(byte[] publicKeyEncoded) {

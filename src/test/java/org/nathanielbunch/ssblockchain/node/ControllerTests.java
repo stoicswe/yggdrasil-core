@@ -2,9 +2,9 @@ package org.nathanielbunch.ssblockchain.node;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
-import org.nathanielbunch.ssblockchain.core.ledger.SSTransaction;
-import org.nathanielbunch.ssblockchain.node.controller.SSRestController;
-import org.nathanielbunch.ssblockchain.node.service.SSBlockchainService;
+import org.nathanielbunch.ssblockchain.core.ledger.Transaction;
+import org.nathanielbunch.ssblockchain.node.controller.RestController;
+import org.nathanielbunch.ssblockchain.node.service.BlockchainService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -21,14 +21,14 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest(controllers = SSRestController.class)
+@WebMvcTest(controllers = RestController.class)
 public class ControllerTests {
 
     @Autowired
     private MockMvc mockMvc;
 
     @MockBean
-    private SSBlockchainService service;
+    private BlockchainService service;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -57,8 +57,8 @@ public class ControllerTests {
         assertThat(responseBody).contains("\"note\":\"Test transaction\"");
     }
 
-    private SSTransaction buildTestTransaction() throws NoSuchAlgorithmException {
-        return SSTransaction.TBuilder.newSSTransactionBuilder()
+    private Transaction buildTestTransaction() throws NoSuchAlgorithmException {
+        return Transaction.TBuilder.newSSTransactionBuilder()
                 .setOrigin("TestAddress")
                 .setDestination("TestDestination")
                 .setValue(new BigDecimal("0.1234"))

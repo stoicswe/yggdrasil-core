@@ -6,14 +6,14 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @JsonInclude
-public class SSBlockResponse {
+public class BlockResponse {
 
     private final UUID index;
     private final LocalDateTime timestamp;
     private final Long size;
     private final byte[] blockHash;
 
-    private SSBlockResponse(Builder builder) {
+    private BlockResponse(Builder builder) {
         this.index = builder.index;
         this.timestamp = builder.timestamp;
         this.size = builder.size;
@@ -69,8 +69,8 @@ public class SSBlockResponse {
             return this;
         }
 
-        public SSBlockResponse build() {
-            return new SSBlockResponse(this);
+        public BlockResponse build() {
+            return new BlockResponse(this);
         }
 
     }

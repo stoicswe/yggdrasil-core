@@ -1,6 +1,6 @@
 package org.nathanielbunch.ssblockchain.core.ledger;
 
-import org.nathanielbunch.ssblockchain.core.utils.SSHasher;
+import org.nathanielbunch.ssblockchain.core.utils.BCOHasher;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
@@ -15,7 +15,7 @@ import java.util.UUID;
  * @since 0.0.1
  * @author nathanielbunch
  */
-public final class SSBlock implements Serializable {
+public final class Block implements Serializable {
 
     // Make the different fields of the block immutable
     private final UUID index;
@@ -24,12 +24,12 @@ public final class SSBlock implements Serializable {
     private final byte[] previousBlockHash;
     private final byte[] blockHash;
 
-    private SSBlock(BBuilder blockBuilder) throws Exception {
+    private Block(BBuilder blockBuilder) throws Exception {
         this.index = blockBuilder.index;
         this.timestamp = blockBuilder.timestamp;
         this.transactions = blockBuilder.transactions;
         this.previousBlockHash = blockBuilder.previousBlock;
-        this.blockHash = SSHasher.hash(this);
+        this.blockHash = BCOHasher.hash(this);
     }
 
     public UUID getIndex() {
@@ -54,7 +54,7 @@ public final class SSBlock implements Serializable {
 
     @Override
     public String toString() {
-        return SSHasher.humanReadableHash(blockHash);
+        return BCOHasher.humanReadableHash(blockHash);
     }
 
     /**
@@ -84,10 +84,10 @@ public final class SSBlock implements Serializable {
             return this;
         }
 
-        public SSBlock build() throws Exception {
+        public Block build() throws Exception {
             this.index = UUID.randomUUID();
             timestamp = LocalDateTime.now();
-            return new SSBlock(this);
+            return new Block(this);
         }
 
     }

@@ -1,9 +1,9 @@
 package org.nathanielbunch.ssblockchain.core.utils;
 
 import org.apache.commons.lang3.SerializationUtils;
-import org.nathanielbunch.ssblockchain.core.ledger.SSBlock;
-import org.nathanielbunch.ssblockchain.core.ledger.SSTransaction;
-import org.nathanielbunch.ssblockchain.core.ledger.SSWallet;
+import org.nathanielbunch.ssblockchain.core.ledger.Block;
+import org.nathanielbunch.ssblockchain.core.ledger.Transaction;
+import org.nathanielbunch.ssblockchain.core.ledger.Wallet;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -18,41 +18,41 @@ import java.security.NoSuchAlgorithmException;
  * @since 0.0.1
  * @author nathanielbunch
  */
-public class SSHasher {
+public class BCOHasher {
 
     private static final String _HASH_ALGORITHM = "SHA3-512";
 
     /**
      * Hashes a SSBlock.
      *
-     * @param ssBlock
+     * @param block
      * @return
      * @throws NoSuchAlgorithmException
      */
-    public static byte[] hash(SSBlock ssBlock) throws NoSuchAlgorithmException {
-        return MessageDigest.getInstance(_HASH_ALGORITHM).digest(SerializationUtils.serialize(ssBlock));
+    public static byte[] hash(Block block) throws NoSuchAlgorithmException {
+        return MessageDigest.getInstance(_HASH_ALGORITHM).digest(SerializationUtils.serialize(block));
     }
 
     /**
      * Hashes a SSTransaction.
      *
-     * @param ssTransaction
+     * @param transaction
      * @return
      * @throws NoSuchAlgorithmException
      */
-    public static byte[] hash(SSTransaction ssTransaction) throws NoSuchAlgorithmException {
-        return MessageDigest.getInstance(_HASH_ALGORITHM).digest(SerializationUtils.serialize(ssTransaction));
+    public static byte[] hash(Transaction transaction) throws NoSuchAlgorithmException {
+        return MessageDigest.getInstance(_HASH_ALGORITHM).digest(SerializationUtils.serialize(transaction));
     }
 
     /**
      * Hashes a SSWallet.
      *
-     * @param ssWallet
+     * @param wallet
      * @return
      * @throws NoSuchAlgorithmException
      */
-    public static byte[] hash(SSWallet ssWallet) throws NoSuchAlgorithmException {
-        return MessageDigest.getInstance(_HASH_ALGORITHM).digest(SerializationUtils.serialize(ssWallet));
+    public static byte[] hash(Wallet wallet) throws NoSuchAlgorithmException {
+        return MessageDigest.getInstance(_HASH_ALGORITHM).digest(SerializationUtils.serialize(wallet));
     }
 
     /**

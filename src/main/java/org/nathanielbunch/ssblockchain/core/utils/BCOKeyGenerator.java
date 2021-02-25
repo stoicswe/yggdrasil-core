@@ -13,7 +13,7 @@ import java.security.*;
  * @author nathanielbunch
  */
 @Component
-public class SSKeyGenerator {
+public class BCOKeyGenerator {
 
     private static final String _KEY_PAIR_ALGORITHM = "DSA";
     private static final String _KEY_PAIR_PROVIDER = "SUN";
