@@ -3,10 +3,10 @@ package org.nathanielbunch.ssblockchain.node.controller;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.nathanielbunch.ssblockchain.core.ledger.SSTransaction;
-import org.nathanielbunch.ssblockchain.core.ledger.SSWallet;
-import org.nathanielbunch.ssblockchain.node.model.SSBlockResponse;
-import org.nathanielbunch.ssblockchain.node.service.SSBlockchainService;
+import org.nathanielbunch.ssblockchain.core.ledger.Transaction;
+import org.nathanielbunch.ssblockchain.core.ledger.Wallet;
+import org.nathanielbunch.ssblockchain.node.model.BlockResponse;
+import org.nathanielbunch.ssblockchain.node.service.BlockchainService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,15 +23,15 @@ import javax.annotation.PostConstruct;
  * @since 0.0.1
  * @author nathanielbunch
  */
-@RestController
-public class SSRestController {
+@org.springframework.web.bind.annotation.RestController
+public class RestController {
 
-    Logger logger = LoggerFactory.getLogger(SSRestController.class);
+    Logger logger = LoggerFactory.getLogger(RestController.class);
 
     private ObjectMapper objectMapper;
 
     @Autowired
-    SSBlockchainService service;
+    BlockchainService service;
 
     @PostConstruct
     private void init() {
@@ -39,25 +39,25 @@ public class SSRestController {
     }
 
     @RequestMapping(value = "/transaction", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<SSTransaction> putSSTransaction(@RequestBody JsonNode data) throws JsonProcessingException {
+    public ResponseEntity<Transaction> putSSTransaction(@RequestBody JsonNode data) throws JsonProcessingException {
         logger.trace("Received new data: {}", data);
-        SSTransaction transaction = objectMapper.treeToValue(data, SSTransaction.class);
+        Transaction transaction = objectMapper.treeToValue(data, Transaction.class);
         this.service.addNewTransaction(transaction);
         return new ResponseEntity<>(transaction, HttpStatus.CREATED);
     }
 
     @RequestMapping(value = "/transaction", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<SSTransaction> getSSTransaction() throws Exception {
+    public ResponseEntity<Transaction> getSSTransaction() throws Exception {
         return new ResponseEntity<>(this.service.getTransaction(), HttpStatus.OK);
     }
 
     @RequestMapping(value = "/wallet", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<SSWallet> getSSWallet() throws Exception {
+    public ResponseEntity<Wallet> getSSWallet() throws Exception {
         return new ResponseEntity<>(this.service.getWallet(), HttpStatus.OK);
     }
 
     @RequestMapping(value = "/mine", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<SSBlockResponse> mineBlock() throws Exception {
+    public ResponseEntity<BlockResponse> mineBlock() throws Exception {
         return new ResponseEntity<>(this.service.mineBlock(), HttpStatus.CREATED);
     }
 

@@ -3,8 +3,8 @@ package org.nathanielbunch.ssblockchain.core.ledger;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import org.nathanielbunch.ssblockchain.core.serialization.SSTransactionDeserializer;
-import org.nathanielbunch.ssblockchain.core.utils.SSHasher;
+import org.nathanielbunch.ssblockchain.core.serialization.TransactionDeserializer;
+import org.nathanielbunch.ssblockchain.core.utils.BCOHasher;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -24,8 +24,8 @@ import java.util.UUID;
  * @author nathanielbunch
  */
 @JsonInclude
-@JsonDeserialize(using = SSTransactionDeserializer.class)
-public class SSTransaction implements Serializable {
+@JsonDeserialize(using = TransactionDeserializer.class)
+public class Transaction implements Serializable {
 
     private final UUID index;
     private final LocalDateTime timestamp;
@@ -35,14 +35,14 @@ public class SSTransaction implements Serializable {
     private final String note;
     private final byte[] transactionHash;
 
-    protected SSTransaction(TBuilder builder) throws NoSuchAlgorithmException {
+    protected Transaction(TBuilder builder) throws NoSuchAlgorithmException {
         this.index = builder.index;
         this.timestamp = builder.timestamp;
         this.origin = builder.origin;
         this.destination = builder.destination;
         this.amount = builder.amount;
         this.note = builder.note;
-        this.transactionHash = SSHasher.hash(this);
+        this.transactionHash = BCOHasher.hash(this);
     }
 
     public UUID getIndex() {
@@ -75,7 +75,7 @@ public class SSTransaction implements Serializable {
 
     @Override
     public String toString(){
-        return SSHasher.humanReadableHash(transactionHash);
+        return BCOHasher.humanReadableHash(transactionHash);
     }
 
     /**
@@ -117,10 +117,10 @@ public class SSTransaction implements Serializable {
             return new TBuilder();
         }
 
-        public SSTransaction build() throws NoSuchAlgorithmException {
+        public Transaction build() throws NoSuchAlgorithmException {
             this.index = UUID.randomUUID();
             timestamp = LocalDateTime.now();
-            return new SSTransaction(this);
+            return new Transaction(this);
         }
     }
 
