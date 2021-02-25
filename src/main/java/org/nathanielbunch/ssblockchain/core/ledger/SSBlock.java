@@ -20,14 +20,14 @@ public final class SSBlock implements Serializable {
     // Make the different fields of the block immutable
     private final UUID index;
     private final LocalDateTime timestamp;
-    private final Object data;
+    private final Object transactions;
     private final byte[] previousBlockHash;
     private final byte[] blockHash;
 
     private SSBlock(BBuilder blockBuilder) throws Exception {
         this.index = blockBuilder.index;
         this.timestamp = blockBuilder.timestamp;
-        this.data = blockBuilder.data;
+        this.transactions = blockBuilder.transactions;
         this.previousBlockHash = blockBuilder.previousBlock;
         this.blockHash = SSHasher.hash(this);
     }
@@ -40,8 +40,8 @@ public final class SSBlock implements Serializable {
         return timestamp;
     }
 
-    public Object getData() {
-        return data;
+    public Object getTransactions() {
+        return transactions;
     }
 
     public byte[] getPreviousBlockHash() {
@@ -65,7 +65,7 @@ public final class SSBlock implements Serializable {
 
         private UUID index;
         private LocalDateTime timestamp;
-        private Object data;
+        private Object transactions;
         private byte[] previousBlock;
 
         private BBuilder(){}
@@ -74,8 +74,8 @@ public final class SSBlock implements Serializable {
             return new BBuilder();
         }
 
-        public BBuilder setData(Object data){
-            this.data = data;
+        public BBuilder setTransactions(Object transactions){
+            this.transactions = transactions;
             return this;
         }
 
