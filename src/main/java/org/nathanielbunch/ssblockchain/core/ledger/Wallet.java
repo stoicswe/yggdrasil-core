@@ -2,12 +2,13 @@ package org.nathanielbunch.ssblockchain.core.ledger;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import org.nathanielbunch.ssblockchain.core.utils.BCOHasher;
+import org.nathanielbunch.ssblockchain.core.utils.DateTimeUtil;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.UUID;
 
 /**
@@ -15,6 +16,7 @@ import java.util.UUID;
  * in an encrypted environment. The SSWallet will also be capable of creating
  * an identifiable address in order to send and receive currency.
  *
+ * @since 0.0.1
  * @author nathanielbunch
  */
 @JsonInclude
@@ -24,7 +26,7 @@ public class Wallet implements Serializable {
     // Should include balance, address, etc...
     private final PublicKey publicKey;
     private final UUID index;
-    private final LocalDateTime creationDate;
+    private final ZonedDateTime creationDate;
     private final byte[] address;
     private final BigDecimal balance;
     private final byte[] walletHash;
@@ -38,7 +40,7 @@ public class Wallet implements Serializable {
         this.walletHash = BCOHasher.hash(this);
     }
 
-    private Wallet(PublicKey publicKey, UUID index, LocalDateTime creationDate, byte[] address, BigDecimal balance, byte[] walletHash) {
+    private Wallet(PublicKey publicKey, UUID index, ZonedDateTime creationDate, byte[] address, BigDecimal balance, byte[] walletHash) {
         this.publicKey = publicKey;
         this.index = index;
         this.creationDate = creationDate;
@@ -51,7 +53,7 @@ public class Wallet implements Serializable {
         return index;
     }
 
-    public LocalDateTime getCreationDate() {
+    public ZonedDateTime getCreationDate() {
         return creationDate;
     }
 
@@ -94,7 +96,7 @@ public class Wallet implements Serializable {
 
         private PublicKey publicKey;
         private UUID index;
-        private LocalDateTime creationDate;
+        private ZonedDateTime creationDate;
         private byte[] address;
 
         private WBuilder(){}
@@ -110,7 +112,7 @@ public class Wallet implements Serializable {
 
         public Wallet build() throws NoSuchAlgorithmException {
             this.index = UUID.randomUUID();
-            this.creationDate = LocalDateTime.now();
+            this.creationDate = DateTimeUtil.getCurrentTimestamp();
             this.address = this.buildWalletAddress(publicKey.getEncoded());
             return new Wallet(this);
         }

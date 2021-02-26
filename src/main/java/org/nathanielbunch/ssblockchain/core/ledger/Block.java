@@ -1,9 +1,10 @@
 package org.nathanielbunch.ssblockchain.core.ledger;
 
 import org.nathanielbunch.ssblockchain.core.utils.BCOHasher;
+import org.nathanielbunch.ssblockchain.core.utils.DateTimeUtil;
 
 import java.io.Serializable;
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.UUID;
 
 /**
@@ -19,7 +20,7 @@ public final class Block implements Serializable {
 
     // Make the different fields of the block immutable
     private final UUID index;
-    private final LocalDateTime timestamp;
+    private final ZonedDateTime timestamp;
     private final Object transactions;
     private final byte[] previousBlockHash;
     private final byte[] blockHash;
@@ -36,7 +37,7 @@ public final class Block implements Serializable {
         return index;
     }
 
-    public LocalDateTime getTimestamp() {
+    public ZonedDateTime getTimestamp() {
         return timestamp;
     }
 
@@ -64,7 +65,7 @@ public final class Block implements Serializable {
     public static class BBuilder {
 
         private UUID index;
-        private LocalDateTime timestamp;
+        private ZonedDateTime timestamp;
         private Object transactions;
         private byte[] previousBlock;
 
@@ -86,7 +87,7 @@ public final class Block implements Serializable {
 
         public Block build() throws Exception {
             this.index = UUID.randomUUID();
-            timestamp = LocalDateTime.now();
+            timestamp = DateTimeUtil.getCurrentTimestamp();
             return new Block(this);
         }
 

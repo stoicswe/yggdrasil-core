@@ -4,3 +4,9 @@
 
 # Ignore builds
 target
+
+# Ignore Blockchain Data
+.ssblockchain-data
+
+# Ignore other OS Specific files
+.DS_Store
