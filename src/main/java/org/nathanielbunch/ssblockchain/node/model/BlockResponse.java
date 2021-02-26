@@ -2,14 +2,21 @@ package org.nathanielbunch.ssblockchain.node.model;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.UUID;
 
+/**
+ * The block response is useful for returning some of the basic information about
+ * recently acquired or mined blocks.
+ *
+ * @since 0.0.1
+ * @author nathanielbunch
+ */
 @JsonInclude
 public class BlockResponse {
 
     private final UUID index;
-    private final LocalDateTime timestamp;
+    private final ZonedDateTime timestamp;
     private final Long size;
     private final byte[] blockHash;
 
@@ -24,7 +31,7 @@ public class BlockResponse {
         return index;
     }
 
-    public LocalDateTime getTimestamp() {
+    public ZonedDateTime getTimestamp() {
         return timestamp;
     }
 
@@ -39,7 +46,7 @@ public class BlockResponse {
     public static class Builder {
 
         private UUID index;
-        private LocalDateTime timestamp;
+        private ZonedDateTime timestamp;
         private Long size;
         private byte[] blockhash;
 
@@ -54,7 +61,7 @@ public class BlockResponse {
             return this;
         }
 
-        public Builder setTimestamp(LocalDateTime timestamp) {
+        public Builder setTimestamp(ZonedDateTime timestamp) {
             this.timestamp = timestamp;
             return this;
         }

@@ -1,4 +1,8 @@
 spring:
   application: "SSBlockchain Core"
+  profiles:
+    active: "live"
 server:
   port: 9000
+blockchain:
+  hotBlocks: 20

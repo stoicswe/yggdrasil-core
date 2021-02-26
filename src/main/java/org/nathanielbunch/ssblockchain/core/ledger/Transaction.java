@@ -5,11 +5,12 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import org.nathanielbunch.ssblockchain.core.serialization.TransactionDeserializer;
 import org.nathanielbunch.ssblockchain.core.utils.BCOHasher;
+import org.nathanielbunch.ssblockchain.core.utils.DateTimeUtil;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.security.NoSuchAlgorithmException;
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.UUID;
 
 /**
@@ -28,7 +29,7 @@ import java.util.UUID;
 public class Transaction implements Serializable {
 
     private final UUID index;
-    private final LocalDateTime timestamp;
+    private final ZonedDateTime timestamp;
     private final String origin;
     private final String destination;
     private final BigDecimal amount;
@@ -49,7 +50,7 @@ public class Transaction implements Serializable {
         return index;
     }
 
-    public LocalDateTime getTimestamp() {
+    public ZonedDateTime getTimestamp() {
         return timestamp;
     }
 
@@ -85,7 +86,7 @@ public class Transaction implements Serializable {
     public static class TBuilder {
 
         protected UUID index;
-        protected LocalDateTime timestamp;
+        protected ZonedDateTime timestamp;
         protected String origin;
         protected String destination;
         protected BigDecimal amount;
@@ -119,7 +120,7 @@ public class Transaction implements Serializable {
 
         public Transaction build() throws NoSuchAlgorithmException {
             this.index = UUID.randomUUID();
-            timestamp = LocalDateTime.now();
+            timestamp = DateTimeUtil.getCurrentTimestamp();
             return new Transaction(this);
         }
     }

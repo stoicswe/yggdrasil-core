@@ -2,8 +2,11 @@ package org.nathanielbunch.ssblockchain.node;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
+import org.junit.runner.RunWith;
+import org.mockito.junit.MockitoJUnitRunner;
+import org.nathanielbunch.ssblockchain.core.ledger.Blockchain;
 import org.nathanielbunch.ssblockchain.core.ledger.Transaction;
-import org.nathanielbunch.ssblockchain.node.controller.RestController;
+import org.nathanielbunch.ssblockchain.node.controller.BlockchainController;
 import org.nathanielbunch.ssblockchain.node.service.BlockchainService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -13,7 +16,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
 import java.math.BigDecimal;
-import java.security.NoSuchAlgorithmException;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.Mockito.when;
@@ -21,11 +23,15 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest(controllers = RestController.class)
+@WebMvcTest(controllers = BlockchainController.class)
+@RunWith(MockitoJUnitRunner.class)
 public class ControllerTests {
 
     @Autowired
     private MockMvc mockMvc;
+
+    @MockBean
+    private Blockchain blockchain;
 
     @MockBean
     private BlockchainService service;
@@ -43,7 +49,13 @@ public class ControllerTests {
 
     @Test
     void testGetTransaction() throws Exception {
-        when(service.getTransaction()).thenReturn(this.buildTestTransaction());
+        when(service.getTransaction()).thenReturn(
+                Transaction.TBuilder.newSSTransactionBuilder()
+                .setOrigin("TestAddress")
+                .setDestination("TestDestination")
+                .setValue(new BigDecimal("0.1234"))
+                .setNote("Test transaction")
+                .build());
 
         MvcResult result = mockMvc.perform(get("/transaction")
                 .accept(MediaType.APPLICATION_JSON))
@@ -55,15 +67,6 @@ public class ControllerTests {
         assertThat(responseBody).contains("\"destination\":\"TestDestination\"");
         assertThat(responseBody).contains("\"amount\":0.1234");
         assertThat(responseBody).contains("\"note\":\"Test transaction\"");
-    }
-
-    private Transaction buildTestTransaction() throws NoSuchAlgorithmException {
-        return Transaction.TBuilder.newSSTransactionBuilder()
-                .setOrigin("TestAddress")
-                .setDestination("TestDestination")
-                .setValue(new BigDecimal("0.1234"))
-                .setNote("Test transaction")
-                .build();
     }
 
 }

@@ -1,11 +1,12 @@
 package org.nathanielbunch.ssblockchain.node.service;
 
 import org.nathanielbunch.ssblockchain.core.ledger.Block;
+import org.nathanielbunch.ssblockchain.core.ledger.Blockchain;
 import org.nathanielbunch.ssblockchain.core.ledger.Transaction;
 import org.nathanielbunch.ssblockchain.core.ledger.Wallet;
 import org.nathanielbunch.ssblockchain.core.utils.BCOHasher;
 import org.nathanielbunch.ssblockchain.core.utils.BCOKeyGenerator;
-import org.nathanielbunch.ssblockchain.node.controller.RestController;
+import org.nathanielbunch.ssblockchain.node.controller.BlockchainController;
 import org.nathanielbunch.ssblockchain.node.model.BlockResponse;
 import org.openjdk.jol.info.GraphLayout;
 import org.slf4j.Logger;
@@ -26,7 +27,7 @@ import java.util.List;
  * to serve functionality to the rest endpoint.
  *
  * @since 0.0.1
- * @see RestController
+ * @see BlockchainController
  * @author nathanielbunch
  */
 @Service
@@ -34,15 +35,17 @@ public class BlockchainService {
 
     private Logger logger = LoggerFactory.getLogger(BlockchainService.class);
 
+    private final Object lock = new Object();
+
     @Autowired
     private BCOKeyGenerator keyGenerator;
-    private List<Block> blockchain;
+    @Autowired
+    private Blockchain blockchain;
     private List<Transaction> transactions;
     private Wallet currentWallet;
 
     @PostConstruct
     private void init(){
-        this.blockchain = new ArrayList<>();
         this.transactions = new ArrayList<>();
     }
 
@@ -67,8 +70,10 @@ public class BlockchainService {
      * @param transaction
      */
     public void addNewTransaction(Transaction transaction) {
-        logger.info("New transaction: {} [{} -> {} = {}]", transaction.toString(), transaction.getOrigin(), transaction.getDestination(), transaction.getAmount());
-        this.transactions.add(transaction);
+        synchronized (lock) {
+            logger.info("New transaction: {} [{} -> {} = {}]", transaction.toString(), transaction.getOrigin(), transaction.getDestination(), transaction.getAmount());
+            this.transactions.add(transaction);
+        }
     }
 
     /**
@@ -97,15 +102,15 @@ public class BlockchainService {
 
         BlockResponse lastMinedBlock;
 
-        if(blockchain.size() == 0){
+        if(blockchain.getBlocks().length == 0){
             Block genesisBlock = Block.BBuilder.newSSBlockBuilder()
                     .setTransactions("In the beginning...there was light.")
                     .setPreviousBlock(null)
                     .build();
-            blockchain.add(genesisBlock);
+            blockchain.addBlocks(List.of(genesisBlock));
         }
 
-        Block lastBlock = blockchain.get(blockchain.size()-1);
+        Block lastBlock = blockchain.getBlocks()[blockchain.getBlocks().length-1];
 
         logger.info("Last block record: {}", lastBlock.toString());
 
@@ -127,15 +132,18 @@ public class BlockchainService {
 
         logger.info("Block mine awarded, transaction: {} @ {}", blockMineAward.toString(), blockMineAward.getAmount());
 
-        this.addNewTransaction(blockMineAward);
+        Block newBlock;
+        synchronized (lock) {
+            this.addNewTransaction(blockMineAward);
 
-        Block newBlock = Block.BBuilder.newSSBlockBuilder()
-                .setTransactions(this.transactions.toArray(Transaction[]::new))
-                .setPreviousBlock(this.blockchain.get(this.blockchain.size()-1).getBlockHash())
-                .build();
+            newBlock = Block.BBuilder.newSSBlockBuilder()
+                    .setTransactions(this.transactions.toArray(Transaction[]::new))
+                    .setPreviousBlock(this.blockchain.getBlocks()[this.blockchain.getBlocks().length - 1].getBlockHash())
+                    .build();
 
-        this.blockchain.add(newBlock);
-        this.transactions = new ArrayList<>();
+            this.blockchain.addBlocks(List.of(newBlock));
+            this.transactions = new ArrayList<>();
+        }
 
         logger.info("New block: {}", newBlock.toString());
 
