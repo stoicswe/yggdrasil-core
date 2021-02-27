@@ -5,4 +5,9 @@ spring:
 server:
   port: 9000
 blockchain:
-  hotBlocks: 20
+  hot-blocks: 20
+  p2p:
+    node-name: "blockchain-core-node"
+    port: 9090
+    active-connections: 10
+    timeout: 30
