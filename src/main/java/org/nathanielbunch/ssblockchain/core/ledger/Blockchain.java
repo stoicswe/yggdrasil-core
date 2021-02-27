@@ -2,6 +2,7 @@ package org.nathanielbunch.ssblockchain.core.ledger;
 
 import org.nathanielbunch.ssblockchain.core.utils.BlockchainIO;
 import org.nathanielbunch.ssblockchain.core.utils.DateTimeUtil;
+import org.nathanielbunch.ssblockchain.node.network.NodeConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,11 +28,13 @@ public class Blockchain implements Cloneable {
 
     private Logger logger = LoggerFactory.getLogger(Blockchain.class);
 
-    @Value("${blockchain.hotblocks}")
-    private transient Integer hotblocks;
-    private transient final Object lock = new Object();
+    @Autowired
+    private transient NodeConfig nodeConfig;
     @Autowired
     private transient BlockchainIO blockchainIO;
+    @Value("${blockchain.hot-blocks}")
+    private transient Integer hotblocks;
+    private transient final Object lock = new Object();
 
     private UUID nodeIndex;
     private ZonedDateTime timestamp;
@@ -39,7 +42,7 @@ public class Blockchain implements Cloneable {
 
     @PostConstruct
     public void init() {
-        this.nodeIndex = UUID.randomUUID();
+        this.nodeIndex = nodeConfig.getNodeIndex();
         this.timestamp = DateTimeUtil.getCurrentTimestamp();
         this.blocks = new ArrayList<>();
     }

@@ -8,6 +8,7 @@ import org.nathanielbunch.ssblockchain.core.utils.BCOHasher;
 import org.nathanielbunch.ssblockchain.core.utils.BCOKeyGenerator;
 import org.nathanielbunch.ssblockchain.node.controller.BlockchainController;
 import org.nathanielbunch.ssblockchain.node.model.BlockResponse;
+import org.nathanielbunch.ssblockchain.node.network.Node;
 import org.openjdk.jol.info.GraphLayout;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,14 +34,16 @@ import java.util.List;
 @Service
 public class BlockchainService {
 
-    private Logger logger = LoggerFactory.getLogger(BlockchainService.class);
-
+    private final Logger logger = LoggerFactory.getLogger(BlockchainService.class);
     private final Object lock = new Object();
 
     @Autowired
-    private BCOKeyGenerator keyGenerator;
+    private Node node;
     @Autowired
     private Blockchain blockchain;
+    @Autowired
+    private BCOKeyGenerator keyGenerator;
+
     private List<Transaction> transactions;
     private Wallet currentWallet;
 
