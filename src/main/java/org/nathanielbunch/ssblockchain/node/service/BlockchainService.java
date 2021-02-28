@@ -18,9 +18,12 @@ import org.springframework.stereotype.Service;
 import javax.annotation.PostConstruct;
 import javax.security.auth.DestroyFailedException;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.security.KeyPair;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -34,6 +37,7 @@ import java.util.List;
 @Service
 public class BlockchainService {
 
+    private final Integer _PREFIX = 4;
     private final Logger logger = LoggerFactory.getLogger(BlockchainService.class);
     private final Object lock = new Object();
 
@@ -117,38 +121,32 @@ public class BlockchainService {
 
         logger.info("Last block record: {}", lastBlock.toString());
 
-        int lastProof;
-        if(lastBlock.getTransactions() instanceof String){
-            lastProof = 1;
-        } else {
-            lastProof = ((Transaction[]) lastBlock.getTransactions()).length;
-        }
-
-        this.proofOfWork(lastProof);
-
-        Transaction blockMineAward = Transaction.TBuilder.newSSTransactionBuilder()
-                .setOrigin("SSBlockchainNetwork")
-                .setDestination(currentWallet.getHumanReadableAddress())
-                .setValue(new BigDecimal(1))
-                .setNote("Happy mining!")
-                .build();
-
-        logger.info("Block mine awarded, transaction: {} @ {}", blockMineAward.toString(), blockMineAward.getAmount());
-
         Block newBlock;
         synchronized (lock) {
-            this.addNewTransaction(blockMineAward);
-
             newBlock = Block.BBuilder.newSSBlockBuilder()
                     .setTransactions(this.transactions.toArray(Transaction[]::new))
                     .setPreviousBlock(this.blockchain.getBlocks()[this.blockchain.getBlocks().length - 1].getBlockHash())
                     .build();
 
-            this.blockchain.addBlocks(List.of(newBlock));
             this.transactions = new ArrayList<>();
         }
 
+        // Do some work
+        newBlock = this.proofOfWork(_PREFIX, newBlock);
+        this.blockchain.addBlocks(List.of(newBlock));
+
         logger.info("New block: {}", newBlock.toString());
+
+        Transaction blockMineAward = Transaction.TBuilder.newSSTransactionBuilder()
+                .setOrigin("SSBlockchainNetwork")
+                .setDestination(currentWallet.getHumanReadableAddress())
+                .setValue(new BigDecimal(newBlock.toString().length() / 9.23).setScale(12, RoundingMode.FLOOR))
+                .setNote("Happy mining!")
+                .build();
+
+        this.addNewTransaction(blockMineAward);
+
+        logger.info("Block mine awarded, transaction: {} @ {}", blockMineAward.toString(), blockMineAward.getAmount());
 
         return BlockResponse.Builder.builder()
                 .setIndex(newBlock.getIndex())
@@ -158,12 +156,19 @@ public class BlockchainService {
                 .build();
     }
 
-    private int proofOfWork(int work) {
-        int incrememt = work + 1;
-        while(work % 23 == 0 && incrememt % work == 0) {
-            incrememt++;
+    private Block proofOfWork(int prefix, Block currentBlock) throws Exception {
+        List<Transaction> blockTransactions = new ArrayList<>(Arrays.asList((Transaction[]) currentBlock.getTransactions()));
+        blockTransactions.sort(Comparator.comparing(Transaction::getTimestamp));
+        Block sortedBlock = Block.BBuilder.newSSBlockBuilder()
+                .setPreviousBlock(currentBlock.getPreviousBlockHash())
+                .setTransactions(blockTransactions)
+                .build();
+        String prefixString = new String(new char[prefix]).replace('\0', '0');
+        while (!sortedBlock.toString().substring(0, prefix).equals(prefixString)) {
+            sortedBlock.incrementNonce();
+            sortedBlock.setBlockHash(BCOHasher.hash(sortedBlock));
         }
-        return incrememt;
+        return sortedBlock;
     }
 
 }

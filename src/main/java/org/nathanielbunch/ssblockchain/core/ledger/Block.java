@@ -23,7 +23,8 @@ public final class Block implements Serializable {
     private final ZonedDateTime timestamp;
     private final Object transactions;
     private final byte[] previousBlockHash;
-    private final byte[] blockHash;
+    private byte[] blockHash;
+    private int nonce;
 
     private Block(BBuilder blockBuilder) throws Exception {
         this.index = blockBuilder.index;
@@ -49,8 +50,16 @@ public final class Block implements Serializable {
         return previousBlockHash;
     }
 
+    public void setBlockHash(byte[] blockHash) {
+        this.blockHash = blockHash;
+    }
+
     public byte[] getBlockHash() {
         return blockHash;
+    }
+
+    public void incrementNonce() {
+        this.nonce++;
     }
 
     @Override

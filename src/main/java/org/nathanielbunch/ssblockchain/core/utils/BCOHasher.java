@@ -20,7 +20,7 @@ import java.security.NoSuchAlgorithmException;
  */
 public class BCOHasher {
 
-    private static final String _HASH_ALGORITHM = "SHA3-512";
+    private static final String _HASH_ALGORITHM = "SHA-256";
 
     /**
      * Hashes a SSBlock.
