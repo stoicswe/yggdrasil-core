@@ -52,6 +52,8 @@ Tests can be run during the build proccess: run `mvn clean install` to build wit
 
 Contributions are welcome!
 
+Before contributing, take time to review the [code of conduct](https://github.com/nathanielbunch/AStupidlySimpleBlockchain/blob/main/CODE_OF_CONDUCT.md).
+
 See also other contributors on the list of [contributors](https://github.com/taranoshi/AStupidlySimpleBlockchain/graphs/contributors).
 
 ## License
