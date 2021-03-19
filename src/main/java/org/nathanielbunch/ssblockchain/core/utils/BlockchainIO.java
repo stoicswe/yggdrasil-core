@@ -1,7 +1,7 @@
 package org.nathanielbunch.ssblockchain.core.utils;
 
-import org.nathanielbunch.ssblockchain.core.ledger.Block;
-import org.nathanielbunch.ssblockchain.core.ledger.Blockchain;
+import org.nathanielbunch.ssblockchain.core.ledger.chain.Block;
+import org.nathanielbunch.ssblockchain.core.ledger.chain.Blockchain;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Profile;

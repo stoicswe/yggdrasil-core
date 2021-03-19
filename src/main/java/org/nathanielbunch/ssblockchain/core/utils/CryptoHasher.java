@@ -2,14 +2,12 @@ package org.nathanielbunch.ssblockchain.core.utils;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.SerializationUtils;
-import org.nathanielbunch.ssblockchain.core.ledger.Block;
-import org.nathanielbunch.ssblockchain.core.ledger.Transaction;
+import org.nathanielbunch.ssblockchain.core.ledger.chain.Block;
+import org.nathanielbunch.ssblockchain.core.ledger.transaction.Txn;
 import org.nathanielbunch.ssblockchain.core.ledger.Wallet;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * The SSHasher provides useful tooling for hashing transactions and blocks using
@@ -21,7 +19,7 @@ import java.util.List;
  * @since 0.0.1
  * @author nathanielbunch
  */
-public class BCOHasher {
+public class CryptoHasher {
 
     private static final String _HASH_ALGORITHM = "SHA-256";
 
@@ -45,12 +43,19 @@ public class BCOHasher {
     /**
      * Hashes a SSTransaction.
      *
-     * @param transaction
+     * @param txn
      * @return
      * @throws NoSuchAlgorithmException
      */
-    public static byte[] hash(Transaction transaction) throws NoSuchAlgorithmException {
-        return MessageDigest.getInstance(_HASH_ALGORITHM).digest(SerializationUtils.serialize(transaction));
+    public static byte[] hash(Txn txn) throws NoSuchAlgorithmException {
+        byte[] txnData = new byte[0];
+        txnData = appendBytes(txnData, SerializationUtils.serialize(txn.getIndex()));
+        txnData = appendBytes(txnData, SerializationUtils.serialize(txn.getTimestamp()));
+        txnData = appendBytes(txnData, SerializationUtils.serialize(txn.getOrigin()));
+        txnData = appendBytes(txnData, SerializationUtils.serialize(txn.getDestination()));
+        txnData = appendBytes(txnData, SerializationUtils.serialize(txn.getAmount()));
+        txnData = appendBytes(txnData, SerializationUtils.serialize(txn.getNote()));
+        return MessageDigest.getInstance(_HASH_ALGORITHM).digest(SerializationUtils.serialize(txnData));
     }
 
     /**
@@ -61,7 +66,11 @@ public class BCOHasher {
      * @throws NoSuchAlgorithmException
      */
     public static byte[] hash(Wallet wallet) throws NoSuchAlgorithmException {
-        return MessageDigest.getInstance(_HASH_ALGORITHM).digest(SerializationUtils.serialize(wallet));
+        byte[] walletData = new byte[0];
+        walletData = appendBytes(walletData, SerializationUtils.serialize(wallet.getIndex()));
+        walletData = appendBytes(walletData, SerializationUtils.serialize(wallet.getAddress()));
+        walletData = appendBytes(walletData, SerializationUtils.serialize(wallet.getCreationDate()));
+        return MessageDigest.getInstance(_HASH_ALGORITHM).digest(SerializationUtils.serialize(walletData));
     }
 
     /**

@@ -3,8 +3,8 @@ package org.nathanielbunch.ssblockchain.node.controller;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.nathanielbunch.ssblockchain.core.ledger.Blockchain;
-import org.nathanielbunch.ssblockchain.core.ledger.Transaction;
+import org.nathanielbunch.ssblockchain.core.ledger.chain.Blockchain;
+import org.nathanielbunch.ssblockchain.core.ledger.transaction.Txn;
 import org.nathanielbunch.ssblockchain.core.ledger.Wallet;
 import org.nathanielbunch.ssblockchain.node.model.BlockResponse;
 import org.nathanielbunch.ssblockchain.node.service.BlockchainService;
@@ -58,15 +58,15 @@ public class BlockchainController {
     }
 
     @RequestMapping(value = "/transaction", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Transaction> putTransaction(@RequestBody JsonNode data) throws JsonProcessingException {
+    public ResponseEntity<Txn> putTransaction(@RequestBody JsonNode data) throws JsonProcessingException {
         logger.trace("Received new data: {}", data);
-        Transaction transaction = objectMapper.treeToValue(data, Transaction.class);
-        this.service.addNewTransaction(transaction);
-        return new ResponseEntity<>(transaction, HttpStatus.CREATED);
+        Txn txn = objectMapper.treeToValue(data, Txn.class);
+        this.service.addNewTransaction(txn);
+        return new ResponseEntity<>(txn, HttpStatus.CREATED);
     }
 
     @RequestMapping(value = "/transaction", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Transaction> getTransaction() throws Exception {
+    public ResponseEntity<Txn> getTransaction() throws Exception {
         return new ResponseEntity<>(this.service.getTransaction(), HttpStatus.OK);
     }
 

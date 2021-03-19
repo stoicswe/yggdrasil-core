@@ -1,7 +1,7 @@
-package org.nathanielbunch.ssblockchain.core.ledger;
+package org.nathanielbunch.ssblockchain.core.ledger.chain;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import org.nathanielbunch.ssblockchain.core.utils.BCOHasher;
+import org.nathanielbunch.ssblockchain.core.utils.CryptoHasher;
 import org.nathanielbunch.ssblockchain.core.utils.BlockchainIO;
 import org.nathanielbunch.ssblockchain.core.utils.DateTimeUtil;
 import org.nathanielbunch.ssblockchain.node.network.NodeConfig;
@@ -108,8 +108,8 @@ public class Blockchain implements Cloneable {
         for(int i = 1; i < chain.size(); i++){
             Block b0 = chain.get(i-1);
             Block b1 = chain.get(i);
-            if(!BCOHasher.humanReadableHash(b1.getPreviousBlockHash()).contentEquals(BCOHasher.humanReadableHash(b0.getBlockHash())) ||
-                    !BCOHasher.humanReadableHash(b1.getBlockHash()).contentEquals(BCOHasher.humanReadableHash(BCOHasher.hash(b1)))){
+            if(!CryptoHasher.humanReadableHash(b1.getPreviousBlockHash()).contentEquals(CryptoHasher.humanReadableHash(b0.getBlockHash())) ||
+                    !CryptoHasher.humanReadableHash(b1.getBlockHash()).contentEquals(CryptoHasher.humanReadableHash(CryptoHasher.hash(b1)))){
                 return false;
             }
         }
