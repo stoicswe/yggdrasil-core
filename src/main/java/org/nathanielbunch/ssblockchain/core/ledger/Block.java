@@ -1,5 +1,7 @@
 package org.nathanielbunch.ssblockchain.core.ledger;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import org.nathanielbunch.ssblockchain.core.utils.BCOHasher;
 import org.nathanielbunch.ssblockchain.core.utils.DateTimeUtil;
 
@@ -16,20 +18,24 @@ import java.util.UUID;
  * @since 0.0.1
  * @author nathanielbunch
  */
+@JsonInclude
+@JsonIgnoreProperties(value = "nonce")
 public final class Block implements Serializable {
 
     // Make the different fields of the block immutable
     private final UUID index;
     private final ZonedDateTime timestamp;
-    private final Object transactions;
+    private final Object data;
     private final byte[] previousBlockHash;
     private byte[] blockHash;
+    private byte[] validator;
+    private byte[] signature;
     private int nonce;
 
     private Block(BBuilder blockBuilder) throws Exception {
         this.index = blockBuilder.index;
         this.timestamp = blockBuilder.timestamp;
-        this.transactions = blockBuilder.transactions;
+        this.data = blockBuilder.data;
         this.previousBlockHash = blockBuilder.previousBlock;
         this.blockHash = BCOHasher.hash(this);
     }
@@ -42,8 +48,8 @@ public final class Block implements Serializable {
         return timestamp;
     }
 
-    public Object getTransactions() {
-        return transactions;
+    public Object getData() {
+        return data;
     }
 
     public byte[] getPreviousBlockHash() {
@@ -58,13 +64,40 @@ public final class Block implements Serializable {
         return blockHash;
     }
 
+    public byte[] getValidator() {
+        return validator;
+    }
+
+    public void setValidator(byte[] validator) {
+        this.validator = validator;
+    }
+
+    public byte[] getSignature() {
+        return signature;
+    }
+
+    public void setSignature(byte[] signature) {
+        this.signature = signature;
+    }
+
     public void incrementNonce() {
         this.nonce++;
+    }
+
+    public int getNonce() {
+        return nonce;
     }
 
     @Override
     public String toString() {
         return BCOHasher.humanReadableHash(blockHash);
+    }
+
+    public static Block genesis() throws Exception {
+        return new Block.BBuilder()
+                .setPreviousBlock(null)
+                .setData("'Think Different' - Steve Jobs")
+                .build();
     }
 
     /**
@@ -75,7 +108,7 @@ public final class Block implements Serializable {
 
         private UUID index;
         private ZonedDateTime timestamp;
-        private Object transactions;
+        private Object data;
         private byte[] previousBlock;
 
         private BBuilder(){}
@@ -84,8 +117,8 @@ public final class Block implements Serializable {
             return new BBuilder();
         }
 
-        public BBuilder setTransactions(Object transactions){
-            this.transactions = transactions;
+        public BBuilder setData(Object data){
+            this.data = data;
             return this;
         }
 

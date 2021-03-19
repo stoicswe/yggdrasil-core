@@ -1,12 +1,13 @@
 package org.nathanielbunch.ssblockchain.core.ledger;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import org.nathanielbunch.ssblockchain.core.utils.BCOHasher;
 import org.nathanielbunch.ssblockchain.core.utils.BlockchainIO;
 import org.nathanielbunch.ssblockchain.core.utils.DateTimeUtil;
 import org.nathanielbunch.ssblockchain.node.network.NodeConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
@@ -24,6 +25,7 @@ import java.util.UUID;
  * @author nathanielbunch
  */
 @Component
+@JsonInclude
 public class Blockchain implements Cloneable {
 
     private Logger logger = LoggerFactory.getLogger(Blockchain.class);
@@ -32,8 +34,9 @@ public class Blockchain implements Cloneable {
     private transient NodeConfig nodeConfig;
     @Autowired
     private transient BlockchainIO blockchainIO;
-    @Value("${blockchain.hot-blocks}")
-    private transient Integer hotblocks;
+    // This hotBlock functionality is disabled for now
+    // Future impl will include a moving window technique
+    private transient final Integer hotblocks = -1;
     private transient final Object lock = new Object();
 
     private UUID nodeIndex;
@@ -41,10 +44,11 @@ public class Blockchain implements Cloneable {
     private List<Block> blocks;
 
     @PostConstruct
-    public void init() {
+    public void init() throws Exception {
         this.nodeIndex = nodeConfig.getNodeIndex();
         this.timestamp = DateTimeUtil.getCurrentTimestamp();
         this.blocks = new ArrayList<>();
+        this.blocks.add(Block.genesis());
     }
 
     public UUID getNodeIndex() {
@@ -80,6 +84,36 @@ public class Blockchain implements Cloneable {
                 }
             }
         }
+    }
+
+    public void replaceChain(List<Block> newChain) throws Exception {
+
+        if(newChain.size() <= this.blocks.size()) {
+            logger.debug("Received chain of length [{}] is not longer than local chain size [{}].", newChain.size(), this.blocks.size());
+            return;
+        } else if(!isValidChain(newChain)) {
+            logger.warn("Received chain is invalid.");
+            return;
+        }
+
+        logger.info("Replacing local chain with incoming chain.");
+        this.blocks = newChain;
+
+    }
+
+    public static boolean isValidChain(List<Block> chain) throws Exception {
+        if(!chain.get(0).toString().contentEquals(Block.genesis().toString())){
+            return false;
+        }
+        for(int i = 1; i < chain.size(); i++){
+            Block b0 = chain.get(i-1);
+            Block b1 = chain.get(i);
+            if(!BCOHasher.humanReadableHash(b1.getPreviousBlockHash()).contentEquals(BCOHasher.humanReadableHash(b0.getBlockHash())) ||
+                    !BCOHasher.humanReadableHash(b1.getBlockHash()).contentEquals(BCOHasher.humanReadableHash(BCOHasher.hash(b1)))){
+                return false;
+            }
+        }
+        return true;
     }
 
     @Override

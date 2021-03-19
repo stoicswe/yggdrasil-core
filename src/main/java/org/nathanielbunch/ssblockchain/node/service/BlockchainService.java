@@ -57,12 +57,23 @@ public class BlockchainService {
     }
 
     /**
+     * Returns the current local blockchain instance.
+     *
+     * @return
+     */
+    public Blockchain getBlockchain() {
+        return this.blockchain;
+    }
+
+    /**
      * Returns a transaction given a set of identifying parameters.
      *
      * @return
      * @throws NoSuchAlgorithmException
      */
     public Transaction getTransaction() throws NoSuchAlgorithmException {
+        // This returns a dummy transaction for now, but at some point may have a lookup service.
+        // Primarily for testing serialization.
         return Transaction.TBuilder.newSSTransactionBuilder()
                 .setOrigin("TestAddress")
                 .setDestination("TestDestination")
@@ -111,7 +122,7 @@ public class BlockchainService {
 
         if(blockchain.getBlocks().length == 0){
             Block genesisBlock = Block.BBuilder.newSSBlockBuilder()
-                    .setTransactions("In the beginning...there was light.")
+                    .setData("In the beginning...there was light.")
                     .setPreviousBlock(null)
                     .build();
             blockchain.addBlocks(List.of(genesisBlock));
@@ -124,7 +135,7 @@ public class BlockchainService {
         Block newBlock;
         synchronized (lock) {
             newBlock = Block.BBuilder.newSSBlockBuilder()
-                    .setTransactions(this.transactions.toArray(Transaction[]::new))
+                    .setData(this.transactions.toArray(Transaction[]::new))
                     .setPreviousBlock(this.blockchain.getBlocks()[this.blockchain.getBlocks().length - 1].getBlockHash())
                     .build();
 
@@ -157,11 +168,11 @@ public class BlockchainService {
     }
 
     private Block proofOfWork(int prefix, Block currentBlock) throws Exception {
-        List<Transaction> blockTransactions = new ArrayList<>(Arrays.asList((Transaction[]) currentBlock.getTransactions()));
+        List<Transaction> blockTransactions = new ArrayList<>(Arrays.asList((Transaction[]) currentBlock.getData()));
         blockTransactions.sort(Comparator.comparing(Transaction::getTimestamp));
         Block sortedBlock = Block.BBuilder.newSSBlockBuilder()
                 .setPreviousBlock(currentBlock.getPreviousBlockHash())
-                .setTransactions(blockTransactions)
+                .setData(blockTransactions)
                 .build();
         String prefixString = new String(new char[prefix]).replace('\0', '0');
         while (!sortedBlock.toString().substring(0, prefix).equals(prefixString)) {

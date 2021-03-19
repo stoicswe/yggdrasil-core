@@ -1,5 +1,6 @@
 package org.nathanielbunch.ssblockchain.core.utils;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.SerializationUtils;
 import org.nathanielbunch.ssblockchain.core.ledger.Block;
 import org.nathanielbunch.ssblockchain.core.ledger.Transaction;
@@ -7,6 +8,8 @@ import org.nathanielbunch.ssblockchain.core.ledger.Wallet;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * The SSHasher provides useful tooling for hashing transactions and blocks using
@@ -30,7 +33,13 @@ public class BCOHasher {
      * @throws NoSuchAlgorithmException
      */
     public static byte[] hash(Block block) throws NoSuchAlgorithmException {
-        return MessageDigest.getInstance(_HASH_ALGORITHM).digest(SerializationUtils.serialize(block));
+        byte[] blockData = new byte[0];
+        blockData = appendBytes(blockData, SerializationUtils.serialize(block.getIndex()));
+        blockData = appendBytes(blockData, SerializationUtils.serialize(block.getTimestamp()));
+        blockData = appendBytes(blockData, SerializationUtils.serialize(block.getData().hashCode()));
+        blockData = appendBytes(blockData, SerializationUtils.serialize(block.getPreviousBlockHash()));
+        blockData = appendBytes(blockData, SerializationUtils.serialize(block.getNonce()));
+        return MessageDigest.getInstance(_HASH_ALGORITHM).digest(SerializationUtils.serialize(blockData));
     }
 
     /**
@@ -71,6 +80,10 @@ public class BCOHasher {
             hexString.append(hex);
         }
         return hexString.toString();
+    }
+
+    private static byte[] appendBytes(byte[] base, byte[] extension) {
+        return ArrayUtils.addAll(base, extension);
     }
 
 }
