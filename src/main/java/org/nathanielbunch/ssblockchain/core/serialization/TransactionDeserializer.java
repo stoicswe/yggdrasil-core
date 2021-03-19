@@ -5,7 +5,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonNode;
-import org.nathanielbunch.ssblockchain.core.ledger.Transaction;
+import org.nathanielbunch.ssblockchain.core.ledger.transaction.Txn;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,7 +20,7 @@ import java.security.NoSuchAlgorithmException;
  * @since 0.0.1
  * @author nathanielbunch
  */
-public class TransactionDeserializer extends JsonDeserializer<Transaction> {
+public class TransactionDeserializer extends JsonDeserializer<Txn> {
 
     Logger logger = LoggerFactory.getLogger(TransactionDeserializer.class);
 
@@ -36,14 +36,14 @@ public class TransactionDeserializer extends JsonDeserializer<Transaction> {
      * @throws JsonProcessingException
      */
     @Override
-    public Transaction deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException, JsonProcessingException {
+    public Txn deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException, JsonProcessingException {
         JsonNode node = jsonParser.getCodec().readTree(jsonParser);
         String origin = node.get("origin").asText();
         String destination = node.get("destination").asText();
         BigDecimal amount = new BigDecimal(node.get("amount").asText());
         String note = node.get("note").asText();
         try {
-            return Transaction.TBuilder.newSSTransactionBuilder()
+            return Txn.Builder.newSSTransactionBuilder()
                     .setOrigin(origin)
                     .setDestination(destination)
                     .setValue(amount)

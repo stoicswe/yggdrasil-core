@@ -1,7 +1,7 @@
 package org.nathanielbunch.ssblockchain.node.network.data;
 
-import org.nathanielbunch.ssblockchain.core.ledger.Block;
-import org.nathanielbunch.ssblockchain.core.ledger.Transaction;
+import org.nathanielbunch.ssblockchain.core.ledger.chain.Block;
+import org.nathanielbunch.ssblockchain.core.ledger.transaction.Txn;
 import org.openjdk.jol.info.GraphLayout;
 
 import java.io.Serializable;
@@ -81,11 +81,11 @@ public class Message implements Serializable {
             return this;
         }
 
-        public Builder newTransactionMessage(String nodeIdentifier, Transaction transaction) {
+        public Builder newTransactionMessage(String nodeIdentifier, Txn txn) {
             this.messageIdentifier = MessageIdentifier.TRANSACTIONAL_MESSAGE;
             this.sender = nodeIdentifier;
-            this.dataSize = GraphLayout.parseInstance(transaction).totalSize();
-            this.data = transaction;
+            this.dataSize = GraphLayout.parseInstance(txn).totalSize();
+            this.data = txn;
             return this;
         }
 

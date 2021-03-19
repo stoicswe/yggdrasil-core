@@ -1,8 +1,8 @@
-package org.nathanielbunch.ssblockchain.core.ledger;
+package org.nathanielbunch.ssblockchain.core.ledger.chain;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import org.nathanielbunch.ssblockchain.core.utils.BCOHasher;
+import org.nathanielbunch.ssblockchain.core.utils.CryptoHasher;
 import org.nathanielbunch.ssblockchain.core.utils.DateTimeUtil;
 
 import java.io.Serializable;
@@ -37,7 +37,7 @@ public final class Block implements Serializable {
         this.timestamp = blockBuilder.timestamp;
         this.data = blockBuilder.data;
         this.previousBlockHash = blockBuilder.previousBlock;
-        this.blockHash = BCOHasher.hash(this);
+        this.blockHash = CryptoHasher.hash(this);
     }
 
     public UUID getIndex() {
@@ -90,7 +90,7 @@ public final class Block implements Serializable {
 
     @Override
     public String toString() {
-        return BCOHasher.humanReadableHash(blockHash);
+        return CryptoHasher.humanReadableHash(blockHash);
     }
 
     public static Block genesis() throws Exception {

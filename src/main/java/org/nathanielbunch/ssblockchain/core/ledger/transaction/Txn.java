@@ -1,10 +1,10 @@
-package org.nathanielbunch.ssblockchain.core.ledger;
+package org.nathanielbunch.ssblockchain.core.ledger.transaction;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import org.nathanielbunch.ssblockchain.core.serialization.TransactionDeserializer;
-import org.nathanielbunch.ssblockchain.core.utils.BCOHasher;
+import org.nathanielbunch.ssblockchain.core.utils.CryptoHasher;
 import org.nathanielbunch.ssblockchain.core.utils.DateTimeUtil;
 
 import java.io.Serializable;
@@ -26,7 +26,7 @@ import java.util.UUID;
  */
 @JsonInclude
 @JsonDeserialize(using = TransactionDeserializer.class)
-public class Transaction implements Serializable {
+public class Txn implements Serializable {
 
     private final UUID index;
     private final ZonedDateTime timestamp;
@@ -34,16 +34,16 @@ public class Transaction implements Serializable {
     private final String destination;
     private final BigDecimal amount;
     private final String note;
-    private final byte[] transactionHash;
+    private final byte[] txnHash;
 
-    protected Transaction(TBuilder builder) throws NoSuchAlgorithmException {
+    protected Txn(Builder builder) throws NoSuchAlgorithmException {
         this.index = builder.index;
         this.timestamp = builder.timestamp;
         this.origin = builder.origin;
         this.destination = builder.destination;
         this.amount = builder.amount;
         this.note = builder.note;
-        this.transactionHash = BCOHasher.hash(this);
+        this.txnHash = CryptoHasher.hash(this);
     }
 
     public UUID getIndex() {
@@ -70,20 +70,36 @@ public class Transaction implements Serializable {
         return note;
     }
 
-    public byte[] getTransactionHash() {
-        return transactionHash;
+    public byte[] getTxnHash() {
+        return txnHash;
+    }
+
+    public boolean compareTxnHash(byte[] txnHash) {
+
+        try {
+            for (int i = 0; i < txnHash.length; i++) {
+                if (this.txnHash[i] != txnHash[i]) {
+                    return false;
+                }
+            }
+        } catch (IndexOutOfBoundsException e) {
+            return false;
+        }
+
+        return true;
+
     }
 
     @Override
     public String toString(){
-        return BCOHasher.humanReadableHash(transactionHash);
+        return CryptoHasher.humanReadableHash(txnHash);
     }
 
     /**
      * TBuilder class is the SSTransaction builder. This is to ensure some level
      * of data protection by enforcing non-direct data access and immutable data.
      */
-    public static class TBuilder {
+    public static class Builder {
 
         protected UUID index;
         protected ZonedDateTime timestamp;
@@ -92,36 +108,36 @@ public class Transaction implements Serializable {
         protected BigDecimal amount;
         protected String note;
 
-        private TBuilder(){}
+        private Builder(){}
 
-        public TBuilder setOrigin(@JsonProperty("origin") String origin) {
+        public Builder setOrigin(@JsonProperty("origin") String origin) {
             this.origin = origin;
             return this;
         }
 
-        public TBuilder setDestination(@JsonProperty("destination") String destination) {
+        public Builder setDestination(@JsonProperty("destination") String destination) {
             this.destination = destination;
             return this;
         }
 
-        public TBuilder setValue(@JsonProperty("value") BigDecimal value) {
+        public Builder setValue(@JsonProperty("value") BigDecimal value) {
             this.amount = value;
             return this;
         }
 
-        public TBuilder setNote(@JsonProperty("note") String note) {
+        public Builder setNote(@JsonProperty("note") String note) {
             this.note = note;
             return this;
         }
 
-        public static TBuilder newSSTransactionBuilder() {
-            return new TBuilder();
+        public static Builder newSSTransactionBuilder() {
+            return new Builder();
         }
 
-        public Transaction build() throws NoSuchAlgorithmException {
+        public Txn build() throws NoSuchAlgorithmException {
             this.index = UUID.randomUUID();
             timestamp = DateTimeUtil.getCurrentTimestamp();
-            return new Transaction(this);
+            return new Txn(this);
         }
     }
 

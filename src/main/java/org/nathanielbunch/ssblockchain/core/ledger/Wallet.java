@@ -1,7 +1,7 @@
 package org.nathanielbunch.ssblockchain.core.ledger;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import org.nathanielbunch.ssblockchain.core.utils.BCOHasher;
+import org.nathanielbunch.ssblockchain.core.utils.CryptoHasher;
 import org.nathanielbunch.ssblockchain.core.utils.DateTimeUtil;
 
 import java.io.Serializable;
@@ -37,7 +37,7 @@ public class Wallet implements Serializable {
         this.creationDate = builder.creationDate;
         this.address = builder.address;
         this.balance = BigDecimal.ZERO;
-        this.walletHash = BCOHasher.hash(this);
+        this.walletHash = CryptoHasher.hash(this);
     }
 
     private Wallet(PublicKey publicKey, UUID index, ZonedDateTime creationDate, byte[] address, BigDecimal balance, byte[] walletHash) {
@@ -80,12 +80,12 @@ public class Wallet implements Serializable {
     }
 
     public String getHumanReadableAddress() {
-        return "0x" + BCOHasher.humanReadableHash(address);
+        return "0x" + CryptoHasher.humanReadableHash(address);
     }
 
     @Override
     public String toString() {
-        return BCOHasher.humanReadableHash(walletHash);
+        return CryptoHasher.humanReadableHash(walletHash);
     }
 
     /**

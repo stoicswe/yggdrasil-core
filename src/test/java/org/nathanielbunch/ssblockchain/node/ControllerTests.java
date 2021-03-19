@@ -4,8 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
 import org.mockito.junit.MockitoJUnitRunner;
-import org.nathanielbunch.ssblockchain.core.ledger.Blockchain;
-import org.nathanielbunch.ssblockchain.core.ledger.Transaction;
+import org.nathanielbunch.ssblockchain.core.ledger.chain.Blockchain;
+import org.nathanielbunch.ssblockchain.core.ledger.transaction.Txn;
 import org.nathanielbunch.ssblockchain.node.controller.BlockchainController;
 import org.nathanielbunch.ssblockchain.node.service.BlockchainService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,7 +50,7 @@ public class ControllerTests {
     @Test
     void testGetTransaction() throws Exception {
         when(service.getTransaction()).thenReturn(
-                Transaction.TBuilder.newSSTransactionBuilder()
+                Txn.Builder.newSSTransactionBuilder()
                 .setOrigin("TestAddress")
                 .setDestination("TestDestination")
                 .setValue(new BigDecimal("0.1234"))
