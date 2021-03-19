@@ -3,6 +3,7 @@ package org.nathanielbunch.ssblockchain.node.controller;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.nathanielbunch.ssblockchain.core.ledger.Blockchain;
 import org.nathanielbunch.ssblockchain.core.ledger.Transaction;
 import org.nathanielbunch.ssblockchain.core.ledger.Wallet;
 import org.nathanielbunch.ssblockchain.node.model.BlockResponse;
@@ -41,8 +42,23 @@ public class BlockchainController {
         this.objectMapper = new ObjectMapper();
     }
 
+    @RequestMapping(value = "/blocks", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Blockchain> getBlockchain() throws Exception {
+        return new ResponseEntity<>(this.service.getBlockchain(), HttpStatus.OK);
+    }
+
+    @RequestMapping(value = "/mine", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<BlockResponse> mineBlock() throws Exception {
+        return new ResponseEntity<>(this.service.mineBlock(), HttpStatus.CREATED);
+    }
+
+    @RequestMapping(value = "/wallet", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Wallet> getWallet() throws Exception {
+        return new ResponseEntity<>(this.service.getWallet(), HttpStatus.OK);
+    }
+
     @RequestMapping(value = "/transaction", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Transaction> putSSTransaction(@RequestBody JsonNode data) throws JsonProcessingException {
+    public ResponseEntity<Transaction> putTransaction(@RequestBody JsonNode data) throws JsonProcessingException {
         logger.trace("Received new data: {}", data);
         Transaction transaction = objectMapper.treeToValue(data, Transaction.class);
         this.service.addNewTransaction(transaction);
@@ -50,18 +66,8 @@ public class BlockchainController {
     }
 
     @RequestMapping(value = "/transaction", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Transaction> getSSTransaction() throws Exception {
+    public ResponseEntity<Transaction> getTransaction() throws Exception {
         return new ResponseEntity<>(this.service.getTransaction(), HttpStatus.OK);
-    }
-
-    @RequestMapping(value = "/wallet", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Wallet> getSSWallet() throws Exception {
-        return new ResponseEntity<>(this.service.getWallet(), HttpStatus.OK);
-    }
-
-    @RequestMapping(value = "/mine", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<BlockResponse> mineBlock() throws Exception {
-        return new ResponseEntity<>(this.service.mineBlock(), HttpStatus.CREATED);
     }
 
 }
