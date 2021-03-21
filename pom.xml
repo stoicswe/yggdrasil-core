@@ -5,10 +5,10 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>org.nathanielbunch</groupId>
-    <artifactId>AStupidlySimpleBlockchain</artifactId>
+    <artifactId>yggdrasil-core</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>SS Blockchain Core</name>
-    <description>A Stupidly Simple Blockchain</description>
+    <name>Yggdrasil Core</name>
+    <description>A simplistic blockchain project for learning more about blockchains.</description>
 
     <properties>
         <maven.compiler.source>15</maven.compiler.source>
