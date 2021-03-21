@@ -1,6 +1,22 @@
-# AStupidlySimpleBlockchain
+# Yggdrasil Core
 
-The Stupidly Simple (SS) Blockchain is a collection of blocks that represent transactions on the stupidly simple blockchain network. The purpose of this project is to explore the realm of block chain technology and is not designed for production use. Derivatives of this project that are more stable and less experimental would probably be a better choice for further consideration as an actual implementation.
+### What is Yggdrasil?
+The Yggdrasil blockchain is a system designed to allow for transfer of value between participants. The blockchain is named after the great tree of Norse mythology that connects the nine worlds: Asgard, Alfheim, Nidavellir, Midgard, Jotunheim, Vanaheim, Niflheim, Muspell, and Hel. Just as the tree is known for the powerful connections it has to the reality described in the works of the Norse, so too does this project strive for strong interlocking bonds between transactions and blocks in the form of the blockcahin. Does this project strive to become great one day? No, but it does seek to explore the wonderful technology that is Blockchains, encryption, and cryptography. This project is meant to learn about the inner workings of cryptocurrency, therefore all implementations are meant to be as simplistic and straightforward as possible.
+
+### Definitions
+Here are some definitions for some aspects of the blockchain and cryptocurrency: The ticker symbol of the currency is: `$YGG`, simply...the first few letters of the project's name. The object of value or currency of the project is known as `Yggs` (pronounced "yigs"). The symbol for describing the currency is the "vend", an Old Norse ASCII character. The character is: `Ꝩ` and is added after the numerical value, for example: `0.575Ꝩ`. The reason for choosing this symbol was because it resembled a tree branch visibly. In order to type the Vend character, you can do one of the following:
+
+```
+//Windows ALT Code
+ALT+42856
+//macOS Option Code
+Option+A768
+//HTML Encoding
+&#42856;
+```
+
+### Future of this Project
+In the future, once the Java variant of the source code is written, there is a goal to translate the project into the Haskell. The reason for this is performance improvement, further simplicity of the source code, and also further seperating itself from the other multitudes of cryptocurrencies out there. Haskell is a very capable language for the task, and there's only the matter of utilizing it. One may ask (and rightfully so) why the project was not first written in Haskell and is being prototyped in Java instead? The reason for this was because the creator of this project simply did not know Haskell well enough in order to begin prototyping. The translation period will being about a good opportunity for delving into the realm of Haskell and bring with it a much deeper understanding of the functional language. Hence this project can be stated to also provide another great learning opportunity for participants: the opportunity to learn purely functional programming techniques. There is potential in the future as well that other clients, nodes, and components of the network be written in other languages as well as time moves on ;-).
 
 ## Getting Started
 
