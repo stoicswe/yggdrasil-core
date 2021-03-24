@@ -1,5 +1,13 @@
 package org.yggdrasil.node.network.data.messages.enums;
 
+/**
+ * The RequestType is an identifying enum for
+ * message headers and helps nodes handle data
+ * properly.
+ *
+ * @since 0.0.1
+ * @author nathanielbunch
+ */
 public enum RequestType {
 
     GET_DATA("GDAT".toCharArray()),

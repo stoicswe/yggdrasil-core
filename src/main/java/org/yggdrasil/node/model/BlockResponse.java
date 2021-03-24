@@ -7,7 +7,8 @@ import java.util.UUID;
 
 /**
  * The block response is useful for returning some of the basic information about
- * recently acquired or mined blocks.
+ * recently acquired or mined blocks. This is the object returned to the calling REST
+ * interface.
  *
  * @since 0.0.1
  * @author nathanielbunch

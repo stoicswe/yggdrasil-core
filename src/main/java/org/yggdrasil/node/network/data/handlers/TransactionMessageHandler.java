@@ -1,6 +1,6 @@
 package org.yggdrasil.node.network.data.handlers;
 
-import org.yggdrasil.core.ledger.transaction.Txn;
+import org.yggdrasil.core.ledger.transaction.Transaction;
 import org.yggdrasil.node.network.data.Message;
 import org.yggdrasil.node.service.BlockchainService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,8 +18,8 @@ public class TransactionMessageHandler implements Runnable {
 
     @Override
     public void run() {
-        if(m.getData() instanceof Txn){
-            blockchainService.addNewTransaction((Txn) m.getData());
+        if(m.getData() instanceof Transaction){
+            blockchainService.addNewTransaction((Transaction) m.getData());
         }
     }
 

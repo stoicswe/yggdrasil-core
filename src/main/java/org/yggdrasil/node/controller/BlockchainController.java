@@ -4,7 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.yggdrasil.core.ledger.chain.Blockchain;
-import org.yggdrasil.core.ledger.transaction.Txn;
+import org.yggdrasil.core.ledger.transaction.Transaction;
 import org.yggdrasil.core.ledger.Wallet;
 import org.yggdrasil.node.model.BlockResponse;
 import org.yggdrasil.node.service.BlockchainService;
@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.annotation.PostConstruct;
 
 /**
- * Provides the rest interface for interacting with the SSBlockchain.
+ * Provides the rest interface controller for interacting with the Blockchain.
  *
  * @since 0.0.1
  * @author nathanielbunch
@@ -58,15 +58,15 @@ public class BlockchainController {
     }
 
     @RequestMapping(value = "/transaction", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Txn> putTransaction(@RequestBody JsonNode data) throws JsonProcessingException {
+    public ResponseEntity<Transaction> putTransaction(@RequestBody JsonNode data) throws JsonProcessingException {
         logger.trace("Received new data: {}", data);
-        Txn txn = objectMapper.treeToValue(data, Txn.class);
-        this.service.addNewTransaction(txn);
-        return new ResponseEntity<>(txn, HttpStatus.CREATED);
+        Transaction transaction = objectMapper.treeToValue(data, Transaction.class);
+        this.service.addNewTransaction(transaction);
+        return new ResponseEntity<>(transaction, HttpStatus.CREATED);
     }
 
     @RequestMapping(value = "/transaction", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Txn> getTransaction() throws Exception {
+    public ResponseEntity<Transaction> getTransaction() throws Exception {
         return new ResponseEntity<>(this.service.getTransaction(), HttpStatus.OK);
     }
 

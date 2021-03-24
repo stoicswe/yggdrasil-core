@@ -1,5 +1,11 @@
 package org.yggdrasil.node.network.data.messages.enums;
 
+/**
+ * The GetDataType is an identifying enum for getData requests.
+ *
+ * @since 0.0.1
+ * @author nathanielbunch
+ */
 public enum GetDataType {
 
     BLOCKCHAIN("BLKC".toCharArray()),

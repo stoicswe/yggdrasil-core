@@ -3,7 +3,7 @@ package org.yggdrasil.node.service;
 import org.yggdrasil.core.ledger.chain.Block;
 import org.yggdrasil.core.ledger.chain.Blockchain;
 import org.yggdrasil.core.ledger.transaction.Mempool;
-import org.yggdrasil.core.ledger.transaction.Txn;
+import org.yggdrasil.core.ledger.transaction.Transaction;
 import org.yggdrasil.core.ledger.Wallet;
 import org.yggdrasil.core.utils.CryptoHasher;
 import org.yggdrasil.core.utils.CryptoKeyGenerator;
@@ -27,7 +27,7 @@ import java.util.Comparator;
 import java.util.List;
 
 /**
- * Handles lower-level operation with the SSBlockchain. Used
+ * Handles lower-level operation with the Blockchain. Used
  * to serve functionality to the rest endpoint.
  *
  * @since 0.0.1
@@ -69,10 +69,10 @@ public class BlockchainService {
      * @return
      * @throws NoSuchAlgorithmException
      */
-    public Txn getTransaction() throws NoSuchAlgorithmException {
+    public Transaction getTransaction() throws NoSuchAlgorithmException {
         // This returns a dummy transaction for now, but at some point may have a lookup service.
         // Primarily for testing serialization.
-        return Txn.Builder.newSSTransactionBuilder()
+        return Transaction.Builder.newSSTransactionBuilder()
                 .setOrigin("TestAddress")
                 .setDestination("TestDestination")
                 .setValue(new BigDecimal("0.1234"))
@@ -83,11 +83,11 @@ public class BlockchainService {
     /**
      * Adds a new transaction to execute on the blockchain.
      *
-     * @param txn
+     * @param transaction
      */
-    public void addNewTransaction(Txn txn) {
-        logger.info("New transaction: {} [{} -> {} = {}]", txn.toString(), txn.getOrigin(), txn.getDestination(), txn.getAmount());
-        this.mempool.putTransaction(txn);
+    public void addNewTransaction(Transaction transaction) {
+        logger.info("New transaction: {} [{} -> {} = {}]", transaction.toString(), transaction.getOrigin(), transaction.getDestination(), transaction.getAmount());
+        this.mempool.putTransaction(transaction);
     }
 
     /**
@@ -118,7 +118,7 @@ public class BlockchainService {
         Block lastBlock = blockchain.getBlocks()[blockchain.getBlocks().length-1];
         logger.info("Last block record: {}", lastBlock.toString());
 
-        List<Txn> blockData = new ArrayList<>();
+        List<Transaction> blockData = new ArrayList<>();
         while(mempool.hasNext()) {
             if(!(blockData.size() < _MAX_BLOCK_SIZE)) {
                 blockData.add(mempool.getTransaction());
@@ -128,7 +128,7 @@ public class BlockchainService {
         }
         Block newBlock;
         newBlock = Block.BBuilder.newSSBlockBuilder()
-                .setData(blockData.toArray(Txn[]::new))
+                .setData(blockData.toArray(Transaction[]::new))
                 .setPreviousBlock(this.blockchain.getBlocks()[this.blockchain.getBlocks().length - 1].getBlockHash())
                 .build();
 
@@ -138,7 +138,7 @@ public class BlockchainService {
 
         logger.info("New block: {}", newBlock.toString());
 
-        Txn blockMineAward = Txn.Builder.newSSTransactionBuilder()
+        Transaction blockMineAward = Transaction.Builder.newSSTransactionBuilder()
                 .setOrigin("SSBlockchainNetwork")
                 .setDestination(currentWallet.getHumanReadableAddress())
                 .setValue(new BigDecimal(newBlock.toString().length() / 9.23).setScale(12, RoundingMode.FLOOR))
@@ -158,12 +158,13 @@ public class BlockchainService {
     }
 
     // This will be replaced with the validator, using PoS as the system for validation
+    // This will could eventually be used for customizing the hash.
     private Block proofOfWork(int prefix, Block currentBlock) throws Exception {
-        List<Txn> blockTxns = new ArrayList<>(Arrays.asList((Txn[]) currentBlock.getData()));
-        blockTxns.sort(Comparator.comparing(Txn::getTimestamp));
+        List<Transaction> blockTransactions = new ArrayList<>(Arrays.asList((Transaction[]) currentBlock.getData()));
+        blockTransactions.sort(Comparator.comparing(Transaction::getTimestamp));
         Block sortedBlock = Block.BBuilder.newSSBlockBuilder()
                 .setPreviousBlock(currentBlock.getPreviousBlockHash())
-                .setData(blockTxns)
+                .setData(blockTransactions)
                 .build();
         String prefixString = new String(new char[prefix]).replace('\0', '0');
         while (!sortedBlock.toString().substring(0, prefix).equals(prefixString)) {

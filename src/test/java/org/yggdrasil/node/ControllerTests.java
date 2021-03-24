@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.yggdrasil.core.ledger.chain.Blockchain;
-import org.yggdrasil.core.ledger.transaction.Txn;
+import org.yggdrasil.core.ledger.transaction.Transaction;
 import org.yggdrasil.node.controller.BlockchainController;
 import org.yggdrasil.node.service.BlockchainService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,7 +50,7 @@ public class ControllerTests {
     @Test
     void testGetTransaction() throws Exception {
         when(service.getTransaction()).thenReturn(
-                Txn.Builder.newSSTransactionBuilder()
+                Transaction.Builder.newSSTransactionBuilder()
                 .setOrigin("TestAddress")
                 .setDestination("TestDestination")
                 .setValue(new BigDecimal("0.1234"))
