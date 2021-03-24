@@ -10,7 +10,7 @@ import java.time.ZonedDateTime;
 import java.util.UUID;
 
 /**
- * The SSBlock is the main unit of data in the SSBlockchain. SSBlocks contain
+ * The Block is the main unit of data in Yggdrasil. Blocks contain
  * an identifier known as the index, a timestamp for data management / sorting,
  * an object that contains transactions, a link to a previous block (previousBlockHash)
  * and the current block hash (blockHash). Blocks can be queried by hash or index.

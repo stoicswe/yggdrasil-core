@@ -12,9 +12,9 @@ import java.time.ZonedDateTime;
 import java.util.UUID;
 
 /**
- * The SSWallet will contain the ability to send, receive, and store crypto
- * in an encrypted environment. The SSWallet will also be capable of creating
- * an identifiable address in order to send and receive currency.
+ * The Wallet will contain the ability to send, receive, and store crypto
+ * in an encrypted environment. The Wallet will also be capable of creating
+ * an identifiable address in order to send and receive value.
  *
  * @since 0.0.1
  * @author nathanielbunch

@@ -14,7 +14,7 @@ import java.time.ZonedDateTime;
 import java.util.UUID;
 
 /**
- * Every SSBlock is made of n number of SSTransactions. SSTransactions contain
+ * Every Block is made of n number of Transactions. Transactions contain
  * information used for identifying a transaction (index), a timestamp for
  * sorting and managing transactions in a block, an origin address, a
  * destination address, an amount of coin transmitted, a transaction note, and
@@ -26,7 +26,7 @@ import java.util.UUID;
  */
 @JsonInclude
 @JsonDeserialize(using = TransactionDeserializer.class)
-public class Txn implements Serializable {
+public class Transaction implements Serializable {
 
     private final UUID index;
     private final ZonedDateTime timestamp;
@@ -36,7 +36,7 @@ public class Txn implements Serializable {
     private final String note;
     private final byte[] txnHash;
 
-    protected Txn(Builder builder) throws NoSuchAlgorithmException {
+    protected Transaction(Builder builder) throws NoSuchAlgorithmException {
         this.index = builder.index;
         this.timestamp = builder.timestamp;
         this.origin = builder.origin;
@@ -134,10 +134,10 @@ public class Txn implements Serializable {
             return new Builder();
         }
 
-        public Txn build() throws NoSuchAlgorithmException {
+        public Transaction build() throws NoSuchAlgorithmException {
             this.index = UUID.randomUUID();
             timestamp = DateTimeUtil.getCurrentTimestamp();
-            return new Txn(this);
+            return new Transaction(this);
         }
     }
 

@@ -23,39 +23,39 @@ public class Mempool {
 
     private Logger logger = LoggerFactory.getLogger(Mempool.class);
 
-    private List<Txn> txnPool;
+    private List<Transaction> transactionPool;
 
     @PostConstruct
     private void init() {
-        this.txnPool = new ArrayList<>();
+        this.transactionPool = new ArrayList<>();
     }
 
-    public void putTransaction(Txn txn) {
+    public void putTransaction(Transaction transaction) {
         logger.trace("In putTransaction");
-        this.txnPool.add(txn);
-        logger.debug("New transaction added to the mempool: {}", txn.toString());
+        this.transactionPool.add(transaction);
+        logger.debug("New transaction added to the mempool: {}", transaction.toString());
     }
 
     public boolean hasNext() {
-        return this.txnPool.size() > 0;
+        return this.transactionPool.size() > 0;
     }
 
-    public Txn getTransaction() {
+    public Transaction getTransaction() {
         logger.trace("In getTransaction");
-        if(txnPool.size() > 0) {
-            Txn txn = txnPool.get(0);
-            txnPool.remove(0);
-            logger.debug("Retrieved next transaction from the mempool: {}", txn.toString());
-            return txn;
+        if(transactionPool.size() > 0) {
+            Transaction transaction = transactionPool.get(0);
+            transactionPool.remove(0);
+            logger.debug("Retrieved next transaction from the mempool: {}", transaction.toString());
+            return transaction;
         } else {
             logger.debug("Tried to get a transaction from an empty mempool.");
             return null;
         }
     }
 
-    public Optional<Txn> getTransaction(byte[] txnHash){
+    public Optional<Transaction> getTransaction(byte[] txnHash){
         logger.trace("In getTransaction with transaction hash: {}", CryptoHasher.humanReadableHash(txnHash));
-        return txnPool.stream().filter(txn -> txn.compareTxnHash(txnHash)).findFirst();
+        return transactionPool.stream().filter(txn -> txn.compareTxnHash(txnHash)).findFirst();
     }
 
 }

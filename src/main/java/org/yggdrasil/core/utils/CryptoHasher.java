@@ -3,7 +3,7 @@ package org.yggdrasil.core.utils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.SerializationUtils;
 import org.yggdrasil.core.ledger.chain.Block;
-import org.yggdrasil.core.ledger.transaction.Txn;
+import org.yggdrasil.core.ledger.transaction.Transaction;
 import org.yggdrasil.core.ledger.Wallet;
 
 import java.security.MessageDigest;
@@ -43,18 +43,18 @@ public class CryptoHasher {
     /**
      * Hashes a SSTransaction.
      *
-     * @param txn
+     * @param transaction
      * @return
      * @throws NoSuchAlgorithmException
      */
-    public static byte[] hash(Txn txn) throws NoSuchAlgorithmException {
+    public static byte[] hash(Transaction transaction) throws NoSuchAlgorithmException {
         byte[] txnData = new byte[0];
-        txnData = appendBytes(txnData, SerializationUtils.serialize(txn.getIndex()));
-        txnData = appendBytes(txnData, SerializationUtils.serialize(txn.getTimestamp()));
-        txnData = appendBytes(txnData, SerializationUtils.serialize(txn.getOrigin()));
-        txnData = appendBytes(txnData, SerializationUtils.serialize(txn.getDestination()));
-        txnData = appendBytes(txnData, SerializationUtils.serialize(txn.getAmount()));
-        txnData = appendBytes(txnData, SerializationUtils.serialize(txn.getNote()));
+        txnData = appendBytes(txnData, SerializationUtils.serialize(transaction.getIndex()));
+        txnData = appendBytes(txnData, SerializationUtils.serialize(transaction.getTimestamp()));
+        txnData = appendBytes(txnData, SerializationUtils.serialize(transaction.getOrigin()));
+        txnData = appendBytes(txnData, SerializationUtils.serialize(transaction.getDestination()));
+        txnData = appendBytes(txnData, SerializationUtils.serialize(transaction.getAmount()));
+        txnData = appendBytes(txnData, SerializationUtils.serialize(transaction.getNote()));
         return MessageDigest.getInstance(_HASH_ALGORITHM).digest(SerializationUtils.serialize(txnData));
     }
 

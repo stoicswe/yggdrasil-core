@@ -13,6 +13,13 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.ZonedDateTime;
 
+/**
+ * The BlockchainIO component is used for writing block data to the
+ * hard disk.
+ *
+ * @since 0.0.1
+ * @author nathanielbunch
+ */
 @Profile("!test")
 @Component
 public class BlockchainIO {
@@ -36,6 +43,12 @@ public class BlockchainIO {
         }
     }
 
+    /**
+     * Function for writing blocks to the disk.
+     *
+     * @param currentBlock
+     * @throws IOException
+     */
     public void writeBlock(Block currentBlock) throws IOException {
         logger.debug("Writing new block to storage: {}", currentBlock.toString());
         try(FileOutputStream currentBlockFile = new FileOutputStream(new File(_CURRENT_DIRECTORY + "/" + currentBlock.toString() + "_" + currentBlock.getTimestamp().toEpochSecond() + _FILE_EXTENSION))) {
@@ -46,6 +59,14 @@ public class BlockchainIO {
         logger.debug("Block written successfully.");
     }
 
+    /**
+     * Function for reading blocks from the disk.
+     *
+     * @param zonedDateTime
+     * @return
+     * @throws IOException
+     * @throws ClassNotFoundException
+     */
     public Block readBlock(ZonedDateTime zonedDateTime) throws IOException, ClassNotFoundException {
         logger.debug("Reading block from storage...");
         FileInputStream currentBlockFile = new FileInputStream(new File(_CURRENT_DIRECTORY + "/" + zonedDateTime.toEpochSecond() + _FILE_EXTENSION));

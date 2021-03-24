@@ -1,7 +1,7 @@
 package org.yggdrasil.node.network.data;
 
 import org.yggdrasil.core.ledger.chain.Block;
-import org.yggdrasil.core.ledger.transaction.Txn;
+import org.yggdrasil.core.ledger.transaction.Transaction;
 import org.openjdk.jol.info.GraphLayout;
 
 import java.io.Serializable;
@@ -81,11 +81,11 @@ public class Message implements Serializable {
             return this;
         }
 
-        public Builder newTransactionMessage(String nodeIdentifier, Txn txn) {
+        public Builder newTransactionMessage(String nodeIdentifier, Transaction transaction) {
             this.messageIdentifier = MessageIdentifier.TRANSACTIONAL_MESSAGE;
             this.sender = nodeIdentifier;
-            this.dataSize = GraphLayout.parseInstance(txn).totalSize();
-            this.data = txn;
+            this.dataSize = GraphLayout.parseInstance(transaction).totalSize();
+            this.data = transaction;
             return this;
         }
 
