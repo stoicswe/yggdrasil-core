@@ -10,7 +10,7 @@ import org.yggdrasil.node.network.messages.MessagePayload;
  * the object hashes will be populated. Otherwise, the message is a command message,
  * used by the distributed system for system data, such as IP addresses.
  *
- * @since 0.0.1
+ * @since 0.0.10
  * @author nathanielbunch
  */
 public class GetDataMessage implements MessagePayload {

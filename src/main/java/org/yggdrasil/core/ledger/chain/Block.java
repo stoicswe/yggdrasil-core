@@ -15,7 +15,7 @@ import java.util.UUID;
  * an object that contains transactions, a link to a previous block (previousBlockHash)
  * and the current block hash (blockHash). Blocks can be queried by hash or index.
  *
- * @since 0.0.1
+ * @since 0.0.2
  * @author nathanielbunch
  */
 @JsonInclude

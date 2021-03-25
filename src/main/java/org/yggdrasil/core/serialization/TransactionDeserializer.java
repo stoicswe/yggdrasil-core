@@ -17,7 +17,7 @@ import java.security.NoSuchAlgorithmException;
  * Provides the necessary functionality to correctly deserialize incoming
  * transactions by the rest endpoint.
  *
- * @since 0.0.1
+ * @since 0.0.3
  * @author nathanielbunch
  */
 public class TransactionDeserializer extends JsonDeserializer<Transaction> {

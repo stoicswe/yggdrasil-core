@@ -10,7 +10,7 @@ import org.yggdrasil.node.network.messages.enums.HeaderType;
  * either block or transaction headers. The internal headerPayload property
  * contains the actual headers (block or transaction).
  *
- * @since 0.0.1
+ * @since 0.0.10
  * @author nathanielbunch
  */
 public class HeaderMessage implements MessagePayload {

@@ -11,6 +11,12 @@ import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.net.Socket;
 
+/**
+ * The node connection is a thread that reacts to incoming messages.
+ *
+ * @since 0.0.8
+ * @author nathanielbunch
+ */
 public class NodeConnection implements Runnable {
 
     Logger logger = LoggerFactory.getLogger(NodeConnection.class);

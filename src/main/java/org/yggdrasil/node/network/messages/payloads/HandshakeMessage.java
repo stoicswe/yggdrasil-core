@@ -9,6 +9,9 @@ import java.math.BigInteger;
 /**
  * The Handshake Message is used for verifying the connection that has been opened
  * between nodes is functional and able to be used for communication.
+ *
+ * @since 0.0.10
+ * @author nathanielbunch
  */
 public class HandshakeMessage implements MessagePayload {
 

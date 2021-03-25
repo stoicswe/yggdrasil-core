@@ -9,7 +9,7 @@ import java.math.BigInteger;
  *  The Message object serves as the header for messages sent between nodes. Message
  *  headers contain useful metadata about the payload contained within the message.
  *
- * @since 0.0.1
+ * @since 0.0.10
  * @author nathanielbunch
  */
 public class Message {

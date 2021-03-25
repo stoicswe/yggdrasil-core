@@ -3,6 +3,13 @@ package org.yggdrasil;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
+/**
+ * Application runner.
+ *
+ * @since 0.0.1
+ * @author nathanielbunch
+ *
+ */
 @SpringBootApplication
 public class Application {
 

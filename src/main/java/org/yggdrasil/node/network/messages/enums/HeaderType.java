@@ -4,7 +4,7 @@ package org.yggdrasil.node.network.messages.enums;
  * The HeaderType is an identifying enum for header messages
  * being requested or received.
  *
- * @since 0.0.1
+ * @since 0.0.10
  * @author nathanielbunch
  */
 public enum HeaderType {

@@ -3,7 +3,7 @@ package org.yggdrasil.node.network.messages.enums;
 /**
  * The GetDataType is an identifying enum for getData requests.
  *
- * @since 0.0.1
+ * @since 0.0.10
  * @author nathanielbunch
  */
 public enum GetDataType {

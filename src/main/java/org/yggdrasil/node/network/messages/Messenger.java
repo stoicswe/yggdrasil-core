@@ -11,7 +11,7 @@ import org.yggdrasil.node.network.messages.validators.MessageValidator;
  * The Messenger component will handle the messages from other nodes
  * and the sending of messages to other nodes.
  *
- * @since 0.0.1
+ * @since 0.0.11
  * @author nathanielbunch
  */
 @Component

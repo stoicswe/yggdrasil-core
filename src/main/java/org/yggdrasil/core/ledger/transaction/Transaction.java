@@ -21,7 +21,7 @@ import java.util.UUID;
  * the identifying transaction hash. Transactions can be queried for by their
  * hash or their index and timestamp.
  *
- * @since 0.0.1
+ * @since 0.0.2
  * @author nathanielbunch
  */
 @JsonInclude

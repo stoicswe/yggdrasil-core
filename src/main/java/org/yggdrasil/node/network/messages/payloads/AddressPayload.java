@@ -11,7 +11,7 @@ import java.math.BigInteger;
  * This object holds individual pieces of metadata, as well as the IP Address for
  * a given node.
  *
- * @since 0.0.1
+ * @since 0.0.10
  * @author nathanielbunch
  */
 public class AddressPayload implements MessagePayload {

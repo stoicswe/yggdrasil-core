@@ -16,7 +16,7 @@ import java.util.UUID;
  * in an encrypted environment. The Wallet will also be capable of creating
  * an identifiable address in order to send and receive value.
  *
- * @since 0.0.1
+ * @since 0.0.5
  * @author nathanielbunch
  */
 @JsonInclude

@@ -7,7 +7,7 @@ import org.yggdrasil.node.network.messages.MessagePayload;
  * The Ping Pong Message is used to communicate back and forth to see if a conneciton
  * is alive between nodes.
  *
- * @since 0.0.1
+ * @since 0.0.10
  * @author nathanielbunch
  */
 public class PingPongMessage implements MessagePayload {

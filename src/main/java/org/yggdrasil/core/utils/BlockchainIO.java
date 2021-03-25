@@ -17,7 +17,7 @@ import java.time.ZonedDateTime;
  * The BlockchainIO component is used for writing block data to the
  * hard disk.
  *
- * @since 0.0.1
+ * @since 0.0.7
  * @author nathanielbunch
  */
 @Profile("!test")

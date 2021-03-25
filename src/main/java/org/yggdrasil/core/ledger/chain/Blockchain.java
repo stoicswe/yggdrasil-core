@@ -21,7 +21,7 @@ import java.util.UUID;
  * This is the class definition for the blockchain object. Its purpose
  * is for storing transaction records.
  *
- * @since 0.0.1
+ * @since 0.0.7
  * @author nathanielbunch
  */
 @Component

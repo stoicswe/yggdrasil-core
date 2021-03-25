@@ -30,7 +30,7 @@ import java.util.List;
  * Handles lower-level operation with the Blockchain. Used
  * to serve functionality to the rest endpoint.
  *
- * @since 0.0.1
+ * @since 0.0.3
  * @see BlockchainController
  * @author nathanielbunch
  */
