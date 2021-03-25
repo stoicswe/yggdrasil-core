@@ -5,7 +5,7 @@ package org.yggdrasil.node.network.messages.enums;
  * the test or main network message types so that
  * the different networks are not confused.
  *
- * @since 0.0.1
+ * @since 0.0.10
  * @author nathanielbunch
  */
 public enum NetworkType {

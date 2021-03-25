@@ -15,7 +15,7 @@ import java.util.Optional;
  * Transactions stored here are ones that have been verified (received) but have yet
  * to be placed and processed into a block.
  *
- * @since 0.0.1
+ * @since 0.0.9
  * @author nathanielbunch
  */
 @Component

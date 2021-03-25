@@ -5,6 +5,14 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
+/**
+ * The node runner watches for connection attempts and calls the startListening
+ * function.
+ *
+ * @since 0.0.8
+ * @author nathanielbunch
+ *
+ */
 public class NodeRunner implements Runnable {
 
     Logger logger = LoggerFactory.getLogger(NodeRunner.class);

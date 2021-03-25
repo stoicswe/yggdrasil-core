@@ -17,7 +17,7 @@ import java.security.NoSuchAlgorithmException;
  * in case in the future there is the desire to hash either one with different
  * algorithms.
  *
- * @since 0.0.1
+ * @since 0.0.3
  * @author nathanielbunch
  */
 public class CryptoHasher {

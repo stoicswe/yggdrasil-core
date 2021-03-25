@@ -10,7 +10,7 @@ import org.yggdrasil.node.network.messages.MessagePayload;
  * and nonce are populated, compared to a transaction header where only the hash,
  * previousHash, time and nonce are populated.
  *
- * @since 0.0.1
+ * @since 0.0.10
  * @author nathanielbunch
  */
 public class HeaderPayload implements MessagePayload {

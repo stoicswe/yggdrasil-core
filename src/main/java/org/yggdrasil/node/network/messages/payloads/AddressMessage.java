@@ -8,7 +8,7 @@ import org.yggdrasil.node.network.messages.MessagePayload;
  * The Address Message object serves as a container for nodes to share information about
  * other nodes in the network. This allows for a better distributed system.
  *
- * @since 0.0.1
+ * @since 0.0.10
  * @author nathanielbunch
  */
 public class AddressMessage implements MessagePayload {

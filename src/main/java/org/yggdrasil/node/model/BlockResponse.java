@@ -10,7 +10,7 @@ import java.util.UUID;
  * recently acquired or mined blocks. This is the object returned to the calling REST
  * interface.
  *
- * @since 0.0.1
+ * @since 0.0.6
  * @author nathanielbunch
  */
 @JsonInclude

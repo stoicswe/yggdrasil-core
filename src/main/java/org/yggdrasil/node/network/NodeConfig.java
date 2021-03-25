@@ -8,6 +8,14 @@ import javax.annotation.PostConstruct;
 import java.net.*;
 import java.util.UUID;
 
+/**
+ * The node config contains customizations that are set
+ * from the application.yaml.
+ *
+ * @since 0.0.8
+ * @author nathanielbunch
+ *
+ */
 @Profile("!test")
 @Configuration
 public class NodeConfig {

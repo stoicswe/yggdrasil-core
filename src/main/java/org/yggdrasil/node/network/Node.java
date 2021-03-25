@@ -20,7 +20,7 @@ import java.util.HashMap;
  * The node class handles the binding of the socket, and initial openeing
  * of connections to other nodes. Messages are not handled here.
  *
- * @since 0.0.1
+ * @since 0.0.8
  * @author nathanielbunch
  */
 @Profile("!test")

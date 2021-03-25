@@ -9,7 +9,7 @@ import java.security.*;
  * This component serves as the public and private key pair generator
  * for different use cases in the Blockchain.
  *
- * @since 0.0.1
+ * @since 0.0.5
  * @author nathanielbunch
  */
 @Component

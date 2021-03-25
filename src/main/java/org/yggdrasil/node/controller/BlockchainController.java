@@ -24,7 +24,7 @@ import javax.annotation.PostConstruct;
 /**
  * Provides the rest interface controller for interacting with the Blockchain.
  *
- * @since 0.0.1
+ * @since 0.0.3
  * @author nathanielbunch
  */
 @RestController

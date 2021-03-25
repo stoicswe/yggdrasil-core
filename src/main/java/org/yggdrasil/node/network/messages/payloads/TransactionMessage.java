@@ -9,7 +9,7 @@ import java.math.BigDecimal;
 /**
  * The Transaction Message contains the full information of a transaction.
  *
- * @since 0.0.1
+ * @since 0.0.10
  * @author nathanielbunch
  */
 public class TransactionMessage implements MessagePayload {

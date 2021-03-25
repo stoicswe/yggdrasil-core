@@ -7,7 +7,7 @@ import java.time.ZonedDateTime;
  * The DateTimeUtil class is used for getting the current date and time in UTC
  * format.
  *
- * @since 0.0.1
+ * @since 0.0.7
  * @author nathanielbunch
  */
 public class DateTimeUtil {
