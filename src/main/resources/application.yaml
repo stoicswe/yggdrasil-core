@@ -5,6 +5,7 @@ spring:
 server:
   port: 9000
 blockchain:
+  network: "main"
   p2p:
     node-name: "blockchain-core-node"
     port: 9090

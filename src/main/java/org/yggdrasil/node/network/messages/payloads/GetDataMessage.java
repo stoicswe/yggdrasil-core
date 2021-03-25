@@ -1,6 +1,8 @@
-package org.yggdrasil.node.network.data.messages.payloads;
+package org.yggdrasil.node.network.messages.payloads;
 
-import org.yggdrasil.node.network.data.messages.MessagePayload;
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.SerializationUtils;
+import org.yggdrasil.node.network.messages.MessagePayload;
 
 /**
  * The Get Data message is used by a node to retrieve data from another node.
@@ -45,6 +47,21 @@ public class GetDataMessage implements MessagePayload {
 
     public char[] getStopHash() {
         return stopHash;
+    }
+
+    @Override
+    public byte[] getDataBytes() {
+        byte[] messageBytes = new byte[0];
+        messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(version));
+        messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(type));
+        messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(hashCount));
+        messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(objectHashes));
+        messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(stopHash));
+        return messageBytes;
+    }
+
+    private static byte[] appendBytes(byte[] base, byte[] extension) {
+        return ArrayUtils.addAll(base, extension);
     }
 
     public static class Builder {

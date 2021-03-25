@@ -1,11 +1,10 @@
 package org.yggdrasil.node.network;
 
-import org.yggdrasil.node.network.data.handlers.BlockMessageHandler;
-import org.yggdrasil.node.network.data.Message;
-import org.yggdrasil.node.network.data.MessageIdentifier;
-import org.yggdrasil.node.network.data.handlers.TransactionMessageHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.yggdrasil.node.network.messages.Message;
+import org.yggdrasil.node.network.messages.Messenger;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -16,6 +15,8 @@ public class NodeConnection implements Runnable {
 
     Logger logger = LoggerFactory.getLogger(NodeConnection.class);
 
+    @Autowired
+    private Messenger messenger;
     private Socket nodeSocket;
 
     public NodeConnection(Socket node){
@@ -32,14 +33,7 @@ public class NodeConnection implements Runnable {
             try (InputStream ms = nodeSocket.getInputStream()) {
                 try (ObjectInputStream os = new ObjectInputStream(ms)) {
                     Message m = (Message) os.readObject();
-                    if(m.getIdentifier() != null) {
-                        if(MessageIdentifier.BLOCK_MESSAGE.equals(m.getIdentifier())){
-                            new Thread(new BlockMessageHandler(m)).start();
-                        }
-                        if(MessageIdentifier.TRANSACTIONAL_MESSAGE.equals(m.getIdentifier())){
-                            new Thread(new TransactionMessageHandler(m)).start();
-                        }
-                    }
+                    this.messenger.handleMessage(m);
                 }
             } catch (IOException | ClassNotFoundException e) {
                 logger.error("Socket input stream read failed with exception: {}", e.getLocalizedMessage());

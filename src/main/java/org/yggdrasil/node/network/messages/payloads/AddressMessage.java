@@ -1,6 +1,8 @@
-package org.yggdrasil.node.network.data.messages.payloads;
+package org.yggdrasil.node.network.messages.payloads;
 
-import org.yggdrasil.node.network.data.messages.MessagePayload;
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.SerializationUtils;
+import org.yggdrasil.node.network.messages.MessagePayload;
 
 /**
  * The Address Message object serves as a container for nodes to share information about
@@ -25,6 +27,20 @@ public class AddressMessage implements MessagePayload {
 
     public AddressPayload[] getIpAddresses() {
         return ipAddresses;
+    }
+
+    @Override
+    public byte[] getDataBytes() {
+        byte[] messageBytes = new byte[0];
+        messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(ipAddressCount));
+        for(AddressPayload ap : ipAddresses) {
+            messageBytes = appendBytes(messageBytes, ap.getDataBytes());
+        }
+        return messageBytes;
+    }
+
+    private static byte[] appendBytes(byte[] base, byte[] extension) {
+        return ArrayUtils.addAll(base, extension);
     }
 
     public static class Builder {

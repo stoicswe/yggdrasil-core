@@ -1,7 +1,7 @@
-package org.yggdrasil.node.network.data.messages;
+package org.yggdrasil.node.network.messages;
 
-import org.yggdrasil.node.network.data.messages.enums.NetworkType;
-import org.yggdrasil.node.network.data.messages.enums.RequestType;
+import org.yggdrasil.node.network.messages.enums.NetworkType;
+import org.yggdrasil.node.network.messages.enums.RequestType;
 
 import java.math.BigInteger;
 
@@ -48,6 +48,11 @@ public class Message {
         return checksum;
     }
 
+    @Override
+    public String toString() {
+        return String.format("Network: [%s], Request; [%s], Checksum: [%s]", String.copyValueOf(network), String.valueOf(request), String.valueOf(checksum));
+    }
+
     public static class Builder {
 
         private char[] network;
@@ -63,12 +68,12 @@ public class Message {
         }
 
         public Builder setNetwork(NetworkType network) {
-            this.network = network.getValue();
+            this.network = network.getMessageValue();
             return this;
         }
 
         public Builder setRequestType(RequestType requestType) {
-            this.requestType = requestType.getValue();
+            this.requestType = requestType.getMessageValue();
             return this;
         }
 

@@ -1,6 +1,8 @@
-package org.yggdrasil.node.network.data.messages.payloads;
+package org.yggdrasil.node.network.messages.payloads;
 
-import org.yggdrasil.node.network.data.messages.MessagePayload;
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.SerializationUtils;
+import org.yggdrasil.node.network.messages.MessagePayload;
 
 import java.math.BigInteger;
 
@@ -54,6 +56,23 @@ public class HandshakeMessage implements MessagePayload {
 
     public int getSenderPort() {
         return senderPort;
+    }
+
+    @Override
+    public byte[] getDataBytes() {
+        byte[] messageBytes = new byte[0];
+        messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(version));
+        messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(services));
+        messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(timestamp));
+        messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(receiverAddress));
+        messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(receiverPort));
+        messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(senderAddress));
+        messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(senderPort));
+        return messageBytes;
+    }
+
+    private static byte[] appendBytes(byte[] base, byte[] extension) {
+        return ArrayUtils.addAll(base, extension);
     }
 
     public static class Builder {

@@ -1,4 +1,8 @@
-package org.yggdrasil.node.network.data.messages.payloads;
+package org.yggdrasil.node.network.messages.payloads;
+
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.SerializationUtils;
+import org.yggdrasil.node.network.messages.MessagePayload;
 
 /**
  * The Header Payload message contains the headers of either blocks or transactions.
@@ -9,7 +13,7 @@ package org.yggdrasil.node.network.data.messages.payloads;
  * @since 0.0.1
  * @author nathanielbunch
  */
-public class HeaderPayload {
+public class HeaderPayload implements MessagePayload {
 
     private final char[] hash;
     private final char[] prevHash;
@@ -43,6 +47,21 @@ public class HeaderPayload {
 
     public int getNonce() {
         return nonce;
+    }
+
+    @Override
+    public byte[] getDataBytes() {
+        byte[] messageBytes = new byte[0];
+        messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(hash));
+        messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(prevHash));
+        messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(transactionCount));
+        messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(time));
+        messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(nonce));
+        return messageBytes;
+    }
+
+    private static byte[] appendBytes(byte[] base, byte[] extension) {
+        return ArrayUtils.addAll(base, extension);
     }
 
     public static class Builder {

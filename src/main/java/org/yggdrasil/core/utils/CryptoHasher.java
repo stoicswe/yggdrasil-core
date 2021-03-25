@@ -5,6 +5,7 @@ import org.apache.commons.lang3.SerializationUtils;
 import org.yggdrasil.core.ledger.chain.Block;
 import org.yggdrasil.core.ledger.transaction.Transaction;
 import org.yggdrasil.core.ledger.Wallet;
+import org.yggdrasil.node.network.messages.MessagePayload;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -24,7 +25,7 @@ public class CryptoHasher {
     private static final String _HASH_ALGORITHM = "SHA-256";
 
     /**
-     * Hashes a SSBlock.
+     * Hashes a Block.
      *
      * @param block
      * @return
@@ -41,7 +42,7 @@ public class CryptoHasher {
     }
 
     /**
-     * Hashes a SSTransaction.
+     * Hashes a Transaction.
      *
      * @param transaction
      * @return
@@ -59,7 +60,7 @@ public class CryptoHasher {
     }
 
     /**
-     * Hashes a SSWallet.
+     * Hashes a Wallet.
      *
      * @param wallet
      * @return
@@ -71,6 +72,19 @@ public class CryptoHasher {
         walletData = appendBytes(walletData, SerializationUtils.serialize(wallet.getAddress()));
         walletData = appendBytes(walletData, SerializationUtils.serialize(wallet.getCreationDate()));
         return MessageDigest.getInstance(_HASH_ALGORITHM).digest(SerializationUtils.serialize(walletData));
+    }
+
+    /**
+     * Hashes a given message payload twice.
+     *
+     * @param payload
+     * @return
+     * @throws NoSuchAlgorithmException
+     */
+    public static byte[] hash(MessagePayload payload) throws  NoSuchAlgorithmException {
+        return MessageDigest.getInstance(_HASH_ALGORITHM)
+                .digest(MessageDigest.getInstance(_HASH_ALGORITHM)
+                        .digest(SerializationUtils.serialize(payload.getDataBytes())));
     }
 
     /**
