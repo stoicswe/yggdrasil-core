@@ -1,4 +1,8 @@
-package org.yggdrasil.node.network.data.messages.payloads;
+package org.yggdrasil.node.network.messages.payloads;
+
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.SerializationUtils;
+import org.yggdrasil.node.network.messages.MessagePayload;
 
 import java.math.BigInteger;
 
@@ -10,7 +14,7 @@ import java.math.BigInteger;
  * @since 0.0.1
  * @author nathanielbunch
  */
-public class AddressPayload {
+public class AddressPayload implements MessagePayload {
 
     private final int timestamp;
     private final BigInteger services;
@@ -38,6 +42,20 @@ public class AddressPayload {
 
     public int getPort() {
         return port;
+    }
+
+    @Override
+    public byte[] getDataBytes() {
+        byte[] messageBytes = new byte[0];
+        messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(timestamp));
+        messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(services));
+        messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(ipAddress));
+        messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(port));
+        return messageBytes;
+    }
+
+    private static byte[] appendBytes(byte[] base, byte[] extension) {
+        return ArrayUtils.addAll(base, extension);
     }
 
     public static class Builder {

@@ -1,7 +1,9 @@
-package org.yggdrasil.node.network.data.messages.payloads;
+package org.yggdrasil.node.network.messages.payloads;
 
-import org.yggdrasil.node.network.data.messages.MessagePayload;
-import org.yggdrasil.node.network.data.messages.enums.HeaderType;
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.SerializationUtils;
+import org.yggdrasil.node.network.messages.MessagePayload;
+import org.yggdrasil.node.network.messages.enums.HeaderType;
 
 /**
  * The Header message is a response to the getData message that is requesting
@@ -35,6 +37,21 @@ public class HeaderMessage implements MessagePayload {
         return headers;
     }
 
+    @Override
+    public byte[] getDataBytes() {
+        byte[] messageBytes = new byte[0];
+        messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(headerCount));
+        messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(headerType));
+        for(HeaderPayload hp : headers) {
+            messageBytes = appendBytes(messageBytes, hp.getDataBytes());
+        }
+        return messageBytes;
+    }
+
+    private static byte[] appendBytes(byte[] base, byte[] extension) {
+        return ArrayUtils.addAll(base, extension);
+    }
+
     public static class Builder {
 
         private int headerCount;
@@ -53,7 +70,7 @@ public class HeaderMessage implements MessagePayload {
         }
 
         public Builder setHeaderType(HeaderType headerType) {
-            this.headerType = headerType.getValue();
+            this.headerType = headerType.getMessageValue();
             return this;
         }
 

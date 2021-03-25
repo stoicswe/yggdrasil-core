@@ -1,13 +1,12 @@
 package org.yggdrasil.node.network;
 
-import org.yggdrasil.node.network.data.Message;
-import org.yggdrasil.node.network.data.MessageIdentifier;
-import org.yggdrasil.node.network.data.handlers.MessageSendHandler;
+import org.yggdrasil.node.network.messages.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
+import org.yggdrasil.node.network.messages.Messenger;
 
 import javax.annotation.PostConstruct;
 import java.io.IOException;
@@ -17,14 +16,23 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.HashMap;
 
+/**
+ * The node class handles the binding of the socket, and initial openeing
+ * of connections to other nodes. Messages are not handled here.
+ *
+ * @since 0.0.1
+ * @author nathanielbunch
+ */
 @Profile("!test")
 @Component
 public class Node {
 
-    private Logger logger = LoggerFactory.getLogger(Node.class);
+    private final Logger logger = LoggerFactory.getLogger(Node.class);
 
     @Autowired
     private NodeConfig nodeConfig;
+    @Autowired
+    private Messenger messenger;
     private ServerSocket serverSocket;
     private HashMap<String, NodeConnection> connectedNodes;
 
@@ -44,31 +52,17 @@ public class Node {
         Socket client;
         while(true){
             client = serverSocket.accept();
+            logger.debug("Accepted new connection from: [{}].", client.getInetAddress());
             if(nodeConfig.getActiveConnections() < connectedNodes.size()) {
                 client.setKeepAlive(true);
                 client.setSoTimeout(nodeConfig.getTimeout());
                 InputStream bis = client.getInputStream();
                 ObjectInputStream objIn = new ObjectInputStream(bis);
                 Message m = (Message) objIn.readObject();
-                if (m.getIdentifier().equals(MessageIdentifier.IDENTIFY_MESSAGE)) {
-                    NodeConnection n = new NodeConnection(client);
-                    this.connectedNodes.put(m.getSender(), n);
-                    Thread nt = new Thread(n);
-                    nt.start();
-                }
+                logger.debug("Received message: [{}]", m.toString());
+                messenger.handleMessage(m);
             } else {
                 client.close();
-            }
-        }
-    }
-
-    private void sendMessage(Message m) {
-        for(String s : connectedNodes.keySet()){
-            NodeConnection n = connectedNodes.get(s);
-            if(n.getNodeSocket().isConnected()) {
-                new MessageSendHandler(m, n.getNodeSocket()).run();
-            } else {
-                connectedNodes.remove(s);
             }
         }
     }

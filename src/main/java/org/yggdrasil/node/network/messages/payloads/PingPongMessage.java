@@ -1,6 +1,7 @@
-package org.yggdrasil.node.network.data.messages.payloads;
+package org.yggdrasil.node.network.messages.payloads;
 
-import org.yggdrasil.node.network.data.messages.MessagePayload;
+import org.apache.commons.lang3.SerializationUtils;
+import org.yggdrasil.node.network.messages.MessagePayload;
 
 /**
  * The Ping Pong Message is used to communicate back and forth to see if a conneciton
@@ -19,6 +20,11 @@ public class PingPongMessage implements MessagePayload {
 
     public int getNonce() {
         return nonce;
+    }
+
+    @Override
+    public byte[] getDataBytes() {
+        return SerializationUtils.serialize(nonce);
     }
 
     public static class Builder {

@@ -1,6 +1,8 @@
-package org.yggdrasil.node.network.data.messages.payloads;
+package org.yggdrasil.node.network.messages.payloads;
 
-import org.yggdrasil.node.network.data.messages.MessagePayload;
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.SerializationUtils;
+import org.yggdrasil.node.network.messages.MessagePayload;
 
 import java.math.BigDecimal;
 
@@ -56,6 +58,23 @@ public class TransactionMessage implements MessagePayload {
 
     public char[] getBlockHash() {
         return blockHash;
+    }
+
+    @Override
+    public byte[] getDataBytes() {
+        byte[] messageBytes = new byte[0];
+        messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(index));
+        messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(timestamp));
+        messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(originAddress));
+        messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(destinationAddress));
+        messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(value));
+        messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(transactionHash));
+        messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(blockHash));
+        return messageBytes;
+    }
+
+    private static byte[] appendBytes(byte[] base, byte[] extension) {
+        return ArrayUtils.addAll(base, extension);
     }
 
     public static class Builder {
