@@ -45,9 +45,6 @@ public class BlockchainController {
     @Autowired
     BlockchainService service;
 
-    @Autowired
-    MessageValidator messageValidator;
-
     @PostConstruct
     private void init() {
         this.objectMapper = new ObjectMapper();
@@ -84,17 +81,7 @@ public class BlockchainController {
     // Used to test in-development features
     @RequestMapping(value = "/testFeature", method = RequestMethod.HEAD)
     public void testFeature() throws NoSuchAlgorithmException {
-        PingPongMessage pingPong = PingPongMessage.Builder.newBuilder()
-                .setNonce(1)
-                .build();
-        Message m = Message.Builder.newBuilder()
-                .setNetwork(NetworkType.MAIN_NET)
-                .setRequestType(RequestType.GET_DATA)
-                .setPayloadSize(BigInteger.valueOf(1))
-                .setMessagePayload(pingPong)
-                .setChecksum(CryptoHasher.hash(pingPong))
-                .build();
-        messageValidator.isValidMessage(m);
+
     }
 
 }
