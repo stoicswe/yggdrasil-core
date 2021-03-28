@@ -5,7 +5,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.yggdrasil.node.network.Node;
+import org.yggdrasil.node.network.messages.enums.RequestType;
 import org.yggdrasil.node.network.messages.validators.MessageValidator;
+
+import java.util.Objects;
 
 /**
  * The Messenger component will handle the messages from other nodes
@@ -28,8 +31,28 @@ public class Messenger {
         logger.trace("In handleMessage.");
         try {
             this.validator.isValidMessage(message);
-            logger.debug("Handling valid message.");
-            // do things with the message
+            logger.trace("Handling valid message.");
+            // This should never be null, since the message is validated before it is handled.
+            switch (Objects.requireNonNull(RequestType.equals(message.getRequest()))) {
+                case GET_DATA:
+                    break;
+                case DATA_RESP:
+                    break;
+                case GET_ADDR:
+                    break;
+                case ADDR_RESP:
+                    break;
+                case PING:
+                    break;
+                case PONG:
+                    break;
+                case HANDSHAKE_OFFR:
+                    break;
+                case HANDSHAKE_RESP:
+                    break;
+                default:
+                    break;
+            }
         } catch (Exception e) {
             logger.warn("Error while processing message: [{}] -> [{}]", message.toString(), e.getMessage());
         }
