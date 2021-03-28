@@ -5,6 +5,8 @@ import org.apache.commons.lang3.SerializationUtils;
 import org.yggdrasil.node.network.messages.MessagePayload;
 import org.yggdrasil.node.network.messages.enums.HeaderType;
 
+import javax.validation.constraints.NotNull;
+
 /**
  * The Header message is a response to the getData message that is requesting
  * either block or transaction headers. The internal headerPayload property
@@ -15,8 +17,11 @@ import org.yggdrasil.node.network.messages.enums.HeaderType;
  */
 public class HeaderMessage implements MessagePayload {
 
+    @NotNull
     private final int headerCount;
+    @NotNull
     private final char[] headerType;
+    @NotNull
     private final HeaderPayload[] headers;
 
     private HeaderMessage(Builder builder) {

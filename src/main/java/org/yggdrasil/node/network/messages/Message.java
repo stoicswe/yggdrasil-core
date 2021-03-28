@@ -3,6 +3,7 @@ package org.yggdrasil.node.network.messages;
 import org.yggdrasil.node.network.messages.enums.NetworkType;
 import org.yggdrasil.node.network.messages.enums.RequestType;
 
+import javax.validation.constraints.NotNull;
 import java.math.BigInteger;
 
 /**
@@ -14,11 +15,16 @@ import java.math.BigInteger;
  */
 public class Message {
 
+    @NotNull
     private final char[] network;
+    @NotNull
     private final char[] request;
+    @NotNull
     private final BigInteger payloadSize;
+    @NotNull
     private final MessagePayload payload;
-    private final char[] checksum;
+    @NotNull
+    private final byte[] checksum;
 
     private Message(Builder builder) {
         this.network = builder.network;
@@ -44,7 +50,7 @@ public class Message {
         return payload;
     }
 
-    public char[] getChecksum() {
+    public byte[] getChecksum() {
         return checksum;
     }
 
@@ -59,7 +65,7 @@ public class Message {
         private char[] requestType;
         private BigInteger payloadSize;
         private MessagePayload payload;
-        private char[] checksum;
+        private byte[] checksum;
 
         private Builder(){}
 
@@ -87,7 +93,7 @@ public class Message {
             return this;
         }
 
-        public Builder setChecksum(char[] checksum) {
+        public Builder setChecksum(byte[] checksum) {
             this.checksum = checksum;
             return this;
         }

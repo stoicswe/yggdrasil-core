@@ -4,6 +4,8 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.SerializationUtils;
 import org.yggdrasil.node.network.messages.MessagePayload;
 
+import javax.validation.constraints.NotNull;
+
 /**
  * The Header Payload message contains the headers of either blocks or transactions.
  * When a block header is returned the hash, previousHash, transactionCount, time,
@@ -15,10 +17,15 @@ import org.yggdrasil.node.network.messages.MessagePayload;
  */
 public class HeaderPayload implements MessagePayload {
 
-    private final char[] hash;
-    private final char[] prevHash;
+    @NotNull
+    private final byte[] hash;
+    @NotNull
+    private final byte[] prevHash;
+    @NotNull
     private final int transactionCount;
+    @NotNull
     private final int time;
+    @NotNull
     private final int nonce;
 
     private HeaderPayload(Builder builder) {
@@ -29,11 +36,11 @@ public class HeaderPayload implements MessagePayload {
         this.nonce = builder.nonce;
     }
 
-    public char[] getHash() {
+    public byte[] getHash() {
         return hash;
     }
 
-    public char[] getPrevHash() {
+    public byte[] getPrevHash() {
         return prevHash;
     }
 
@@ -52,8 +59,8 @@ public class HeaderPayload implements MessagePayload {
     @Override
     public byte[] getDataBytes() {
         byte[] messageBytes = new byte[0];
-        messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(hash));
-        messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(prevHash));
+        messageBytes = appendBytes(messageBytes, hash);
+        messageBytes = appendBytes(messageBytes, prevHash);
         messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(transactionCount));
         messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(time));
         messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(nonce));
@@ -66,8 +73,8 @@ public class HeaderPayload implements MessagePayload {
 
     public static class Builder {
 
-        private char[] hash;
-        private char[] previousHash;
+        private byte[] hash;
+        private byte[] previousHash;
         private int transactionCount;
         private int time;
         private int nonce;
@@ -78,12 +85,12 @@ public class HeaderPayload implements MessagePayload {
             return new Builder();
         }
 
-        public Builder setHash(char[] hash) {
+        public Builder setHash(byte[] hash) {
             this.hash = hash;
             return this;
         }
 
-        public Builder setPreviousHash(char[] previousHash) {
+        public Builder setPreviousHash(byte[] previousHash) {
             this.previousHash = previousHash;
             return this;
         }

@@ -2,8 +2,10 @@ package org.yggdrasil.node.network.messages.payloads;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.SerializationUtils;
+import org.springframework.lang.NonNull;
 import org.yggdrasil.node.network.messages.MessagePayload;
 
+import javax.validation.constraints.NotNull;
 import java.math.BigInteger;
 
 /**
@@ -15,12 +17,19 @@ import java.math.BigInteger;
  */
 public class HandshakeMessage implements MessagePayload {
 
+    @NotNull
     private final int version;
+    @NotNull
     private final BigInteger services;
+    @NotNull
     private final int timestamp;
+    @NotNull
     private final char[] receiverAddress;
+    @NotNull
     private final int receiverPort;
+    @NotNull
     private final char[] senderAddress;
+    @NotNull
     private final int senderPort;
 
     private HandshakeMessage(Builder builder) {

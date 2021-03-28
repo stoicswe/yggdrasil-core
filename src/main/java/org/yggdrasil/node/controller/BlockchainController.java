@@ -6,7 +6,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.yggdrasil.core.ledger.chain.Blockchain;
 import org.yggdrasil.core.ledger.transaction.Transaction;
 import org.yggdrasil.core.ledger.Wallet;
+import org.yggdrasil.core.utils.CryptoHasher;
 import org.yggdrasil.node.model.BlockResponse;
+import org.yggdrasil.node.network.messages.Message;
+import org.yggdrasil.node.network.messages.enums.NetworkType;
+import org.yggdrasil.node.network.messages.enums.RequestType;
+import org.yggdrasil.node.network.messages.payloads.PingPongMessage;
+import org.yggdrasil.node.network.messages.validators.MessageValidator;
 import org.yggdrasil.node.service.BlockchainService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,6 +26,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.PostConstruct;
+import java.math.BigInteger;
+import java.security.NoSuchAlgorithmException;
 
 /**
  * Provides the rest interface controller for interacting with the Blockchain.
@@ -68,6 +76,12 @@ public class BlockchainController {
     @RequestMapping(value = "/transaction", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Transaction> getTransaction() throws Exception {
         return new ResponseEntity<>(this.service.getTransaction(), HttpStatus.OK);
+    }
+
+    // Used to test in-development features
+    @RequestMapping(value = "/testFeature", method = RequestMethod.HEAD)
+    public void testFeature() throws NoSuchAlgorithmException {
+
     }
 
 }

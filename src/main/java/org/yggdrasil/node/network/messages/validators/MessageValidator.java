@@ -1,10 +1,16 @@
 package org.yggdrasil.node.network.messages.validators;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+import org.springframework.validation.annotation.Validated;
 import org.yggdrasil.core.exception.InvalidMessageException;
 import org.yggdrasil.core.utils.CryptoHasher;
 import org.yggdrasil.node.network.messages.Message;
+import org.yggdrasil.node.network.messages.MessagePayload;
+
+import javax.validation.Valid;
+import java.security.NoSuchAlgorithmException;
 
 /**
  * The Message validator will verify that the contents of the message was not messed
@@ -14,16 +20,30 @@ import org.yggdrasil.node.network.messages.Message;
  * @author nathanielbunch
  */
 @Component
+@Validated
 public class MessageValidator {
 
-    @Autowired
-    private CryptoHasher hasher;
+    private static final Logger logger = LoggerFactory.getLogger(MessageValidator.class);
 
-    public void isValidMessage(Message message) {
-        if(message != null && message.getPayload() != null) {
+    public void isValidMessage(@Valid Message message) throws NoSuchAlgorithmException {
+        this.validateChecksum(message.getPayload(), message.getChecksum());
+    }
 
-        } else {
-            throw new InvalidMessageException("");
+    private void validateChecksum(MessagePayload payload, byte[] messageChecksum) throws NoSuchAlgorithmException {
+        byte[] payloadHash = CryptoHasher.hash(payload);
+        try {
+            if(messageChecksum.length == payloadHash.length) {
+                for (int i = 0; i < messageChecksum.length; i++) {
+                    if (!(messageChecksum[i] == payloadHash[i])) {
+                        throw new InvalidMessageException("Checksum did not match payload hash.");
+                    }
+                }
+                return;
+            }
+            throw new InvalidMessageException("Checksum did not match payload hash.");
+        } catch (Exception e) {
+            logger.error("Message received was invalid.");
+            throw new InvalidMessageException("Checksum did not match payload hash.");
         }
     }
 

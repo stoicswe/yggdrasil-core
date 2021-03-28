@@ -4,6 +4,8 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.SerializationUtils;
 import org.yggdrasil.node.network.messages.MessagePayload;
 
+import javax.validation.constraints.NotNull;
+
 /**
  * The Get Data message is used by a node to retrieve data from another node.
  * That data could be block related (blocks, chain, or transactions) and in that case
@@ -15,11 +17,16 @@ import org.yggdrasil.node.network.messages.MessagePayload;
  */
 public class GetDataMessage implements MessagePayload {
 
+    @NotNull
     private final int version;
+    @NotNull
     private final char[] type;
+    @NotNull
     private final int hashCount;
-    private final char[][] objectHashes;
-    private final char[] stopHash;
+    @NotNull
+    private final byte[][] objectHashes;
+    @NotNull
+    private final byte[] stopHash;
 
     private GetDataMessage(Builder builder) {
         this.version = builder.version;
@@ -41,11 +48,11 @@ public class GetDataMessage implements MessagePayload {
         return hashCount;
     }
 
-    public char[][] getObjectHashes() {
+    public byte[][] getObjectHashes() {
         return objectHashes;
     }
 
-    public char[] getStopHash() {
+    public byte[] getStopHash() {
         return stopHash;
     }
 
@@ -56,7 +63,7 @@ public class GetDataMessage implements MessagePayload {
         messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(type));
         messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(hashCount));
         messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(objectHashes));
-        messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(stopHash));
+        messageBytes = appendBytes(messageBytes, stopHash);
         return messageBytes;
     }
 
@@ -69,8 +76,8 @@ public class GetDataMessage implements MessagePayload {
         private int version;
         private char[] type;
         private int hashCount;
-        private char[][] objectHashes;
-        private char[] stopHash;
+        private byte[][] objectHashes;
+        private byte[] stopHash;
 
         private Builder(){}
 
@@ -89,12 +96,12 @@ public class GetDataMessage implements MessagePayload {
             return this;
         }
 
-        public Builder setObjectHashes(char[][] objectHashes) {
+        public Builder setObjectHashes(byte[][] objectHashes) {
             this.objectHashes = objectHashes;
             return this;
         }
 
-        public Builder setStopHash(char[] stopHash) {
+        public Builder setStopHash(byte[] stopHash) {
             this.stopHash = stopHash;
             return this;
         }
