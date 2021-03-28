@@ -20,6 +20,7 @@ public enum RequestType {
     HANDSHAKE_RESP("WVBK");
 
     private String value;
+    private static final RequestType[] values = new RequestType[]{GET_DATA, DATA_RESP, GET_ADDR, ADDR_RESP, PING, PONG, HANDSHAKE_OFFR, HANDSHAKE_RESP};
 
     RequestType(String value) {
         this.value = value;
@@ -33,8 +34,17 @@ public enum RequestType {
         return value.toCharArray();
     }
 
-    public boolean equals(char[] messageValue) {
-        return this.value.contentEquals(String.valueOf(messageValue));
+    public boolean containsValue(char[] value) {
+        return this.value.contentEquals(String.valueOf(value));
+    }
+
+    public static RequestType equals(char[] messageValue) {
+        for(RequestType rt : values) {
+            if(rt.containsValue(messageValue)){
+                return rt;
+            }
+        }
+        return null;
     }
 
     @Override

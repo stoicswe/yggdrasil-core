@@ -7,6 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 import org.yggdrasil.node.network.messages.Messenger;
+import org.yggdrasil.node.network.messages.enums.RequestType;
+import org.yggdrasil.node.network.messages.payloads.HandshakeMessage;
 
 import javax.annotation.PostConstruct;
 import java.io.IOException;
@@ -54,14 +56,24 @@ public class Node {
             client = serverSocket.accept();
             logger.debug("Accepted new connection from: [{}].", client.getInetAddress());
             if(nodeConfig.getActiveConnections() < connectedNodes.size()) {
-                client.setKeepAlive(true);
-                client.setSoTimeout(nodeConfig.getTimeout());
-                InputStream bis = client.getInputStream();
-                ObjectInputStream objIn = new ObjectInputStream(bis);
-                Message m = (Message) objIn.readObject();
-                logger.debug("Received message: [{}]", m.toString());
-                messenger.handleMessage(m);
+                try {
+                    client.setKeepAlive(true);
+                    client.setSoTimeout(nodeConfig.getTimeout());
+                    InputStream bis = client.getInputStream();
+                    ObjectInputStream objIn = new ObjectInputStream(bis);
+                    Message m = (Message) objIn.readObject();
+                    logger.debug("Received message: [{}]", m.toString());
+                    if(RequestType.HANDSHAKE_OFFR.containsValue(m.getRequest()) && m.getPayload() instanceof HandshakeMessage) {
+                        messenger.handleMessage(m);
+                    } else {
+                        throw new Exception("Node trying to establish connection with wrong message.");
+                    }
+                } catch (Exception e) {
+                    logger.debug("Error while attempting to handshake: {}", e.getMessage());
+                    client.close();
+                }
             } else {
+                logger.debug("Maximum connections have been reached.");
                 client.close();
             }
         }
