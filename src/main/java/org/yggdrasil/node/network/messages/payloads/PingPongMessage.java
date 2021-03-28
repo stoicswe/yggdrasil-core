@@ -3,6 +3,8 @@ package org.yggdrasil.node.network.messages.payloads;
 import org.apache.commons.lang3.SerializationUtils;
 import org.yggdrasil.node.network.messages.MessagePayload;
 
+import javax.validation.constraints.NotNull;
+
 /**
  * The Ping Pong Message is used to communicate back and forth to see if a conneciton
  * is alive between nodes.
@@ -12,6 +14,7 @@ import org.yggdrasil.node.network.messages.MessagePayload;
  */
 public class PingPongMessage implements MessagePayload {
 
+    @NotNull
     private final int nonce;
 
     private PingPongMessage(Builder builder) {

@@ -4,6 +4,7 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.SerializationUtils;
 import org.yggdrasil.node.network.messages.MessagePayload;
 
+import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 
 /**
@@ -14,13 +15,20 @@ import java.math.BigDecimal;
  */
 public class TransactionMessage implements MessagePayload {
 
+    @NotNull
     private final char[] index;
+    @NotNull
     private final int timestamp;
-    private final char[] originAddress;
-    private final char[] destinationAddress;
+    @NotNull
+    private final byte[] originAddress;
+    @NotNull
+    private final byte[] destinationAddress;
+    @NotNull
     private final BigDecimal value;
-    private final char[] transactionHash;
-    private final char[] blockHash;
+    @NotNull
+    private final byte[] transactionHash;
+    @NotNull
+    private final byte[] blockHash;
 
     private TransactionMessage(Builder builder){
         this.index = builder.index;
@@ -40,11 +48,11 @@ public class TransactionMessage implements MessagePayload {
         return timestamp;
     }
 
-    public char[] getOriginAddress() {
+    public byte[] getOriginAddress() {
         return originAddress;
     }
 
-    public char[] getDestinationAddress() {
+    public byte[] getDestinationAddress() {
         return destinationAddress;
     }
 
@@ -52,11 +60,11 @@ public class TransactionMessage implements MessagePayload {
         return value;
     }
 
-    public char[] getTransactionHash() {
+    public byte[] getTransactionHash() {
         return transactionHash;
     }
 
-    public char[] getBlockHash() {
+    public byte[] getBlockHash() {
         return blockHash;
     }
 
@@ -68,8 +76,8 @@ public class TransactionMessage implements MessagePayload {
         messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(originAddress));
         messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(destinationAddress));
         messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(value));
-        messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(transactionHash));
-        messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(blockHash));
+        messageBytes = appendBytes(messageBytes, transactionHash);
+        messageBytes = appendBytes(messageBytes, blockHash);
         return messageBytes;
     }
 
@@ -81,11 +89,11 @@ public class TransactionMessage implements MessagePayload {
 
         private char[] index;
         private int timestamp;
-        private char[] originAddress;
-        private char[] destinationAddress;
+        private byte[] originAddress;
+        private byte[] destinationAddress;
         private BigDecimal value;
-        private char[] transactionHash;
-        private char[] blockHash;
+        private byte[] transactionHash;
+        private byte[] blockHash;
 
         private Builder(){}
 
@@ -103,12 +111,12 @@ public class TransactionMessage implements MessagePayload {
             return this;
         }
 
-        public Builder setOriginAddress(char[] originAddress) {
+        public Builder setOriginAddress(byte[] originAddress) {
             this.originAddress = originAddress;
             return this;
         }
 
-        public Builder setDestinationAddress(char[] destinationAddress) {
+        public Builder setDestinationAddress(byte[] destinationAddress) {
             this.destinationAddress = destinationAddress;
             return this;
         }
@@ -118,12 +126,12 @@ public class TransactionMessage implements MessagePayload {
             return this;
         }
 
-        public Builder setTransactionHash(char[] transactionHash) {
+        public Builder setTransactionHash(byte[] transactionHash) {
             this.transactionHash = transactionHash;
             return this;
         }
 
-        public Builder setBlockHash(char[] blockHash) {
+        public Builder setBlockHash(byte[] blockHash) {
             this.blockHash = blockHash;
             return this;
         }

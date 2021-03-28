@@ -4,6 +4,7 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.SerializationUtils;
 import org.yggdrasil.node.network.messages.MessagePayload;
 
+import javax.validation.constraints.NotNull;
 import java.math.BigInteger;
 
 /**
@@ -16,9 +17,13 @@ import java.math.BigInteger;
  */
 public class AddressPayload implements MessagePayload {
 
+    @NotNull
     private final int timestamp;
+    @NotNull
     private final BigInteger services;
+    @NotNull
     private final char[] ipAddress;
+    @NotNull
     private final int port;
 
     private AddressPayload(Builder builder) {

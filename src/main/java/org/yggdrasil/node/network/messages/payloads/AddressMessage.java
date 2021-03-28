@@ -4,6 +4,8 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.SerializationUtils;
 import org.yggdrasil.node.network.messages.MessagePayload;
 
+import javax.validation.constraints.NotNull;
+
 /**
  * The Address Message object serves as a container for nodes to share information about
  * other nodes in the network. This allows for a better distributed system.
@@ -13,7 +15,9 @@ import org.yggdrasil.node.network.messages.MessagePayload;
  */
 public class AddressMessage implements MessagePayload {
 
+    @NotNull
     private final int ipAddressCount;
+    @NotNull
     private final AddressPayload[] ipAddresses;
 
     private AddressMessage(Builder builder) {
