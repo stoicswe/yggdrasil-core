@@ -6,9 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.yggdrasil.node.network.messages.Message;
 import org.yggdrasil.node.network.messages.Messenger;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.ObjectInputStream;
+import java.io.*;
 import java.net.Socket;
 
 /**
@@ -36,10 +34,17 @@ public class NodeConnection implements Runnable {
     @Override
     public void run() {
         while(nodeSocket.isConnected()){
-            try (InputStream ms = nodeSocket.getInputStream()) {
-                try (ObjectInputStream os = new ObjectInputStream(ms)) {
-                    Message m = (Message) os.readObject();
-                    this.messenger.handleMessage(m);
+            // Handle incoming message
+            try (InputStream mis = nodeSocket.getInputStream()) {
+                try (ObjectInputStream ois = new ObjectInputStream(mis)) {
+                    Message m = (Message) ois.readObject();
+                    Message rm = this.messenger.handleMessage(m);
+                    // Write the return message
+                    try (OutputStream mos = nodeSocket.getOutputStream()) {
+                        try (ObjectOutputStream oos = new ObjectOutputStream(mos)) {
+                            oos.writeObject(rm);
+                        }
+                    }
                 }
             } catch (IOException | ClassNotFoundException e) {
                 logger.error("Socket input stream read failed with exception: {}", e.getLocalizedMessage());

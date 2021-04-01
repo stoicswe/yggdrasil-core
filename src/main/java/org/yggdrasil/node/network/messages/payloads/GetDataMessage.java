@@ -24,7 +24,7 @@ public class GetDataMessage implements MessagePayload {
     @NotNull
     private final int hashCount;
     @NotNull
-    private final byte[][] objectHashes;
+    private final byte[] objectHashes;
     @NotNull
     private final byte[] stopHash;
 
@@ -48,7 +48,7 @@ public class GetDataMessage implements MessagePayload {
         return hashCount;
     }
 
-    public byte[][] getObjectHashes() {
+    public byte[] getObjectHashes() {
         return objectHashes;
     }
 
@@ -76,7 +76,7 @@ public class GetDataMessage implements MessagePayload {
         private int version;
         private char[] type;
         private int hashCount;
-        private byte[][] objectHashes;
+        private byte[] objectHashes;
         private byte[] stopHash;
 
         private Builder(){}
@@ -96,7 +96,7 @@ public class GetDataMessage implements MessagePayload {
             return this;
         }
 
-        public Builder setObjectHashes(byte[][] objectHashes) {
+        public Builder setObjectHashes(byte[] objectHashes) {
             this.objectHashes = objectHashes;
             return this;
         }
