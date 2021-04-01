@@ -17,10 +17,11 @@ public enum RequestType {
     PING("PING"),
     PONG("PONG"),
     HANDSHAKE_OFFR("WVTO"),
-    HANDSHAKE_RESP("WVBK");
+    HANDSHAKE_RESP("WVBK"),
+    ACKNOWLEDGE("ACKM");
 
     private String value;
-    private static final RequestType[] values = new RequestType[]{GET_DATA, DATA_RESP, GET_ADDR, ADDR_RESP, PING, PONG, HANDSHAKE_OFFR, HANDSHAKE_RESP};
+    private static final RequestType[] values = new RequestType[]{GET_DATA, DATA_RESP, GET_ADDR, ADDR_RESP, PING, PONG, HANDSHAKE_OFFR, HANDSHAKE_RESP, ACKNOWLEDGE};
 
     RequestType(String value) {
         this.value = value;
