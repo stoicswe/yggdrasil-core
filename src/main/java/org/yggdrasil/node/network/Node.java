@@ -1,22 +1,16 @@
 package org.yggdrasil.node.network;
 
-import org.yggdrasil.node.network.messages.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 import org.yggdrasil.node.network.messages.Messenger;
-import org.yggdrasil.node.network.messages.enums.RequestType;
-import org.yggdrasil.node.network.messages.payloads.HandshakeMessage;
 
 import javax.annotation.PostConstruct;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.ObjectInputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.SocketImpl;
 import java.util.HashMap;
 
 /**
@@ -56,6 +50,8 @@ public class Node {
         for (String ipString : nodeConfig.getPeers()) {
             logger.info("Attempting to connect to peer: {}", ipString);
             Socket s = new Socket(ipString, nodeConfig.getPort());
+            s.setKeepAlive(true);
+            s.setSoTimeout(nodeConfig.getTimeout());
             NodeConnection n = new NodeConnection(s, this.messenger);
             boolean isAlreadyConnected = false;
             for (NodeConnection nc : this.connectedNodes.values()) {

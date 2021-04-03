@@ -21,9 +21,7 @@ public class NodeConnection implements Runnable {
 
     private Messenger messenger;
     private Socket nodeSocket;
-    //private InputStream inputStream;
     private ObjectInputStream objectInputStream;
-    //private OutputStream outputStream;
     private ObjectOutputStream objectOutputStream;
 
     public NodeConnection(Socket node, Messenger messenger) throws IOException {
@@ -61,10 +59,12 @@ public class NodeConnection implements Runnable {
         while(nodeSocket.isConnected()){
             // Handle incoming message
             try {
-                Message m = (Message) this.objectInputStream.readObject();
-                Message rm = this.messenger.handleMessage(m);
-                // Write the return message
-                this.objectOutputStream.writeObject(rm);
+                Message m;
+                while((m = (Message) this.objectInputStream.readObject()) != null) {
+                    Message rm = this.messenger.handleMessage(m);
+                    // Write the return message
+                    this.objectOutputStream.writeObject(rm);
+                }
             } catch (IOException | ClassNotFoundException e) {
                 logger.error("Socket input stream read failed with exception: {}", e.getLocalizedMessage());
                 break;
