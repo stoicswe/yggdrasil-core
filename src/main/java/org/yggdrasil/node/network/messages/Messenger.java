@@ -124,11 +124,17 @@ public class Messenger {
     }
 
     public void sendBroadcastMessage(Message message) throws IOException {
-        for(NodeConnection nc : node.getConnectedNodes().values()) {
-            try(OutputStream os = nc.getNodeSocket().getOutputStream()) {
-                try(ObjectOutputStream objOut = new ObjectOutputStream(os)){
-                    objOut.writeObject(message);
+        node.establishConnections();
+        for(String nck : node.getConnectedNodes().keySet()) {
+            NodeConnection nc = node.getConnectedNodes().get(nck);
+            if(nc.getNodeSocket().isConnected()) {
+                try (OutputStream os = nc.getNodeSocket().getOutputStream()) {
+                    try (ObjectOutputStream objOut = new ObjectOutputStream(os)) {
+                        objOut.writeObject(message);
+                    }
                 }
+            } else {
+                node.getConnectedNodes().remove(nck);
             }
         }
     }

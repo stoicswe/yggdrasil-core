@@ -43,16 +43,16 @@ public class Node {
     public void init() throws IOException, ClassNotFoundException {
         this.connectedNodes = new HashMap<>();
         this.serverSocket = new ServerSocket(nodeConfig.getPort(), 3, nodeConfig.getNodeIp());
+        logger.info("P2P Connect listening on {}:{}", nodeConfig.getNodeIp(), nodeConfig.getPort());
         Thread nodeRunner = new Thread(new NodeRunner(this));
-        nodeRunner.start();
-        this.establishConnections();
+        nodeRunner.run();
     }
 
     public HashMap<String, NodeConnection> getConnectedNodes() {
         return this.connectedNodes;
     }
 
-    private void establishConnections() throws IOException {
+    public void establishConnections() throws IOException {
         int peerNum = 0;
         for (String ipString : nodeConfig.getPeers()) {
             logger.info("Attempting to connect to peer: {}", ipString);

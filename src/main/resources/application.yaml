@@ -8,7 +8,7 @@ blockchain:
   network: "main"
   p2p:
     node-name: "blockchain-core-node"
-    peers: <change-me>
+    peers: ""
     port: 9090
     active-connections: 10
     timeout: 30
