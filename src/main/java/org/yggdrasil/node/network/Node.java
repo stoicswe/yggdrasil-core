@@ -56,14 +56,15 @@ public class Node {
         for (String ipString : nodeConfig.getPeers()) {
             logger.info("Attempting to connect to peer: {}", ipString);
             Socket s = new Socket(ipString, nodeConfig.getPort());
+            NodeConnection n = new NodeConnection(s, this.messenger);
             boolean isAlreadyConnected = false;
             for (NodeConnection nc : this.connectedNodes.values()) {
-                if (nc.getNodeSocket().getInetAddress().equals(s.getInetAddress())) {
+                if (n.equals(nc)) {
                     isAlreadyConnected = true;
                 }
             }
             if (!isAlreadyConnected) {
-                this.connectedNodes.put("peer-" + peerNum, new NodeConnection(s, this.messenger));
+                this.connectedNodes.put("peer-" + peerNum, n);
                 peerNum++;
             } else {
                 s.close();
@@ -79,8 +80,6 @@ public class Node {
             logger.info("Accepted new connection from: [{}].", client.getInetAddress());
             client.setKeepAlive(true);
             client.setSoTimeout(nodeConfig.getTimeout());
-            logger.info("Connected node size: {}", connectedNodes.size());
-            logger.info("Active connection limit: {}", nodeConfig.getActiveConnections());
             if(connectedNodes.size() < nodeConfig.getActiveConnections()) {
                 try {
                     connectedNodes.put("OtherMachine", new NodeConnection(client, this.messenger));
@@ -93,6 +92,7 @@ public class Node {
                 logger.error("Maximum connections have been reached.");
                 client.close();
             }
+            logger.info("Number of connected nodes: {}", connectedNodes.size());
         }
     }
 }

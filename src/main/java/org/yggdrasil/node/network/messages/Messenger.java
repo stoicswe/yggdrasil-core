@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.yggdrasil.node.network.Node;
 import org.yggdrasil.node.network.NodeConnection;
+import org.yggdrasil.node.network.exceptions.NodeDisconnectException;
 import org.yggdrasil.node.network.messages.enums.RequestType;
 import org.yggdrasil.node.network.messages.handlers.*;
 import org.yggdrasil.node.network.messages.payloads.*;
@@ -113,10 +114,11 @@ public class Messenger {
     public void sendTargetMessage(String target, Message message) throws IOException {
         NodeConnection nc = node.getConnectedNodes().get(target);
         if(nc != null) {
-            try(OutputStream os = nc.getNodeSocket().getOutputStream()) {
-                try(ObjectOutputStream objOut = new ObjectOutputStream(os)){
-                    objOut.writeObject(message);
-                }
+            if(nc.isConnected()) {
+                nc.getNodeOutput().writeObject(message);
+            } else {
+                node.getConnectedNodes().remove(target);
+                throw new NodeDisconnectException(String.format("Peer %s was disconnected and message could not be transmitted.", target));
             }
         } else {
             logger.warn("Target peer does not exist.");
@@ -127,12 +129,8 @@ public class Messenger {
         node.establishConnections();
         for(String nck : node.getConnectedNodes().keySet()) {
             NodeConnection nc = node.getConnectedNodes().get(nck);
-            if(nc.getNodeSocket().isConnected()) {
-                OutputStream os = nc.getNodeSocket().getOutputStream();
-                try (ObjectOutputStream objOut = new ObjectOutputStream(os)) {
-                    objOut.writeObject(message);
-                    objOut.flush();
-                }
+            if(nc.isConnected()) {
+                nc.getNodeOutput().writeObject(message);
             } else {
                 node.getConnectedNodes().remove(nck);
             }
