@@ -74,8 +74,9 @@ public class Node {
     public void startListening() throws IOException, ClassNotFoundException {
         Socket client;
         while(true){
+            logger.info("Ready for connections.");
             client = serverSocket.accept();
-            logger.debug("Accepted new connection from: [{}].", client.getInetAddress());
+            logger.info("Accepted new connection from: [{}].", client.getInetAddress());
             if(nodeConfig.getActiveConnections() < connectedNodes.size()) {
                 try {
                     client.setKeepAlive(true);
