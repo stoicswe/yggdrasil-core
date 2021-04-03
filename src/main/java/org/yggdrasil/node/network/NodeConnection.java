@@ -48,7 +48,7 @@ public class NodeConnection implements Runnable {
                     }
                 }
             } catch (IOException | ClassNotFoundException e) {
-                logger.error("Socket input stream read failed with exception: {}", e.getLocalizedMessage());
+                logger.debug("Socket input stream read failed with exception: {}", e.getLocalizedMessage());
             }
         }
     }
