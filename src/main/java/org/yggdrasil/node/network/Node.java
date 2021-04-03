@@ -80,6 +80,7 @@ public class Node {
             client.setKeepAlive(true);
             client.setSoTimeout(nodeConfig.getTimeout());
             logger.info("Connected node size: {}", connectedNodes.size());
+            logger.info("Active connection limit: {}", nodeConfig.getActiveConnections());
             if(connectedNodes.size() > nodeConfig.getActiveConnections()) {
                 try {
                     connectedNodes.put("OtherMachine", new NodeConnection(client));
