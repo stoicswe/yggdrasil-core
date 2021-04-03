@@ -26,6 +26,7 @@ public class NodeRunner implements Runnable {
     @Override
     public void run() {
         try {
+            logger.info("Opening listener.");
             this.node.startListening();
         } catch (IOException | ClassNotFoundException e) {
             logger.error("Cannot start listening: {}", e.getMessage());

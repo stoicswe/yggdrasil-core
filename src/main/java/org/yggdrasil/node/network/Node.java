@@ -44,8 +44,7 @@ public class Node {
         this.connectedNodes = new HashMap<>();
         this.serverSocket = new ServerSocket(nodeConfig.getPort(), 3, nodeConfig.getNodeIp());
         logger.info("P2P Connect listening on {}:{}", nodeConfig.getNodeIp(), nodeConfig.getPort());
-        Thread nodeRunner = new Thread(new NodeRunner(this));
-        nodeRunner.run();
+        new Thread(new NodeRunner(this)).start();
     }
 
     public HashMap<String, NodeConnection> getConnectedNodes() {
