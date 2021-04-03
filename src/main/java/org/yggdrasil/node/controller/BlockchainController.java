@@ -26,6 +26,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.PostConstruct;
+import java.io.IOException;
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.security.NoSuchAlgorithmException;
 
@@ -80,8 +82,8 @@ public class BlockchainController {
 
     // Used to test in-development features
     @RequestMapping(value = "/testFeature", method = RequestMethod.HEAD)
-    public void testFeature() throws NoSuchAlgorithmException {
-
+    public void testFeature() throws NoSuchAlgorithmException, IOException {
+        this.service.sendMessage();
     }
 
 }

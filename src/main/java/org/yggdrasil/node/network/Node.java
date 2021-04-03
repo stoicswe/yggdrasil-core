@@ -1,19 +1,14 @@
 package org.yggdrasil.node.network;
 
-import org.yggdrasil.node.network.messages.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 import org.yggdrasil.node.network.messages.Messenger;
-import org.yggdrasil.node.network.messages.enums.RequestType;
-import org.yggdrasil.node.network.messages.payloads.HandshakeMessage;
 
 import javax.annotation.PostConstruct;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.ObjectInputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.HashMap;
@@ -42,40 +37,70 @@ public class Node {
     public void init() throws IOException, ClassNotFoundException {
         this.connectedNodes = new HashMap<>();
         this.serverSocket = new ServerSocket(nodeConfig.getPort(), 3, nodeConfig.getNodeIp());
-        Thread nodeRunner = new Thread(new NodeRunner(this));
-        nodeRunner.start();
+        logger.info("P2P Connect listening on {}:{}", nodeConfig.getNodeIp(), nodeConfig.getPort());
+        new Thread(new NodeRunner(this)).start();
     }
 
     public HashMap<String, NodeConnection> getConnectedNodes() {
         return this.connectedNodes;
     }
 
+    public void establishConnections() throws IOException {
+        int peerNum = 0;
+        for (String ipString : nodeConfig.getPeers()) {
+            logger.info("Attempting to connect to peer: {}", ipString);
+            try {
+                Socket s = new Socket(ipString, nodeConfig.getPort());
+                s.setKeepAlive(true);
+                if(!s.getInetAddress().equals(nodeConfig.getNodeIp())) {
+                    NodeConnection n = new NodeConnection(s, this.messenger);
+                    boolean isAlreadyConnected = false;
+                    for (NodeConnection nc : this.connectedNodes.values()) {
+                        if (n.equals(nc)) {
+                            isAlreadyConnected = true;
+                        }
+                    }
+                    if (!isAlreadyConnected) {
+                        this.connectedNodes.put("peer-" + peerNum, n);
+                        new Thread(n).start();
+                        logger.info("Peer: {} added.", ipString);
+                        peerNum++;
+                    } else {
+                        s.close();
+                    }
+                } else {
+                    s.close();
+                }
+            } catch (Exception e) {
+                logger.info("Failed to connect to peer: {}. Are you sure you are online?", ipString);
+            }
+        }
+    }
+
     public void startListening() throws IOException, ClassNotFoundException {
         Socket client;
+        int cliNum = 0;
         while(true){
+            logger.info("Ready for connections.");
             client = serverSocket.accept();
-            logger.debug("Accepted new connection from: [{}].", client.getInetAddress());
-            if(nodeConfig.getActiveConnections() < connectedNodes.size()) {
+            logger.info("Accepted new connection from: [{}].", client.getInetAddress());
+            client.setKeepAlive(true);
+            //client.setSoTimeout(nodeConfig.getTimeout());
+            if(connectedNodes.size() < nodeConfig.getActiveConnections()) {
                 try {
-                    client.setKeepAlive(true);
-                    client.setSoTimeout(nodeConfig.getTimeout());
-                    InputStream bis = client.getInputStream();
-                    ObjectInputStream objIn = new ObjectInputStream(bis);
-                    Message m = (Message) objIn.readObject();
-                    logger.debug("Received message: [{}]", m.toString());
-                    if(RequestType.HANDSHAKE_OFFR.containsValue(m.getRequest()) && m.getPayload() instanceof HandshakeMessage) {
-                        messenger.handleMessage(m);
-                    } else {
-                        throw new Exception("Node trying to establish connection with wrong message.");
-                    }
+                    connectedNodes.put("peer-"+cliNum, new NodeConnection(client, this.messenger));
+                    new Thread(connectedNodes.get("peer-"+cliNum)).start();
+                    logger.info("Added peer: {}", "peer-"+cliNum);
+                    cliNum++;
                 } catch (Exception e) {
-                    logger.debug("Error while attempting to handshake: {}", e.getMessage());
+                    logger.error("Error while attempting to open connection: {}", e.getMessage());
                     client.close();
                 }
             } else {
-                logger.debug("Maximum connections have been reached.");
+                logger.error("Maximum connections have been reached.");
                 client.close();
             }
+            logger.info("Number of connected nodes: {}", connectedNodes.size());
         }
     }
 }

@@ -26,6 +26,7 @@ public class MessageValidator {
     private static final Logger logger = LoggerFactory.getLogger(MessageValidator.class);
 
     public void isValidMessage(@Valid Message message) throws NoSuchAlgorithmException {
+        logger.info("Checking message checksum.");
         this.validateChecksum(message.getPayload(), message.getChecksum());
     }
 

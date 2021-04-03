@@ -8,6 +8,7 @@ blockchain:
   network: "main"
   p2p:
     node-name: "blockchain-core-node"
+    peers: "192.168.1.42"
     port: 9090
     active-connections: 10
-    timeout: 30
+    #timeout: 30000

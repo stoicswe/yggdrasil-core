@@ -34,6 +34,7 @@ public class Transaction implements Serializable {
     private final String destination;
     private final BigDecimal amount;
     private final String note;
+    private final byte[] signature;
     private final byte[] txnHash;
 
     protected Transaction(Builder builder) throws NoSuchAlgorithmException {
@@ -43,6 +44,7 @@ public class Transaction implements Serializable {
         this.destination = builder.destination;
         this.amount = builder.amount;
         this.note = builder.note;
+        this.signature = builder.signature;
         this.txnHash = CryptoHasher.hash(this);
     }
 
@@ -107,6 +109,7 @@ public class Transaction implements Serializable {
         protected String destination;
         protected BigDecimal amount;
         protected String note;
+        protected byte[] signature;
 
         private Builder(){}
 
@@ -127,6 +130,16 @@ public class Transaction implements Serializable {
 
         public Builder setNote(@JsonProperty("note") String note) {
             this.note = note;
+            return this;
+        }
+
+        public Builder setSignature(@JsonProperty("signature") String signature) {
+            this.signature = CryptoHasher.hashByteArray(signature);
+            return this;
+        }
+
+        public Builder setSignature(byte[] signature) {
+            this.signature = signature;
             return this;
         }
 

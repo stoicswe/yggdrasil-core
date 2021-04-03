@@ -1,5 +1,7 @@
 package org.yggdrasil.node.network.messages;
 
+import java.io.Serializable;
+
 /**
  * Interface for message payload so that it can be genericized.
  *
@@ -7,7 +9,7 @@ package org.yggdrasil.node.network.messages;
  * @author nathanielbunch
  *
  */
-public interface MessagePayload {
+public interface MessagePayload extends Serializable {
 
     byte[] getDataBytes();
 

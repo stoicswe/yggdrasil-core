@@ -1,5 +1,7 @@
 package org.yggdrasil.node.network;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
@@ -20,17 +22,21 @@ import java.util.UUID;
 @Configuration
 public class NodeConfig {
 
+    private static final Logger logger = LoggerFactory.getLogger(NodeConfig.class);
+
     private UUID nodeIndex;
     private InetAddress nodeIp;
     @Value("${blockchain.network}")
     private String[] networks;
+    @Value("${blockchain.p2p.peers}")
+    private String[] peers;
     @Value("${blockchain.p2p.port}")
     private Integer port;
     @Value("${blockchain.p2p.node-name}")
     private String nodeName;
     @Value("${blockchain.p2p.active-connections}")
     private Integer activeConnections;
-    @Value("${blockchain.p2p.timeout}")
+    @Value("${blockchain.p2p.timeout: 30000}")
     private Integer timeout;
 
     @PostConstruct
@@ -41,6 +47,7 @@ public class NodeConfig {
             // Set the nodes IP as seen on the local network
             // Will require port forward in order to open across internet
             this.nodeIp = InetAddress.getByName(socket.getLocalAddress().getHostAddress());
+            logger.info("Current node ip address: {}", nodeIp);
         }
     }
 
@@ -58,6 +65,10 @@ public class NodeConfig {
 
     public InetAddress getNodeIp() {
         return nodeIp;
+    }
+
+    public String[] getPeers() {
+        return peers;
     }
 
     public String[] getNetworks() {

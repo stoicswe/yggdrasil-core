@@ -4,6 +4,7 @@ import org.yggdrasil.node.network.messages.enums.NetworkType;
 import org.yggdrasil.node.network.messages.enums.RequestType;
 
 import javax.validation.constraints.NotNull;
+import java.io.Serializable;
 import java.math.BigInteger;
 
 /**
@@ -13,7 +14,7 @@ import java.math.BigInteger;
  * @since 0.0.10
  * @author nathanielbunch
  */
-public class Message {
+public class Message implements Serializable {
 
     @NotNull
     private final char[] network;
