@@ -79,6 +79,7 @@ public class Node {
             logger.info("Accepted new connection from: [{}].", client.getInetAddress());
             client.setKeepAlive(true);
             client.setSoTimeout(nodeConfig.getTimeout());
+            logger.info("Connected node size: {}", connectedNodes.size());
             if(connectedNodes.size() > nodeConfig.getActiveConnections()) {
                 try {
                     connectedNodes.put("OtherMachine", new NodeConnection(client));
