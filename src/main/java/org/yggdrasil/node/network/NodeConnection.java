@@ -21,14 +21,14 @@ public class NodeConnection implements Runnable {
 
     private Messenger messenger;
     private Socket nodeSocket;
-    private ObjectInputStream objectInputStream;
     private ObjectOutputStream objectOutputStream;
+    private ObjectInputStream objectInputStream;
 
     public NodeConnection(Socket node, Messenger messenger) throws IOException {
         this.nodeSocket = node;
         this.messenger = messenger;
-        this.objectInputStream = new ObjectInputStream(node.getInputStream());
         this.objectOutputStream = new ObjectOutputStream(node.getOutputStream());
+        this.objectInputStream = new ObjectInputStream(node.getInputStream());
     }
 
     public ObjectInputStream getNodeInput() {
