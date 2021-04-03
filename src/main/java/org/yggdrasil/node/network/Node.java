@@ -16,6 +16,7 @@ import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketImpl;
 import java.util.HashMap;
 
 /**
@@ -44,10 +45,31 @@ public class Node {
         this.serverSocket = new ServerSocket(nodeConfig.getPort(), 3, nodeConfig.getNodeIp());
         Thread nodeRunner = new Thread(new NodeRunner(this));
         nodeRunner.start();
+        this.establishConnections();
     }
 
     public HashMap<String, NodeConnection> getConnectedNodes() {
         return this.connectedNodes;
+    }
+
+    private void establishConnections() throws IOException {
+        int peerNum = 0;
+        for (String ipString : nodeConfig.getPeers()) {
+            logger.info("Attempting to connect to peer: {}", ipString);
+            Socket s = new Socket(ipString, nodeConfig.getPort());
+            boolean isAlreadyConnected = false;
+            for (NodeConnection nc : this.connectedNodes.values()) {
+                if (nc.getNodeSocket().getInetAddress().equals(s.getInetAddress())) {
+                    isAlreadyConnected = true;
+                }
+            }
+            if (!isAlreadyConnected) {
+                this.connectedNodes.put("peer-" + peerNum, new NodeConnection(s));
+                peerNum++;
+            } else {
+                s.close();
+            }
+        }
     }
 
     public void startListening() throws IOException, ClassNotFoundException {
@@ -64,6 +86,7 @@ public class Node {
                     Message m = (Message) objIn.readObject();
                     logger.debug("Received message: [{}]", m.toString());
                     messenger.handleMessage(m);
+                    connectedNodes.put("OtherMachine", new NodeConnection(client));
                     /*if(RequestType.HANDSHAKE_OFFR.containsValue(m.getRequest()) && m.getPayload() instanceof HandshakeMessage) {
                         messenger.handleMessage(m);
                     } else {
