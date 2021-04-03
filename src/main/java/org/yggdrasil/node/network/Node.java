@@ -39,6 +39,7 @@ public class Node {
         this.serverSocket = new ServerSocket(nodeConfig.getPort(), 3, nodeConfig.getNodeIp());
         logger.info("P2P Connect listening on {}:{}", nodeConfig.getNodeIp(), nodeConfig.getPort());
         new Thread(new NodeRunner(this)).start();
+
     }
 
     public HashMap<String, NodeConnection> getConnectedNodes() {
@@ -51,7 +52,7 @@ public class Node {
             logger.info("Attempting to connect to peer: {}", ipString);
             Socket s = new Socket(ipString, nodeConfig.getPort());
             s.setKeepAlive(true);
-            s.setSoTimeout(nodeConfig.getTimeout());
+            //s.setSoTimeout(nodeConfig.getTimeout());
             NodeConnection n = new NodeConnection(s, this.messenger);
             boolean isAlreadyConnected = false;
             for (NodeConnection nc : this.connectedNodes.values()) {
@@ -75,7 +76,7 @@ public class Node {
             client = serverSocket.accept();
             logger.info("Accepted new connection from: [{}].", client.getInetAddress());
             client.setKeepAlive(true);
-            client.setSoTimeout(nodeConfig.getTimeout());
+            //client.setSoTimeout(nodeConfig.getTimeout());
             if(connectedNodes.size() < nodeConfig.getActiveConnections()) {
                 try {
                     connectedNodes.put("OtherMachine", new NodeConnection(client, this.messenger));

@@ -11,4 +11,4 @@ blockchain:
     peers: "192.168.1.42"
     port: 9090
     active-connections: 10
-    timeout: 30000
+    #timeout: 30000
