@@ -13,8 +13,6 @@ import org.yggdrasil.node.network.messages.payloads.*;
 import org.yggdrasil.node.network.messages.validators.MessageValidator;
 
 import java.io.IOException;
-import java.io.ObjectOutputStream;
-import java.io.OutputStream;
 import java.util.Objects;
 
 /**
