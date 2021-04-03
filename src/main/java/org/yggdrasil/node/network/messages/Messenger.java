@@ -153,7 +153,12 @@ public class Messenger {
         for(String nck : node.getConnectedNodes().keySet()) {
             NodeConnection nc = node.getConnectedNodes().get(nck);
             if(nc.isConnected()) {
-                nc.getNodeOutput().writeObject(message);
+                try {
+                    nc.getNodeOutput().writeObject(message);
+                } catch (Exception e){
+                    logger.debug("Removing bad peer connection: {}", nck);
+                    node.getConnectedNodes().remove(nck);
+                }
             } else {
                 node.getConnectedNodes().remove(nck);
             }
