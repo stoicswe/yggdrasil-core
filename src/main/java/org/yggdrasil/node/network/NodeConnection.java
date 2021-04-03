@@ -19,12 +19,12 @@ public class NodeConnection implements Runnable {
 
     Logger logger = LoggerFactory.getLogger(NodeConnection.class);
 
-    @Autowired
     private Messenger messenger;
     private Socket nodeSocket;
 
-    public NodeConnection(Socket node){
+    public NodeConnection(Socket node, Messenger messenger){
         this.nodeSocket = node;
+        this.messenger = messenger;
     }
 
     public Socket getNodeSocket() {

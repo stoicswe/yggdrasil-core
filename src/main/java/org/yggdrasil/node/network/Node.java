@@ -63,7 +63,7 @@ public class Node {
                 }
             }
             if (!isAlreadyConnected) {
-                this.connectedNodes.put("peer-" + peerNum, new NodeConnection(s));
+                this.connectedNodes.put("peer-" + peerNum, new NodeConnection(s, this.messenger));
                 peerNum++;
             } else {
                 s.close();
@@ -83,7 +83,7 @@ public class Node {
             logger.info("Active connection limit: {}", nodeConfig.getActiveConnections());
             if(connectedNodes.size() < nodeConfig.getActiveConnections()) {
                 try {
-                    connectedNodes.put("OtherMachine", new NodeConnection(client));
+                    connectedNodes.put("OtherMachine", new NodeConnection(client, this.messenger));
                     new Thread(connectedNodes.get("OtherMachine")).start();
                 } catch (Exception e) {
                     logger.error("Error while attempting to open connection: {}", e.getMessage());
