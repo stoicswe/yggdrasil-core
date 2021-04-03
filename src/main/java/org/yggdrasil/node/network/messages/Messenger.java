@@ -1,18 +1,22 @@
 package org.yggdrasil.node.network.messages;
 
+import org.openjdk.jol.info.GraphLayout;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.yggdrasil.core.utils.CryptoHasher;
 import org.yggdrasil.node.network.Node;
 import org.yggdrasil.node.network.NodeConnection;
 import org.yggdrasil.node.network.exceptions.NodeDisconnectException;
+import org.yggdrasil.node.network.messages.enums.NetworkType;
 import org.yggdrasil.node.network.messages.enums.RequestType;
 import org.yggdrasil.node.network.messages.handlers.*;
 import org.yggdrasil.node.network.messages.payloads.*;
 import org.yggdrasil.node.network.messages.validators.MessageValidator;
 
 import java.io.IOException;
+import java.math.BigInteger;
 import java.util.Objects;
 
 /**
@@ -89,6 +93,12 @@ public class Messenger {
                     messagePayload = AcknowledgeMessage.Builder.newBuilder()
                             .setAcknowledgeChecksum(message.getChecksum())
                             .build();
+                    returnMessage = Message.Builder.newBuilder()
+                            .setNetwork(NetworkType.MAIN_NET)
+                            .setRequestType(RequestType.ACKNOWLEDGE)
+                            .setPayloadSize(BigInteger.valueOf(GraphLayout.parseInstance(messagePayload).totalSize()))
+                            .setChecksum(CryptoHasher.hash(messagePayload))
+                            .build();
                     break;
                 case HANDSHAKE_OFFR:
                     messagePayload = this.handshakeOfferMessageHandler.handleMessagePayload((HandshakeMessage) message.getPayload());
@@ -124,7 +134,6 @@ public class Messenger {
     }
 
     public void sendBroadcastMessage(Message message) throws IOException {
-        node.establishConnections();
         for(String nck : node.getConnectedNodes().keySet()) {
             NodeConnection nc = node.getConnectedNodes().get(nck);
             if(nc.isConnected()) {
