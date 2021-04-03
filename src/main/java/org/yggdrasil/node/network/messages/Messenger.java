@@ -128,10 +128,10 @@ public class Messenger {
         for(String nck : node.getConnectedNodes().keySet()) {
             NodeConnection nc = node.getConnectedNodes().get(nck);
             if(nc.getNodeSocket().isConnected()) {
-                try (OutputStream os = nc.getNodeSocket().getOutputStream()) {
-                    try (ObjectOutputStream objOut = new ObjectOutputStream(os)) {
-                        objOut.writeObject(message);
-                    }
+                OutputStream os = nc.getNodeSocket().getOutputStream();
+                try (ObjectOutputStream objOut = new ObjectOutputStream(os)) {
+                    objOut.writeObject(message);
+                    objOut.flush();
                 }
             } else {
                 node.getConnectedNodes().remove(nck);

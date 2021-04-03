@@ -77,23 +77,14 @@ public class Node {
             logger.info("Ready for connections.");
             client = serverSocket.accept();
             logger.info("Accepted new connection from: [{}].", client.getInetAddress());
-            if(connectedNodes.keySet().size() > nodeConfig.getActiveConnections()) {
+            client.setKeepAlive(true);
+            client.setSoTimeout(nodeConfig.getTimeout());
+            if(connectedNodes.size() > nodeConfig.getActiveConnections()) {
                 try {
-                    client.setKeepAlive(true);
-                    client.setSoTimeout(nodeConfig.getTimeout());
-                    InputStream bis = client.getInputStream();
-                    ObjectInputStream objIn = new ObjectInputStream(bis);
-                    Message m = (Message) objIn.readObject();
-                    logger.info("Received message: [{}]", m.toString());
-                    messenger.handleMessage(m);
                     connectedNodes.put("OtherMachine", new NodeConnection(client));
-                    /*if(RequestType.HANDSHAKE_OFFR.containsValue(m.getRequest()) && m.getPayload() instanceof HandshakeMessage) {
-                        messenger.handleMessage(m);
-                    } else {
-                        throw new Exception("Node trying to establish connection with wrong message.");
-                    }*/
+                    new Thread(connectedNodes.get("OtherMachine")).start();
                 } catch (Exception e) {
-                    logger.error("Error while attempting to handshake: {}", e.getMessage());
+                    logger.error("Error while attempting to open connection: {}", e.getMessage());
                     client.close();
                 }
             } else {

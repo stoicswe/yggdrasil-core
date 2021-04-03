@@ -35,7 +35,8 @@ public class NodeConnection implements Runnable {
     public void run() {
         while(nodeSocket.isConnected()){
             // Handle incoming message
-            try (InputStream mis = nodeSocket.getInputStream()) {
+            try {
+                InputStream mis = nodeSocket.getInputStream();
                 try (ObjectInputStream ois = new ObjectInputStream(mis)) {
                     Message m = (Message) ois.readObject();
                     Message rm = this.messenger.handleMessage(m);
