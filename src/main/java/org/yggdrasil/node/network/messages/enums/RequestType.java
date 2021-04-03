@@ -39,7 +39,7 @@ public enum RequestType {
         return this.value.contentEquals(String.valueOf(value));
     }
 
-    public static RequestType equals(char[] messageValue) {
+    public static RequestType getByValue(char[] messageValue) {
         for(RequestType rt : values) {
             if(rt.containsValue(messageValue)){
                 return rt;

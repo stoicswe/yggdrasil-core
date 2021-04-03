@@ -14,6 +14,7 @@ public enum NetworkType {
     TEST_NET("TEST");
 
     private final String value;
+    private static final NetworkType[] values = new NetworkType[]{MAIN_NET, TEST_NET};
 
     NetworkType(String value) {
         this.value = value;
@@ -29,6 +30,19 @@ public enum NetworkType {
 
     public boolean equals(char[] messageValue) {
         return this.value.contentEquals(String.valueOf(messageValue));
+    }
+
+    public boolean containsValue(char[] value) {
+        return this.value.contentEquals(String.valueOf(value));
+    }
+
+    public static NetworkType getByValue(char[] messageValue) {
+        for(NetworkType nt : values) {
+            if(nt.containsValue(messageValue)){
+                return nt;
+            }
+        }
+        return null;
     }
 
     @Override

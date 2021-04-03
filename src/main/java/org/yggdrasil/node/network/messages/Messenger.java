@@ -64,11 +64,13 @@ public class Messenger {
             this.validator.isValidMessage(message);
             logger.info("Handling valid message.");
             // This should never be null, since the message is validated before it is handled.
-            switch (Objects.requireNonNull(RequestType.equals(message.getRequest()))) {
+            switch (Objects.requireNonNull(RequestType.getByValue(message.getRequest()))) {
                 case GET_DATA:
+                    logger.info("Handling {} message.", RequestType.GET_DATA);
                     messagePayload = this.getDataMessageHandler.handleMessagePayload((GetDataMessage) message.getPayload());
                     break;
                 case DATA_RESP:
+                    logger.info("Handling {} message.", RequestType.DATA_RESP);
                     if (message.getPayload() instanceof HeaderMessage) {
                         messagePayload = this.headerMessageHandler.handleMessagePayload((HeaderMessage) message.getPayload());
                     }
@@ -80,33 +82,46 @@ public class Messenger {
                     }
                     break;
                 case GET_ADDR:
+                    logger.info("Handling {} message.", RequestType.GET_ADDR);
                     messagePayload = this.getAddressMessageHandler.handleMessagePayload((AddressMessage) message.getPayload());
                     break;
                 case ADDR_RESP:
+                    logger.info("Handling {} message.", RequestType.ADDR_RESP);
                     messagePayload = this.addressResponseHandler.handleMessagePayload((AddressPayload) message.getPayload());
                     break;
                 case PING:
+                    logger.info("Handling {} message.", RequestType.PING);
                     messagePayload = this.pingMessageHandler.handleMessagePayload((PingPongMessage) message.getPayload());
+                    returnMessage = Message.Builder.newBuilder()
+                            .setNetwork(NetworkType.getByValue(message.getNetwork()))
+                            .setRequestType(RequestType.PONG)
+                            .setMessagePayload(messagePayload)
+                            .setChecksum(CryptoHasher.hash(messagePayload))
+                            .build();
                     break;
                 case PONG:
-                    messagePayload = this.pongMessageHandler.handleMessagePayload((PingPongMessage) message.getPayload());
+                    logger.info("Handling {} message.", RequestType.PONG);
+                    this.pongMessageHandler.handleMessagePayload((PingPongMessage) message.getPayload());
                     messagePayload = AcknowledgeMessage.Builder.newBuilder()
                             .setAcknowledgeChecksum(message.getChecksum())
                             .build();
                     returnMessage = Message.Builder.newBuilder()
-                            .setNetwork(NetworkType.MAIN_NET)
+                            .setNetwork(NetworkType.getByValue(message.getNetwork()))
                             .setRequestType(RequestType.ACKNOWLEDGE)
                             .setPayloadSize(BigInteger.valueOf(GraphLayout.parseInstance(messagePayload).totalSize()))
                             .setChecksum(CryptoHasher.hash(messagePayload))
                             .build();
                     break;
                 case HANDSHAKE_OFFR:
+                    logger.info("Handling {} message.", RequestType.HANDSHAKE_OFFR);
                     messagePayload = this.handshakeOfferMessageHandler.handleMessagePayload((HandshakeMessage) message.getPayload());
                     break;
                 case HANDSHAKE_RESP:
+                    logger.info("Handling {} message.", RequestType.HANDSHAKE_RESP);
                     messagePayload = this.handshakeResponseMessageHandler.handleMessagePayload((HandshakeMessage) message.getPayload());
                     break;
                 case ACKNOWLEDGE:
+                    logger.info("Handling {} message.", RequestType.ACKNOWLEDGE);
                     // TBH...not really sure how to handle this yet...
                     break;
                 default:

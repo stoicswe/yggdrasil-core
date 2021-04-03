@@ -71,6 +71,7 @@ public class Node {
 
     public void startListening() throws IOException, ClassNotFoundException {
         Socket client;
+        int cliNum = 0;
         while(true){
             logger.info("Ready for connections.");
             client = serverSocket.accept();
@@ -79,8 +80,10 @@ public class Node {
             //client.setSoTimeout(nodeConfig.getTimeout());
             if(connectedNodes.size() < nodeConfig.getActiveConnections()) {
                 try {
-                    connectedNodes.put("OtherMachine", new NodeConnection(client, this.messenger));
-                    new Thread(connectedNodes.get("OtherMachine")).start();
+                    connectedNodes.put("peer-"+cliNum, new NodeConnection(client, this.messenger));
+                    new Thread(connectedNodes.get("peer-"+cliNum)).start();
+                    logger.info("Added peer: {}", "peer-"+cliNum);
+                    cliNum++;
                 } catch (Exception e) {
                     logger.error("Error while attempting to open connection: {}", e.getMessage());
                     client.close();
