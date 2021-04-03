@@ -36,7 +36,7 @@ public class NodeConfig {
     private String nodeName;
     @Value("${blockchain.p2p.active-connections}")
     private Integer activeConnections;
-    @Value("${blockchain.p2p.timeout}")
+    @Value("${blockchain.p2p.timeout: 30000}")
     private Integer timeout;
 
     @PostConstruct
