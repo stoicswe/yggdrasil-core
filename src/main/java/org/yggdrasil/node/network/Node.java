@@ -84,7 +84,7 @@ public class Node {
                     InputStream bis = client.getInputStream();
                     ObjectInputStream objIn = new ObjectInputStream(bis);
                     Message m = (Message) objIn.readObject();
-                    logger.debug("Received message: [{}]", m.toString());
+                    logger.info("Received message: [{}]", m.toString());
                     messenger.handleMessage(m);
                     connectedNodes.put("OtherMachine", new NodeConnection(client));
                     /*if(RequestType.HANDSHAKE_OFFR.containsValue(m.getRequest()) && m.getPayload() instanceof HandshakeMessage) {
@@ -93,11 +93,11 @@ public class Node {
                         throw new Exception("Node trying to establish connection with wrong message.");
                     }*/
                 } catch (Exception e) {
-                    logger.debug("Error while attempting to handshake: {}", e.getMessage());
+                    logger.error("Error while attempting to handshake: {}", e.getMessage());
                     client.close();
                 }
             } else {
-                logger.debug("Maximum connections have been reached.");
+                logger.error("Maximum connections have been reached.");
                 client.close();
             }
         }
