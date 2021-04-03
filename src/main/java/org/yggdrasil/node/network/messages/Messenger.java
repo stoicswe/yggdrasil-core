@@ -127,7 +127,6 @@ public class Messenger {
                 default:
                     break;
             }
-            return null;
         } catch (Exception e) {
             logger.warn("Error while processing message: [{}] -> [{}]", message.toString(), e.getMessage());
         }
