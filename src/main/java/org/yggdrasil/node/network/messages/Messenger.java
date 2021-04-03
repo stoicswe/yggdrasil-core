@@ -96,6 +96,7 @@ public class Messenger {
                             .setNetwork(NetworkType.getByValue(message.getNetwork()))
                             .setRequestType(RequestType.PONG)
                             .setMessagePayload(messagePayload)
+                            .setPayloadSize(BigInteger.valueOf(GraphLayout.parseInstance(messagePayload).totalSize()))
                             .setChecksum(CryptoHasher.hash(messagePayload))
                             .build();
                     break;
