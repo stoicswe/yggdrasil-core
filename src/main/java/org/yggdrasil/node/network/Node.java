@@ -50,21 +50,25 @@ public class Node {
         int peerNum = 0;
         for (String ipString : nodeConfig.getPeers()) {
             logger.info("Attempting to connect to peer: {}", ipString);
-            Socket s = new Socket(ipString, nodeConfig.getPort());
-            s.setKeepAlive(true);
-            //s.setSoTimeout(nodeConfig.getTimeout());
-            NodeConnection n = new NodeConnection(s, this.messenger);
-            boolean isAlreadyConnected = false;
-            for (NodeConnection nc : this.connectedNodes.values()) {
-                if (n.equals(nc)) {
-                    isAlreadyConnected = true;
+            try {
+                Socket s = new Socket(ipString, nodeConfig.getPort());
+                s.setKeepAlive(true);
+                //s.setSoTimeout(nodeConfig.getTimeout());
+                NodeConnection n = new NodeConnection(s, this.messenger);
+                boolean isAlreadyConnected = false;
+                for (NodeConnection nc : this.connectedNodes.values()) {
+                    if (n.equals(nc)) {
+                        isAlreadyConnected = true;
+                    }
                 }
-            }
-            if (!isAlreadyConnected) {
-                this.connectedNodes.put("peer-" + peerNum, n);
-                peerNum++;
-            } else {
-                s.close();
+                if (!isAlreadyConnected) {
+                    this.connectedNodes.put("peer-" + peerNum, n);
+                    peerNum++;
+                } else {
+                    s.close();
+                }
+            } catch (Exception e) {
+                logger.info("Failed to connect to peer: {}. Are you sure you are online?", ipString);
             }
         }
     }

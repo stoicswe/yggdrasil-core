@@ -26,6 +26,7 @@ public class NodeRunner implements Runnable {
     @Override
     public void run() {
         try {
+            this.node.establishConnections();
             logger.info("Opening listener.");
             this.node.startListening();
         } catch (IOException | ClassNotFoundException e) {
