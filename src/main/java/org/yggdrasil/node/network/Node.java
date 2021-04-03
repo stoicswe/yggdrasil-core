@@ -81,7 +81,7 @@ public class Node {
             client.setSoTimeout(nodeConfig.getTimeout());
             logger.info("Connected node size: {}", connectedNodes.size());
             logger.info("Active connection limit: {}", nodeConfig.getActiveConnections());
-            if(connectedNodes.size() > nodeConfig.getActiveConnections()) {
+            if(connectedNodes.size() < nodeConfig.getActiveConnections()) {
                 try {
                     connectedNodes.put("OtherMachine", new NodeConnection(client));
                     new Thread(connectedNodes.get("OtherMachine")).start();
