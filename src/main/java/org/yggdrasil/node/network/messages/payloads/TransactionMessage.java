@@ -28,6 +28,8 @@ public class TransactionMessage implements MessagePayload {
     @NotNull
     private final byte[] transactionHash;
     @NotNull
+    private final byte[] signature;
+    @NotNull
     private final byte[] blockHash;
 
     private TransactionMessage(Builder builder){
@@ -37,6 +39,7 @@ public class TransactionMessage implements MessagePayload {
         this.destinationAddress = builder.destinationAddress;
         this.value = builder.value;
         this.transactionHash = builder.transactionHash;
+        this.signature = builder.signature;
         this.blockHash = builder.blockHash;
     }
 
@@ -64,6 +67,10 @@ public class TransactionMessage implements MessagePayload {
         return transactionHash;
     }
 
+    public byte[] getSignature() {
+        return this.signature;
+    }
+
     public byte[] getBlockHash() {
         return blockHash;
     }
@@ -77,6 +84,7 @@ public class TransactionMessage implements MessagePayload {
         messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(destinationAddress));
         messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(value));
         messageBytes = appendBytes(messageBytes, transactionHash);
+        messageBytes = appendBytes(messageBytes, signature);
         messageBytes = appendBytes(messageBytes, blockHash);
         return messageBytes;
     }
@@ -93,6 +101,7 @@ public class TransactionMessage implements MessagePayload {
         private byte[] destinationAddress;
         private BigDecimal value;
         private byte[] transactionHash;
+        private byte[] signature;
         private byte[] blockHash;
 
         private Builder(){}
@@ -128,6 +137,11 @@ public class TransactionMessage implements MessagePayload {
 
         public Builder setTransactionHash(byte[] transactionHash) {
             this.transactionHash = transactionHash;
+            return this;
+        }
+
+        public Builder setSignature(byte[] signature) {
+            this.signature = signature;
             return this;
         }
 

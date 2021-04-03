@@ -2,11 +2,13 @@ package org.yggdrasil.core.utils;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.SerializationUtils;
+import org.apache.tomcat.util.buf.HexUtils;
 import org.yggdrasil.core.ledger.chain.Block;
 import org.yggdrasil.core.ledger.transaction.Transaction;
 import org.yggdrasil.core.ledger.Wallet;
 import org.yggdrasil.node.network.messages.MessagePayload;
 
+import java.nio.ByteBuffer;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
@@ -94,15 +96,17 @@ public class CryptoHasher {
      * @return
      */
     public static String humanReadableHash(byte[] hash){
-        StringBuilder hexString = new StringBuilder(2 * hash.length);
-        for (int i = 0; i < hash.length; i++) {
-            String hex = Integer.toHexString(0xff & hash[i]);
-            if(hex.length() == 1) {
-                hexString.append('0');
-            }
-            hexString.append(hex);
-        }
-        return hexString.toString();
+        return HexUtils.toHexString(hash);
+    }
+
+    /**
+     * Returns a hash imported from a human-readable hex string.
+     *
+     * @param stringHash
+     * @return
+     */
+    public static byte[] hashByteArray(String stringHash){
+        return HexUtils.fromHexString(stringHash);
     }
 
     private static byte[] appendBytes(byte[] base, byte[] extension) {

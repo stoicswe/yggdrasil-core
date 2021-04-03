@@ -15,9 +15,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.yggdrasil.node.network.messages.Message;
+import org.yggdrasil.node.network.messages.Messenger;
+import org.yggdrasil.node.network.messages.enums.NetworkType;
+import org.yggdrasil.node.network.messages.enums.RequestType;
+import org.yggdrasil.node.network.messages.payloads.PingPongMessage;
 
 import javax.security.auth.DestroyFailedException;
+import java.io.IOException;
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.math.RoundingMode;
 import java.security.KeyPair;
 import java.security.NoSuchAlgorithmException;
@@ -45,6 +52,8 @@ public class BlockchainService {
 
     @Autowired
     private Node node;
+    @Autowired
+    private Messenger messenger;
     @Autowired
     private Blockchain blockchain;
     @Autowired
@@ -105,6 +114,17 @@ public class BlockchainService {
         return newWallet;
     }
 
+    public void sendMessage() throws NoSuchAlgorithmException, IOException {
+        PingPongMessage pingPongMessage = PingPongMessage.Builder.newBuilder().setNonce(25).build();
+        Message message = Message.Builder.newBuilder()
+                .setNetwork(NetworkType.MAIN_NET)
+                .setRequestType(RequestType.PING)
+                .setPayloadSize(BigInteger.valueOf(GraphLayout.parseInstance(pingPongMessage).totalSize()))
+                .setMessagePayload(pingPongMessage)
+                .setChecksum(CryptoHasher.hash(pingPongMessage)).build();
+        messenger.sendBroadcastMessage(message);
+    }
+
     /**
      * Returns a most recent block response.
      *
@@ -120,7 +140,7 @@ public class BlockchainService {
 
         List<Transaction> blockData = new ArrayList<>();
         while(mempool.hasNext()) {
-            if(!(blockData.size() < _MAX_BLOCK_SIZE)) {
+            if(blockData.size() < _MAX_BLOCK_SIZE) {
                 blockData.add(mempool.getTransaction());
             } else {
                 break;

@@ -33,7 +33,7 @@ public class AcknowledgeMessage implements MessagePayload {
 
         private Builder() {}
 
-        public Builder newBuilder() {
+        public static Builder newBuilder() {
             return new Builder();
         }
 

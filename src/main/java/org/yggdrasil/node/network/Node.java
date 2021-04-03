@@ -63,11 +63,12 @@ public class Node {
                     ObjectInputStream objIn = new ObjectInputStream(bis);
                     Message m = (Message) objIn.readObject();
                     logger.debug("Received message: [{}]", m.toString());
-                    if(RequestType.HANDSHAKE_OFFR.containsValue(m.getRequest()) && m.getPayload() instanceof HandshakeMessage) {
+                    messenger.handleMessage(m);
+                    /*if(RequestType.HANDSHAKE_OFFR.containsValue(m.getRequest()) && m.getPayload() instanceof HandshakeMessage) {
                         messenger.handleMessage(m);
                     } else {
                         throw new Exception("Node trying to establish connection with wrong message.");
-                    }
+                    }*/
                 } catch (Exception e) {
                     logger.debug("Error while attempting to handshake: {}", e.getMessage());
                     client.close();

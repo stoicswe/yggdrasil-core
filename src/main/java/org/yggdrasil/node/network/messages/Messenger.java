@@ -5,11 +5,15 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.yggdrasil.node.network.Node;
+import org.yggdrasil.node.network.NodeConnection;
 import org.yggdrasil.node.network.messages.enums.RequestType;
 import org.yggdrasil.node.network.messages.handlers.*;
 import org.yggdrasil.node.network.messages.payloads.*;
 import org.yggdrasil.node.network.messages.validators.MessageValidator;
 
+import java.io.IOException;
+import java.io.ObjectOutputStream;
+import java.io.OutputStream;
 import java.util.Objects;
 
 /**
@@ -83,6 +87,9 @@ public class Messenger {
                     break;
                 case PONG:
                     messagePayload = this.pongMessageHandler.handleMessagePayload((PingPongMessage) message.getPayload());
+                    messagePayload = AcknowledgeMessage.Builder.newBuilder()
+                            .setAcknowledgeChecksum(message.getChecksum())
+                            .build();
                     break;
                 case HANDSHAKE_OFFR:
                     messagePayload = this.handshakeOfferMessageHandler.handleMessagePayload((HandshakeMessage) message.getPayload());
@@ -101,6 +108,29 @@ public class Messenger {
             logger.warn("Error while processing message: [{}] -> [{}]", message.toString(), e.getMessage());
         }
         return returnMessage;
+    }
+
+    public void sendTargetMessage(String target, Message message) throws IOException {
+        NodeConnection nc = node.getConnectedNodes().get(target);
+        if(nc != null) {
+            try(OutputStream os = nc.getNodeSocket().getOutputStream()) {
+                try(ObjectOutputStream objOut = new ObjectOutputStream(os)){
+                    objOut.writeObject(message);
+                }
+            }
+        } else {
+            logger.warn("Target peer does not exist.");
+        }
+    }
+
+    public void sendBroadcastMessage(Message message) throws IOException {
+        for(NodeConnection nc : node.getConnectedNodes().values()) {
+            try(OutputStream os = nc.getNodeSocket().getOutputStream()) {
+                try(ObjectOutputStream objOut = new ObjectOutputStream(os)){
+                    objOut.writeObject(message);
+                }
+            }
+        }
     }
 
 }

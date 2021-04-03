@@ -24,6 +24,8 @@ public class NodeConfig {
     private InetAddress nodeIp;
     @Value("${blockchain.network}")
     private String[] networks;
+    @Value("${blockchain..p2p.peers}")
+    private String[] peers;
     @Value("${blockchain.p2p.port}")
     private Integer port;
     @Value("${blockchain.p2p.node-name}")
@@ -58,6 +60,10 @@ public class NodeConfig {
 
     public InetAddress getNodeIp() {
         return nodeIp;
+    }
+
+    public String[] getPeers() {
+        return peers;
     }
 
     public String[] getNetworks() {
