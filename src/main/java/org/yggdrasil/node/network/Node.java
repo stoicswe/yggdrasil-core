@@ -63,6 +63,7 @@ public class Node {
                     }
                     if (!isAlreadyConnected) {
                         this.connectedNodes.put("peer-" + peerNum, n);
+                        new Thread(n).start();
                         logger.info("Peer: {} added.", ipString);
                         peerNum++;
                     } else {
