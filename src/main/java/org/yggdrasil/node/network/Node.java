@@ -77,7 +77,7 @@ public class Node {
             logger.info("Ready for connections.");
             client = serverSocket.accept();
             logger.info("Accepted new connection from: [{}].", client.getInetAddress());
-            if(nodeConfig.getActiveConnections() < connectedNodes.size()) {
+            if(connectedNodes.size() > nodeConfig.getActiveConnections()) {
                 try {
                     client.setKeepAlive(true);
                     client.setSoTimeout(nodeConfig.getTimeout());
