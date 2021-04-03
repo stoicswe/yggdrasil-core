@@ -26,7 +26,7 @@ public class BlockchainIO {
 
     Logger logger = LoggerFactory.getLogger(BlockchainIO.class);
 
-    private final String _CURRENT_DIRECTORY = System.getProperty("user.dir") + "/.ssblockchain-data";
+    private final String _CURRENT_DIRECTORY = System.getProperty("user.dir") + "/.blockchain-data/blockcahin";
     private final String _FILE_EXTENSION = ".0x";
 
     @PostConstruct

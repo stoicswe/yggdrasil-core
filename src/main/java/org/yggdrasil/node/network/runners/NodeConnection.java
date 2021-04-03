@@ -1,4 +1,4 @@
-package org.yggdrasil.node.network;
+package org.yggdrasil.node.network.runners;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -7,7 +7,6 @@ import org.yggdrasil.node.network.messages.Messenger;
 
 import java.io.*;
 import java.net.Socket;
-import java.nio.file.Path;
 
 /**
  * The node connection is a thread that reacts to incoming messages.
@@ -19,6 +18,7 @@ public class NodeConnection implements Runnable {
 
     Logger logger = LoggerFactory.getLogger(NodeConnection.class);
 
+    private String nodeIdentifier;
     private Messenger messenger;
     private Socket nodeSocket;
     private ObjectOutputStream objectOutputStream;
@@ -29,6 +29,18 @@ public class NodeConnection implements Runnable {
         this.messenger = messenger;
         this.objectOutputStream = new ObjectOutputStream(node.getOutputStream());
         this.objectInputStream = new ObjectInputStream(node.getInputStream());
+    }
+
+    protected void setNodeIdentifier(String nodeIdentifier) {
+        this.nodeIdentifier = nodeIdentifier;
+    }
+
+    public Socket getNodeSocket() {
+        return this.nodeSocket;
+    }
+
+    public String getNodeIdentifier() {
+        return nodeIdentifier;
     }
 
     public ObjectInputStream getNodeInput() {

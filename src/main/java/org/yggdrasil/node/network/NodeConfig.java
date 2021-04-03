@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
+import org.springframework.retry.annotation.EnableRetry;
 
 import javax.annotation.PostConstruct;
 import java.net.*;
@@ -26,18 +27,18 @@ public class NodeConfig {
 
     private UUID nodeIndex;
     private InetAddress nodeIp;
-    @Value("${blockchain.network}")
-    private String[] networks;
-    @Value("${blockchain.p2p.peers}")
-    private String[] peers;
-    @Value("${blockchain.p2p.port}")
-    private Integer port;
     @Value("${blockchain.p2p.node-name}")
     private String nodeName;
+    @Value("${blockchain.network}")
+    private String network;
+    @Value("${blockchain.p2p.port}")
+    private Integer port;
+    @Value("${blockchain.p2p.peers}")
+    private String[] peers;
     @Value("${blockchain.p2p.active-connections}")
     private Integer activeConnections;
-    @Value("${blockchain.p2p.timeout: 30000}")
-    private Integer timeout;
+    @Value("${blockchain.p2p.connection-timeout: 30000}")
+    private Integer connectionTimeout;
 
     @PostConstruct
     public void init() throws UnknownHostException, SocketException {
@@ -47,7 +48,8 @@ public class NodeConfig {
             // Set the nodes IP as seen on the local network
             // Will require port forward in order to open across internet
             this.nodeIp = InetAddress.getByName(socket.getLocalAddress().getHostAddress());
-            logger.info("Current node ip address: {}", nodeIp);
+            logger.debug("Current node ip address: {}", nodeIp);
+            logger.info("This node's identification: {}", this.getNodeIdentifier());
         }
     }
 
@@ -71,8 +73,8 @@ public class NodeConfig {
         return peers;
     }
 
-    public String[] getNetworks() {
-        return networks;
+    public String getNetwork() {
+        return network;
     }
 
     public Integer getPort() {
@@ -83,7 +85,7 @@ public class NodeConfig {
         return activeConnections;
     }
 
-    public Integer getTimeout() {
-        return timeout;
+    public Integer getConnectionTimeout() {
+        return connectionTimeout;
     }
 }

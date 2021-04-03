@@ -35,13 +35,13 @@ public enum RequestType {
         return value.toCharArray();
     }
 
-    public boolean containsValue(char[] value) {
+    public boolean isEqualToLiteral(char[] literal){
         return this.value.contentEquals(String.valueOf(value));
     }
 
     public static RequestType getByValue(char[] messageValue) {
         for(RequestType rt : values) {
-            if(rt.containsValue(messageValue)){
+            if(rt.isEqualToLiteral(messageValue)){
                 return rt;
             }
         }
