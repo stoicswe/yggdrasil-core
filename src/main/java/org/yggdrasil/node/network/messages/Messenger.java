@@ -53,12 +53,12 @@ public class Messenger {
     private HandshakeResponseMessageHandler handshakeResponseMessageHandler;
 
     public Message handleMessage(Message message) {
-        logger.trace("In handleMessage.");
+        logger.info("In handleMessage.");
         Message returnMessage = null;
         MessagePayload messagePayload = null;
         try {
             this.validator.isValidMessage(message);
-            logger.trace("Handling valid message.");
+            logger.info("Handling valid message.");
             // This should never be null, since the message is validated before it is handled.
             switch (Objects.requireNonNull(RequestType.equals(message.getRequest()))) {
                 case GET_DATA:
