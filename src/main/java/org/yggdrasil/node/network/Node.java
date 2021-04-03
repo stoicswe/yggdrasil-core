@@ -53,17 +53,21 @@ public class Node {
             try {
                 Socket s = new Socket(ipString, nodeConfig.getPort());
                 s.setKeepAlive(true);
-                //s.setSoTimeout(nodeConfig.getTimeout());
-                NodeConnection n = new NodeConnection(s, this.messenger);
-                boolean isAlreadyConnected = false;
-                for (NodeConnection nc : this.connectedNodes.values()) {
-                    if (n.equals(nc)) {
-                        isAlreadyConnected = true;
+                if(!s.getInetAddress().equals(nodeConfig.getNodeIp())) {
+                    NodeConnection n = new NodeConnection(s, this.messenger);
+                    boolean isAlreadyConnected = false;
+                    for (NodeConnection nc : this.connectedNodes.values()) {
+                        if (n.equals(nc)) {
+                            isAlreadyConnected = true;
+                        }
                     }
-                }
-                if (!isAlreadyConnected) {
-                    this.connectedNodes.put("peer-" + peerNum, n);
-                    peerNum++;
+                    if (!isAlreadyConnected) {
+                        this.connectedNodes.put("peer-" + peerNum, n);
+                        logger.info("Peer: {} added.", ipString);
+                        peerNum++;
+                    } else {
+                        s.close();
+                    }
                 } else {
                     s.close();
                 }
