@@ -123,6 +123,7 @@ public class HandshakeRunner implements Runnable {
                             // make the connection live
                             logger.info("Connection with {} going live.", this.nodeConnection.getNodeIdentifier());
                             new Thread(nodeConnection).start();
+                            return;
                         } else {
                             throw new HandshakeInitializeException("Handshake failed evaluation.");
                         }
@@ -197,6 +198,7 @@ public class HandshakeRunner implements Runnable {
                                         // make the connection live
                                         logger.info("Connection with {} going live.", this.nodeConnection.getNodeIdentifier());
                                         new Thread(nodeConnection).start();
+                                        return;
                                     } else {
                                         throw new HandshakeInitializeException("Peer failed to acknowledge handshake response.");
                                     }
