@@ -61,9 +61,9 @@ public class HandshakeRunner implements Runnable {
                         .setTimestamp(sendingTime)
                         .setServices(null)
                         .setSenderIdentifier(this.nodeConfig.getNodeIdentifier().toCharArray())
-                        .setSenderAddress(this.nodeConfig.getNodeIp().toString().toCharArray())
+                        .setSenderAddress(this.nodeConfig.getNodeIp().getHostAddress().toCharArray())
                         .setSenderPort(this.nodeConfig.getPort())
-                        .setReceiverAddress(this.nodeConnection.getNodeSocket().getInetAddress().toString().toCharArray())
+                        .setReceiverAddress(this.nodeConnection.getNodeSocket().getInetAddress().getHostAddress().toCharArray())
                         .setReceiverPort(this.nodeConnection.getNodeSocket().getPort())
                         .build();
                 // build the message
@@ -94,10 +94,10 @@ public class HandshakeRunner implements Runnable {
                                 // is less than 1 minute, proceed to validate the handshake
                                 ((rhm.getTimestamp() - sendingTime) < 60000) &&
                                 // verify the addresses of the reference to the current node
-                                (this.nodeConfig.getNodeIp().toString().contentEquals(String.valueOf(rhm.getReceiverAddress()))) &&
+                                (this.nodeConfig.getNodeIp().getHostAddress().contentEquals(String.valueOf(rhm.getReceiverAddress()))) &&
                                 (this.nodeConfig.getPort() == rhm.getReceiverPort()) &&
                                 // verify that this node is referencing the other node proper
-                                (nodeConnection.getNodeSocket().getInetAddress().toString().contentEquals(String.valueOf(rhm.getSenderAddress()))) &&
+                                (nodeConnection.getNodeSocket().getInetAddress().getHostAddress().contentEquals(String.valueOf(rhm.getSenderAddress()))) &&
                                 (nodeConnection.getNodeSocket().getPort() == rhm.getSenderPort())) {
                             // set the supported services
                             nodeConnection.setSupportedServices(rhm.getServices());
@@ -124,10 +124,10 @@ public class HandshakeRunner implements Runnable {
                             logger.info("Connection with {} going live.", this.nodeConnection.getNodeIdentifier());
                             new Thread(nodeConnection).start();
                         } else {
-                            throw new HandshakeInitializeException("Handshake failed. Handshake failed evaluation.");
+                            throw new HandshakeInitializeException("Handshake failed evaluation.");
                         }
                     } else {
-                        throw new HandshakeInitializeException("Handshake failed. Peer responded with wrong message type.");
+                        throw new HandshakeInitializeException("Peer responded with wrong message type.");
                     }
                 }
             } else if(nodeConnection.isConnected()) {
@@ -146,10 +146,10 @@ public class HandshakeRunner implements Runnable {
                                 // is less than 1 minute, proceed to validate the handshake
                                 ((((int) DateTimeUtil.getCurrentTimestamp().toEpochSecond()) - rhm.getTimestamp()) < 60000) &&
                                 // verify the addresses of the reference to the current node
-                                (this.nodeConfig.getNodeIp().toString().contentEquals(String.valueOf(rhm.getReceiverAddress()))) &&
+                                (this.nodeConfig.getNodeIp().getHostAddress().contentEquals(String.valueOf(rhm.getReceiverAddress()))) &&
                                 (this.nodeConfig.getPort() == rhm.getReceiverPort()) &&
                                 // verify that this node is referencing the other node proper
-                                (nodeConnection.getNodeSocket().getInetAddress().toString().contentEquals(String.valueOf(rhm.getSenderAddress()))) &&
+                                (nodeConnection.getNodeSocket().getInetAddress().getHostAddress().contentEquals(String.valueOf(rhm.getSenderAddress()))) &&
                                 (nodeConnection.getNodeSocket().getPort() == rhm.getSenderPort())) {
                             // set the supported services
                             nodeConnection.setSupportedServices(rhm.getServices());
@@ -198,21 +198,21 @@ public class HandshakeRunner implements Runnable {
                                         logger.info("Connection with {} going live.", this.nodeConnection.getNodeIdentifier());
                                         new Thread(nodeConnection).start();
                                     } else {
-                                        throw new HandshakeInitializeException("Handshake failed. Peer failed to acknowledge handshake response.");
+                                        throw new HandshakeInitializeException("Peer failed to acknowledge handshake response.");
                                     }
                                 } else {
-                                    throw new HandshakeInitializeException("Handshake failed. Peer responded to handshake response with wrong message type.");
+                                    throw new HandshakeInitializeException("Peer responded to handshake response with wrong message type.");
                                 }
                             }
                         } else {
-                            throw new HandshakeInitializeException("Handshake failed. Handshake failed evaluation.");
+                            throw new HandshakeInitializeException("Handshake failed evaluation.");
                         }
                     } else {
-                        throw new HandshakeInitializeException("Handshake failed. Peer responded with wrong message type.");
+                        throw new HandshakeInitializeException("Peer responded with wrong message type.");
                     }
                 }
             } else {
-                throw new HandshakeInitializeException("Handshake failed. Peer was disconnected.");
+                throw new HandshakeInitializeException("Peer was disconnected.");
             }
         } catch (IOException | ClassNotFoundException e) {
             logger.error("Socket input stream read failed with exception: {}", e.getMessage());
