@@ -64,7 +64,7 @@ public class HandshakeRunner implements Runnable {
                         .setSenderAddress(this.nodeConfig.getNodeIp().getHostAddress().toCharArray())
                         .setSenderPort(this.nodeConfig.getPort())
                         .setReceiverAddress(this.nodeConnection.getNodeSocket().getInetAddress().getHostAddress().toCharArray())
-                        .setReceiverPort(this.nodeConnection.getNodeSocket().getPort())
+                        .setReceiverPort(this.nodeConnection.getNodeSocket().getLocalPort())
                         .build();
                 // build the message
                 sentMessage = Message.Builder.newBuilder()
@@ -168,7 +168,7 @@ public class HandshakeRunner implements Runnable {
                                     .setSenderAddress(this.nodeConfig.getNodeIp().toString().toCharArray())
                                     .setSenderPort(this.nodeConfig.getPort())
                                     .setReceiverAddress(this.nodeConnection.getNodeSocket().getInetAddress().toString().toCharArray())
-                                    .setReceiverPort(this.nodeConnection.getNodeSocket().getPort())
+                                    .setReceiverPort(this.nodeConnection.getNodeSocket().getLocalPort())
                                     .build();
                             // build the message
                             sentMessage = Message.Builder.newBuilder()
