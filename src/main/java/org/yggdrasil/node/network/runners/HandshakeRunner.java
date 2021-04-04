@@ -95,7 +95,7 @@ public class HandshakeRunner implements Runnable {
                                 ((rhm.getTimestamp() - sendingTime) < 60000) &&
                                 // verify the addresses of the reference to the current node
                                 (this.nodeConfig.getNodeIp().getHostAddress().contentEquals(String.valueOf(rhm.getReceiverAddress()))) &&
-                                (this.nodeConfig.getPort() == rhm.getReceiverPort()) &&
+                                (this.nodeConnection.getNodeSocket().getLocalPort() == rhm.getReceiverPort()) &&
                                 // verify that this node is referencing the other node proper
                                 (nodeConnection.getNodeSocket().getInetAddress().getHostAddress().contentEquals(String.valueOf(rhm.getSenderAddress()))) &&
                                 (nodeConnection.getNodeSocket().getPort() == rhm.getSenderPort())) {
