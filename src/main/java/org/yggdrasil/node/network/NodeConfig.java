@@ -40,6 +40,8 @@ public class NodeConfig {
     @Value("${blockchain.p2p.connection-timeout: 30000}")
     private Integer connectionTimeout;
 
+    private Integer protocolVersion = 1;
+
     @PostConstruct
     public void init() throws UnknownHostException, SocketException {
         this.nodeIndex = UUID.randomUUID();
@@ -87,5 +89,9 @@ public class NodeConfig {
 
     public Integer getConnectionTimeout() {
         return connectionTimeout;
+    }
+
+    public Integer getProtocolVersion() {
+        return protocolVersion;
     }
 }

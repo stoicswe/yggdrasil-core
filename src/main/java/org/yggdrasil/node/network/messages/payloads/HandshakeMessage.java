@@ -73,6 +73,10 @@ public class HandshakeMessage implements MessagePayload {
         return senderPort;
     }
 
+    public char[] getSenderIdentifier() {
+        return senderIdentifier;
+    }
+
     @Override
     public byte[] getDataBytes() {
         byte[] messageBytes = new byte[0];

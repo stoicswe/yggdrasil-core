@@ -6,6 +6,7 @@ import org.yggdrasil.node.network.messages.Message;
 import org.yggdrasil.node.network.messages.Messenger;
 
 import java.io.*;
+import java.math.BigInteger;
 import java.net.Socket;
 
 /**
@@ -23,6 +24,7 @@ public class NodeConnection implements Runnable {
     private Socket nodeSocket;
     private ObjectOutputStream objectOutputStream;
     private ObjectInputStream objectInputStream;
+    private BigInteger supportedServices;
 
     public NodeConnection(Socket node, Messenger messenger) throws IOException {
         this.nodeSocket = node;
@@ -33,6 +35,10 @@ public class NodeConnection implements Runnable {
 
     protected void setNodeIdentifier(String nodeIdentifier) {
         this.nodeIdentifier = nodeIdentifier;
+    }
+
+    protected void setSupportedServices(BigInteger supportedServices) {
+        this.supportedServices = supportedServices;
     }
 
     public Socket getNodeSocket() {
@@ -49,6 +55,10 @@ public class NodeConnection implements Runnable {
 
     public ObjectOutputStream getNodeOutput() {
         return this.objectOutputStream;
+    }
+
+    public BigInteger getSupportedServices() {
+        return this.supportedServices;
     }
 
     public boolean isConnected() {
