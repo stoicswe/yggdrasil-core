@@ -62,9 +62,9 @@ public class HandshakeRunner implements Runnable {
                         .setServices(null)
                         .setSenderIdentifier(this.nodeConfig.getNodeIdentifier().toCharArray())
                         .setSenderAddress(this.nodeConfig.getNodeIp().getHostAddress().toCharArray())
-                        .setSenderPort(this.nodeConfig.getPort())
+                        .setSenderPort(this.nodeConnection.getNodeSocket().getLocalPort())
                         .setReceiverAddress(this.nodeConnection.getNodeSocket().getInetAddress().getHostAddress().toCharArray())
-                        .setReceiverPort(this.nodeConnection.getNodeSocket().getLocalPort())
+                        .setReceiverPort(this.nodeConnection.getNodeSocket().getPort())
                         .build();
                 // build the message
                 sentMessage = Message.Builder.newBuilder()
@@ -166,9 +166,9 @@ public class HandshakeRunner implements Runnable {
                                     .setServices(null)
                                     .setSenderIdentifier(this.nodeConfig.getNodeIdentifier().toCharArray())
                                     .setSenderAddress(this.nodeConfig.getNodeIp().toString().toCharArray())
-                                    .setSenderPort(this.nodeConfig.getPort())
+                                    .setSenderPort(this.nodeConnection.getNodeSocket().getLocalPort())
                                     .setReceiverAddress(this.nodeConnection.getNodeSocket().getInetAddress().toString().toCharArray())
-                                    .setReceiverPort(this.nodeConnection.getNodeSocket().getLocalPort())
+                                    .setReceiverPort(this.nodeConnection.getNodeSocket().getPort())
                                     .build();
                             // build the message
                             sentMessage = Message.Builder.newBuilder()
