@@ -36,7 +36,7 @@ public enum RequestType {
     }
 
     public boolean isEqualToLiteral(char[] literal){
-        return this.value.contentEquals(String.valueOf(value));
+        return this.value.contentEquals(String.valueOf(literal));
     }
 
     public static RequestType getByValue(char[] messageValue) {

@@ -57,23 +57,7 @@ public class Node {
                 Socket peer = new Socket(ipString, nodeConfig.getPort());
                 peer.setKeepAlive(true);
                 if(!peer.getInetAddress().equals(nodeConfig.getNodeIp())) {
-                    //NodeConnection n = new NodeConnection(peer, this.messenger);
                     new Thread(new HandshakeRunner(this, this.nodeConfig, this.messenger, new NodeConnection(peer, this.messenger), true)).start();
-                    /*
-                    boolean isAlreadyConnected = false;
-                    for (NodeConnection nc : this.connectedNodes.values()) {
-                        if (n.equals(nc)) {
-                            isAlreadyConnected = true;
-                        }
-                    }
-                    if (!isAlreadyConnected) {
-                        this.connectedNodes.put("peer-" + peerNum, n);
-                        new Thread(n).start();
-                        logger.info("Peer: {} added.", ipString);
-                        peerNum++;
-                    } else {
-                        s.close();
-                    }*/
                 } else {
                     peer.close();
                 }
@@ -97,10 +81,6 @@ public class Node {
                     try {
                         logger.info("Attempting handshake with: [{}]", peer.getInetAddress());
                         new Thread(new HandshakeRunner(this, this.nodeConfig, this.messenger, new NodeConnection(peer, this.messenger), false)).start();
-                        /*connectedNodes.put("peer-" + cliNum, new NodeConnection(client, this.messenger));
-                        new Thread(connectedNodes.get("peer-" + cliNum)).start();
-                        logger.info("Added peer: {}", "peer-" + cliNum);
-                        cliNum++;*/
                     } catch (Exception e) {
                         logger.error("Error while attempting handshake: {}", e.getMessage());
                         peer.close();
