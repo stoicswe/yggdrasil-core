@@ -22,6 +22,8 @@ public class AddressPayload implements MessagePayload {
     @NotNull
     private final BigInteger services;
     @NotNull
+    private final char[] nodeIdentifier;
+    @NotNull
     private final char[] ipAddress;
     @NotNull
     private final int port;
@@ -29,6 +31,7 @@ public class AddressPayload implements MessagePayload {
     private AddressPayload(Builder builder) {
         this.timestamp = builder.timestamp;
         this.services = builder.services;
+        this.nodeIdentifier = builder.nodeIdentifier;
         this.ipAddress = builder.ipAddress;
         this.port = builder.port;
     }
@@ -39,6 +42,10 @@ public class AddressPayload implements MessagePayload {
 
     public BigInteger getServices() {
         return services;
+    }
+
+    public char[] getNodeIdentifier() {
+        return this.nodeIdentifier;
     }
 
     public char[] getIpAddress() {
@@ -54,6 +61,7 @@ public class AddressPayload implements MessagePayload {
         byte[] messageBytes = new byte[0];
         messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(timestamp));
         messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(services));
+        messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(nodeIdentifier));
         messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(ipAddress));
         messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(port));
         return messageBytes;
@@ -67,6 +75,7 @@ public class AddressPayload implements MessagePayload {
 
         private int timestamp;
         private BigInteger services;
+        private char[] nodeIdentifier;
         private char[] ipAddress;
         private int port;
 
@@ -83,6 +92,11 @@ public class AddressPayload implements MessagePayload {
 
         public Builder setServices(BigInteger services) {
             this.services = services;
+            return this;
+        }
+
+        public Builder setNodeIdentifier(char[] nodeIdentifier) {
+            this.nodeIdentifier = nodeIdentifier;
             return this;
         }
 

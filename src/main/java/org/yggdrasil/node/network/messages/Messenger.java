@@ -7,7 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.yggdrasil.core.utils.CryptoHasher;
 import org.yggdrasil.node.network.Node;
-import org.yggdrasil.node.network.NodeConnection;
+import org.yggdrasil.node.network.runners.NodeConnection;
 import org.yggdrasil.node.network.exceptions.NodeDisconnectException;
 import org.yggdrasil.node.network.messages.enums.NetworkType;
 import org.yggdrasil.node.network.messages.enums.RequestType;
@@ -55,6 +55,10 @@ public class Messenger {
     private HandshakeOfferMessageHandler handshakeOfferMessageHandler;
     @Autowired
     private HandshakeResponseMessageHandler handshakeResponseMessageHandler;
+
+    public MessageValidator getValidator() {
+        return this.validator;
+    }
 
     public Message handleMessage(Message message) {
         logger.info("In handleMessage.");
@@ -135,14 +139,13 @@ public class Messenger {
         return returnMessage;
     }
 
-    public void sendTargetMessage(String target, Message message) throws IOException {
-        NodeConnection nc = node.getConnectedNodes().get(target);
-        if(nc != null) {
-            if(nc.isConnected()) {
-                nc.getNodeOutput().writeObject(message);
+    public void sendTargetMessage(NodeConnection nodeConnection, Message message) throws IOException {
+        if(nodeConnection != null) {
+            if(nodeConnection.isConnected()) {
+                nodeConnection.getNodeOutput().writeObject(message);
             } else {
-                node.getConnectedNodes().remove(target);
-                throw new NodeDisconnectException(String.format("Peer %s was disconnected and message could not be transmitted.", target));
+                node.getConnectedNodes().remove(nodeConnection.getNodeIdentifier());
+                throw new NodeDisconnectException(String.format("Peer %s was disconnected and message could not be transmitted.", nodeConnection.getNodeIdentifier()));
             }
         } else {
             logger.warn("Target peer does not exist.");

@@ -1,4 +1,4 @@
-package org.yggdrasil.node.network;
+package org.yggdrasil.node.network.runners;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -6,8 +6,8 @@ import org.yggdrasil.node.network.messages.Message;
 import org.yggdrasil.node.network.messages.Messenger;
 
 import java.io.*;
+import java.math.BigInteger;
 import java.net.Socket;
-import java.nio.file.Path;
 
 /**
  * The node connection is a thread that reacts to incoming messages.
@@ -19,10 +19,12 @@ public class NodeConnection implements Runnable {
 
     Logger logger = LoggerFactory.getLogger(NodeConnection.class);
 
+    private String nodeIdentifier;
     private Messenger messenger;
     private Socket nodeSocket;
     private ObjectOutputStream objectOutputStream;
     private ObjectInputStream objectInputStream;
+    private BigInteger supportedServices;
 
     public NodeConnection(Socket node, Messenger messenger) throws IOException {
         this.nodeSocket = node;
@@ -31,12 +33,32 @@ public class NodeConnection implements Runnable {
         this.objectInputStream = new ObjectInputStream(node.getInputStream());
     }
 
+    protected void setNodeIdentifier(String nodeIdentifier) {
+        this.nodeIdentifier = nodeIdentifier;
+    }
+
+    protected void setSupportedServices(BigInteger supportedServices) {
+        this.supportedServices = supportedServices;
+    }
+
+    public Socket getNodeSocket() {
+        return this.nodeSocket;
+    }
+
+    public String getNodeIdentifier() {
+        return nodeIdentifier;
+    }
+
     public ObjectInputStream getNodeInput() {
         return this.objectInputStream;
     }
 
     public ObjectOutputStream getNodeOutput() {
         return this.objectOutputStream;
+    }
+
+    public BigInteger getSupportedServices() {
+        return this.supportedServices;
     }
 
     public boolean isConnected() {

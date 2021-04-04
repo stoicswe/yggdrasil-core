@@ -1,7 +1,8 @@
-package org.yggdrasil.node.network;
+package org.yggdrasil.node.network.runners;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yggdrasil.node.network.Node;
 
 import java.io.IOException;
 
@@ -26,7 +27,6 @@ public class NodeRunner implements Runnable {
     @Override
     public void run() {
         try {
-            this.node.establishConnections();
             logger.info("Opening listener.");
             this.node.startListening();
         } catch (IOException | ClassNotFoundException e) {

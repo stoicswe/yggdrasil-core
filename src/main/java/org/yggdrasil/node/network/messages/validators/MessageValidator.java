@@ -4,7 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.annotation.Validated;
-import org.yggdrasil.core.exception.InvalidMessageException;
+import org.yggdrasil.node.network.exceptions.InvalidMessageException;
 import org.yggdrasil.core.utils.CryptoHasher;
 import org.yggdrasil.node.network.messages.Message;
 import org.yggdrasil.node.network.messages.MessagePayload;
@@ -30,7 +30,7 @@ public class MessageValidator {
         this.validateChecksum(message.getPayload(), message.getChecksum());
     }
 
-    private void validateChecksum(MessagePayload payload, byte[] messageChecksum) throws NoSuchAlgorithmException {
+    private void validateChecksum(MessagePayload payload, byte[] messageChecksum) throws NoSuchAlgorithmException, InvalidMessageException {
         byte[] payloadHash = CryptoHasher.hash(payload);
         try {
             if(messageChecksum.length == payloadHash.length) {

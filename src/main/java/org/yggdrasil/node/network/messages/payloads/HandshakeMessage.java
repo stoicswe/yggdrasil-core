@@ -31,6 +31,8 @@ public class HandshakeMessage implements MessagePayload {
     private final char[] senderAddress;
     @NotNull
     private final int senderPort;
+    @NotNull
+    private final char[] senderIdentifier;
 
     private HandshakeMessage(Builder builder) {
         this.version = builder.version;
@@ -40,6 +42,7 @@ public class HandshakeMessage implements MessagePayload {
         this.receiverPort = builder.receiverPort;
         this.senderAddress = builder.senderAddress;
         this.senderPort = builder.senderPort;
+        this.senderIdentifier = builder.senderIdentifier;
     }
 
     public int getVersion() {
@@ -70,6 +73,10 @@ public class HandshakeMessage implements MessagePayload {
         return senderPort;
     }
 
+    public char[] getSenderIdentifier() {
+        return senderIdentifier;
+    }
+
     @Override
     public byte[] getDataBytes() {
         byte[] messageBytes = new byte[0];
@@ -79,6 +86,7 @@ public class HandshakeMessage implements MessagePayload {
         messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(receiverAddress));
         messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(receiverPort));
         messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(senderAddress));
+        messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(senderIdentifier));
         messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(senderPort));
         return messageBytes;
     }
@@ -96,6 +104,7 @@ public class HandshakeMessage implements MessagePayload {
         private int receiverPort;
         private char[] senderAddress;
         private int senderPort;
+        private char[] senderIdentifier;
 
         public static Builder newBuilder() {
             return new Builder();
@@ -133,6 +142,11 @@ public class HandshakeMessage implements MessagePayload {
 
         public Builder setSenderPort(int senderPort) {
             this.senderPort = senderPort;
+            return this;
+        }
+
+        public Builder setSenderIdentifier(char[] senderIdentifier) {
+            this.senderIdentifier = senderIdentifier;
             return this;
         }
 

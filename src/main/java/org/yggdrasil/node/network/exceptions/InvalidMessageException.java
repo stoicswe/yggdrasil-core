@@ -1,4 +1,4 @@
-package org.yggdrasil.core.exception;
+package org.yggdrasil.node.network.exceptions;
 
 /**
  * The invalid message exception is used for passing certain types
