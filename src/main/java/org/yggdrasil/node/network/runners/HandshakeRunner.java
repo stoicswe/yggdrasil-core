@@ -165,9 +165,9 @@ public class HandshakeRunner implements Runnable {
                                     .setTimestamp(sendingTime)
                                     .setServices(null)
                                     .setSenderIdentifier(this.nodeConfig.getNodeIdentifier().toCharArray())
-                                    .setSenderAddress(this.nodeConfig.getNodeIp().toString().toCharArray())
+                                    .setSenderAddress(this.nodeConfig.getNodeIp().getHostAddress().toCharArray())
                                     .setSenderPort(this.nodeConnection.getNodeSocket().getLocalPort())
-                                    .setReceiverAddress(this.nodeConnection.getNodeSocket().getInetAddress().toString().toCharArray())
+                                    .setReceiverAddress(this.nodeConnection.getNodeSocket().getInetAddress().getHostAddress().toCharArray())
                                     .setReceiverPort(this.nodeConnection.getNodeSocket().getPort())
                                     .build();
                             // build the message
