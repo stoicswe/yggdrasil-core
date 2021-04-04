@@ -53,7 +53,7 @@ public class HandshakeRunner implements Runnable {
             Message receivedMessage;
             Message sentMessage;
             if(initializeHandShake && nodeConnection.isConnected()) {
-                logger.debug("Initializing the handshake with [{}]", this.nodeConnection.getNodeSocket().getInetAddress());
+                logger.info("Initializing the handshake with [{}]", this.nodeConnection.getNodeSocket().getInetAddress());
                 // build the handshake
                 int sendingTime = (int) DateTimeUtil.getCurrentTimestamp().toEpochSecond();
                 HandshakeMessage offerHandshake = HandshakeMessage.Builder.newBuilder()
@@ -74,17 +74,17 @@ public class HandshakeRunner implements Runnable {
                         .setMessagePayload(offerHandshake)
                         .setChecksum(CryptoHasher.hash(offerHandshake))
                         .build();
-                logger.debug("Offering handshake to [{}]", this.nodeConnection.getNodeSocket().getInetAddress());
+                logger.info("Offering handshake to [{}]", this.nodeConnection.getNodeSocket().getInetAddress());
                 // send the message containing the handshake payload
                 this.messenger.sendTargetMessage(this.nodeConnection, sentMessage);
                 // wait for the response
-                logger.debug("Waiting for handshake response from [{}]", this.nodeConnection.getNodeSocket().getInetAddress());
+                logger.info("Waiting for handshake response from [{}]", this.nodeConnection.getNodeSocket().getInetAddress());
                 while((receivedMessage = (Message) this.nodeConnection.getNodeInput().readObject()) != null) {
-                    logger.debug("Received a response from [{}]", this.nodeConnection.getNodeSocket().getInetAddress());
+                    logger.info("Received a response from [{}]", this.nodeConnection.getNodeSocket().getInetAddress());
                     // validate the incoming message
                     messenger.getValidator().isValidMessage(receivedMessage);
                     // complete the handshake
-                    logger.debug("Verifying handshake response from [{}]", this.nodeConnection.getNodeSocket().getInetAddress());
+                    logger.info("Verifying handshake response from [{}]", this.nodeConnection.getNodeSocket().getInetAddress());
                     if(RequestType.HANDSHAKE_RESP.isEqualToLiteral(receivedMessage.getRequest())){
                         // verify the handshake
                         HandshakeMessage rhm = (HandshakeMessage) receivedMessage.getPayload();
@@ -104,10 +104,10 @@ public class HandshakeRunner implements Runnable {
                             // set the identifier
                             nodeConnection.setNodeIdentifier(String.valueOf(rhm.getSenderIdentifier()));
                             // add the node connection to the pool
-                            logger.debug("Handshake validated from [{}], identified as: '{}'", this.nodeConnection.getNodeSocket().getInetAddress(), nodeConnection.getNodeIdentifier());
+                            logger.info("Handshake validated from [{}], identified as: '{}'", this.nodeConnection.getNodeSocket().getInetAddress(), nodeConnection.getNodeIdentifier());
                             this.node.getConnectedNodes().put(nodeConnection.getNodeIdentifier(), nodeConnection);
                             // make and send acknowledgement message
-                            logger.debug("Build an acknowledgement to send to {}", nodeConnection.getNodeIdentifier());
+                            logger.info("Build an acknowledgement to send to {}", nodeConnection.getNodeIdentifier());
                             AcknowledgeMessage ackPayload = AcknowledgeMessage.Builder.newBuilder()
                                     .setAcknowledgeChecksum(receivedMessage.getChecksum())
                                     .build();
@@ -119,9 +119,9 @@ public class HandshakeRunner implements Runnable {
                                     .setChecksum(CryptoHasher.hash(ackPayload))
                                     .build();
                             this.messenger.sendTargetMessage(nodeConnection, ackMessage);
-                            logger.debug("Handshake response acknowledgement sent to {}", this.nodeConnection.getNodeIdentifier());
+                            logger.info("Handshake response acknowledgement sent to {}", this.nodeConnection.getNodeIdentifier());
                             // make the connection live
-                            logger.debug("Connection with {} going live.", this.nodeConnection.getNodeIdentifier());
+                            logger.info("Connection with {} going live.", this.nodeConnection.getNodeIdentifier());
                             new Thread(nodeConnection).start();
                         } else {
                             throw new HandshakeInitializeException("Handshake failed. Handshake failed evaluation.");
@@ -132,11 +132,11 @@ public class HandshakeRunner implements Runnable {
                 }
             } else if(nodeConnection.isConnected()) {
                 while ((receivedMessage = (Message) this.nodeConnection.getNodeInput().readObject()) != null) {
-                    logger.debug("Received a message from [{}]", this.nodeConnection.getNodeSocket().getInetAddress());
+                    logger.info("Received a message from [{}]", this.nodeConnection.getNodeSocket().getInetAddress());
                     // validate the incoming message
                     messenger.getValidator().isValidMessage(receivedMessage);
                     // complete the handshake
-                    logger.debug("Verifying handshake offer from [{}]", this.nodeConnection.getNodeSocket().getInetAddress());
+                    logger.info("Verifying handshake offer from [{}]", this.nodeConnection.getNodeSocket().getInetAddress());
                     if(RequestType.HANDSHAKE_OFFR.isEqualToLiteral(receivedMessage.getRequest())){
                         // verify the handshake
                         HandshakeMessage rhm = (HandshakeMessage) receivedMessage.getPayload();
@@ -156,9 +156,9 @@ public class HandshakeRunner implements Runnable {
                             // set the identifier
                             nodeConnection.setNodeIdentifier(String.valueOf(rhm.getSenderIdentifier()));
                             // add the node connection to the pool
-                            logger.debug("Handshake offer validated from [{}], identified as: '{}'", this.nodeConnection.getNodeSocket().getInetAddress(), nodeConnection.getNodeIdentifier());
+                            logger.info("Handshake offer validated from [{}], identified as: '{}'", this.nodeConnection.getNodeSocket().getInetAddress(), nodeConnection.getNodeIdentifier());
                             // respond to the request for an offer to handshake
-                            logger.debug("Initializing the handshake response with [{}]", this.nodeConnection.getNodeIdentifier());
+                            logger.info("Initializing the handshake response with [{}]", this.nodeConnection.getNodeIdentifier());
                             int sendingTime = (int) DateTimeUtil.getCurrentTimestamp().toEpochSecond();
                             HandshakeMessage offerHandshake = HandshakeMessage.Builder.newBuilder()
                                     .setVersion(1)
@@ -178,16 +178,16 @@ public class HandshakeRunner implements Runnable {
                                     .setMessagePayload(offerHandshake)
                                     .setChecksum(CryptoHasher.hash(offerHandshake))
                                     .build();
-                            logger.debug("Sending handshake response to [{}]", this.nodeConnection.getNodeIdentifier());
+                            logger.info("Sending handshake response to [{}]", this.nodeConnection.getNodeIdentifier());
                             // send the message containing the handshake payload
                             this.messenger.sendTargetMessage(this.nodeConnection, sentMessage);
                             // wait for an acknowledgement
-                            logger.debug("Waiting for handshake acknowledgement from [{}]", this.nodeConnection.getNodeIdentifier());
+                            logger.info("Waiting for handshake acknowledgement from [{}]", this.nodeConnection.getNodeIdentifier());
                             while ((receivedMessage = (Message) this.nodeConnection.getNodeInput().readObject()) != null) {
-                                logger.debug("Received message from {}", this.nodeConnection.getNodeIdentifier());
+                                logger.info("Received message from {}", this.nodeConnection.getNodeIdentifier());
                                 // validate the message
                                 messenger.getValidator().isValidMessage(receivedMessage);
-                                logger.debug("Verifying acknowledgement from [{}]", this.nodeConnection.getNodeIdentifier());
+                                logger.info("Verifying acknowledgement from [{}]", this.nodeConnection.getNodeIdentifier());
                                 if(RequestType.ACKNOWLEDGE.isEqualToLiteral(receivedMessage.getRequest())){
                                     // get the acknowledgment
                                     AcknowledgeMessage rackm = (AcknowledgeMessage) receivedMessage.getPayload();
@@ -195,7 +195,7 @@ public class HandshakeRunner implements Runnable {
                                     if(CryptoHasher.humanReadableHash(sentMessage.getChecksum()).contentEquals(CryptoHasher.humanReadableHash(rackm.getAcknowledgeChecksum()))){
                                         this.node.getConnectedNodes().put(nodeConnection.getNodeIdentifier(), nodeConnection);
                                         // make the connection live
-                                        logger.debug("Connection with {} going live.", this.nodeConnection.getNodeIdentifier());
+                                        logger.info("Connection with {} going live.", this.nodeConnection.getNodeIdentifier());
                                         new Thread(nodeConnection).start();
                                     } else {
                                         throw new HandshakeInitializeException("Handshake failed. Peer failed to acknowledge handshake response.");
@@ -215,7 +215,7 @@ public class HandshakeRunner implements Runnable {
                 throw new HandshakeInitializeException("Handshake failed. Peer was disconnected.");
             }
         } catch (IOException | ClassNotFoundException e) {
-            logger.error("Socket input stream read failed with exception: {}", e.getLocalizedMessage());
+            logger.error("Socket input stream read failed with exception: {}", e.getMessage());
             try {
                 nodeConnection.getNodeSocket().close();
             } catch (IOException ioException) { }
@@ -225,7 +225,7 @@ public class HandshakeRunner implements Runnable {
                 nodeConnection.getNodeSocket().close();
             } catch (IOException ioException) { }
         } catch (HandshakeInitializeException | InvalidMessageException e) {
-            logger.error("Handshake failed: {}", e.getMessage());
+            logger.error("Handshake failed: {}", e.getLocalizedMessage());
             try {
                 nodeConnection.getNodeSocket().close();
             } catch (IOException ioException) { }

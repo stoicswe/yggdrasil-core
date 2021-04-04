@@ -57,7 +57,7 @@ public class Node {
                 Socket peer = new Socket(ipString, nodeConfig.getPort());
                 peer.setKeepAlive(true);
                 if(!peer.getInetAddress().equals(nodeConfig.getNodeIp())) {
-                    NodeConnection n = new NodeConnection(peer, this.messenger);
+                    //NodeConnection n = new NodeConnection(peer, this.messenger);
                     new Thread(new HandshakeRunner(this, this.nodeConfig, this.messenger, new NodeConnection(peer, this.messenger), true)).start();
                     /*
                     boolean isAlreadyConnected = false;
