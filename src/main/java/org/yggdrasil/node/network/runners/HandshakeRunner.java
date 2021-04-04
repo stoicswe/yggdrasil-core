@@ -130,7 +130,7 @@ public class HandshakeRunner implements Runnable {
                         throw new HandshakeInitializeException("Peer responded with wrong message type.");
                     }
                 }
-            } else if(nodeConnection.isConnected()) {
+            } else if(!initializeHandShake && nodeConnection.isConnected()) {
                 while ((receivedMessage = (Message) this.nodeConnection.getNodeInput().readObject()) != null) {
                     logger.info("Received a message from [{}]", this.nodeConnection.getNodeSocket().getInetAddress());
                     // validate the incoming message
