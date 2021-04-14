@@ -2,6 +2,7 @@ package org.yggdrasil.node.network.messages.handlers;
 
 import org.yggdrasil.node.network.messages.Message;
 import org.yggdrasil.node.network.messages.MessagePayload;
+import org.yggdrasil.node.network.runners.NodeConnection;
 
 /**
  * The message handler interface ensures that all message handlers
@@ -13,6 +14,6 @@ import org.yggdrasil.node.network.messages.MessagePayload;
  */
 public interface MessageHandler<MessagePayload> {
 
-    public org.yggdrasil.node.network.messages.MessagePayload handleMessagePayload(MessagePayload payload);
+    public org.yggdrasil.node.network.messages.MessagePayload handleMessagePayload(MessagePayload payload, NodeConnection nodeConnection);
 
 }
