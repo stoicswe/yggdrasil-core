@@ -83,9 +83,7 @@ public class NodeConnection implements Runnable {
             try {
                 Message m;
                 while((m = (Message) this.objectInputStream.readObject()) != null) {
-                    Message rm = this.messenger.handleMessage(m);
-                    // Write the return message
-                    this.objectOutputStream.writeObject(rm);
+                    this.messenger.handleMessage(m, this);
                 }
             } catch (IOException | ClassNotFoundException e) {
                 logger.error("Socket input stream read failed with exception: {}", e.getLocalizedMessage());

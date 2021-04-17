@@ -55,6 +55,20 @@ public class Message implements Serializable {
         return checksum;
     }
 
+    public boolean compareChecksum(byte[] checkSum) {
+        try {
+            for(int i = 0; i < checkSum.length; i++){
+                if(checkSum[i] != this.checksum[i]){
+                    return false;
+                }
+            }
+        } catch (IndexOutOfBoundsException e) {
+            return false;
+        }
+
+        return true;
+    }
+
     @Override
     public String toString() {
         return String.format("Network: [%s], Request; [%s], Checksum: [%s]", String.copyValueOf(network), String.valueOf(request), String.valueOf(checksum));

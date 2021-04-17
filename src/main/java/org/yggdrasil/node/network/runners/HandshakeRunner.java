@@ -76,7 +76,7 @@ public class HandshakeRunner implements Runnable {
                         .build();
                 logger.info("Offering handshake to [{}]", this.nodeConnection.getNodeSocket().getInetAddress());
                 // send the message containing the handshake payload
-                this.messenger.sendTargetMessage(this.nodeConnection, sentMessage);
+                this.messenger.sendTargetMessage(sentMessage, this.nodeConnection);
                 // wait for the response
                 logger.info("Waiting for handshake response from [{}]", this.nodeConnection.getNodeSocket().getInetAddress());
                 while((receivedMessage = (Message) this.nodeConnection.getNodeInput().readObject()) != null) {
@@ -118,7 +118,7 @@ public class HandshakeRunner implements Runnable {
                                     .setMessagePayload(ackPayload)
                                     .setChecksum(CryptoHasher.hash(ackPayload))
                                     .build();
-                            this.messenger.sendTargetMessage(nodeConnection, ackMessage);
+                            this.messenger.sendTargetMessage(ackMessage, this.nodeConnection);
                             logger.info("Handshake response acknowledgement sent to {}", this.nodeConnection.getNodeIdentifier());
                             // make the connection live
                             logger.info("Connection with {} going live.", this.nodeConnection.getNodeIdentifier());
@@ -181,7 +181,7 @@ public class HandshakeRunner implements Runnable {
                                     .build();
                             logger.info("Sending handshake response to [{}]", this.nodeConnection.getNodeIdentifier());
                             // send the message containing the handshake payload
-                            this.messenger.sendTargetMessage(this.nodeConnection, sentMessage);
+                            this.messenger.sendTargetMessage(sentMessage, this.nodeConnection);
                             // wait for an acknowledgement
                             logger.info("Waiting for handshake acknowledgement from [{}]", this.nodeConnection.getNodeIdentifier());
                             while ((receivedMessage = (Message) this.nodeConnection.getNodeInput().readObject()) != null) {
