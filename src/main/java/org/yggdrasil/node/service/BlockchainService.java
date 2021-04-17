@@ -15,11 +15,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.yggdrasil.node.network.NodeConfig;
 import org.yggdrasil.node.network.messages.Message;
 import org.yggdrasil.node.network.messages.Messenger;
 import org.yggdrasil.node.network.messages.enums.NetworkType;
 import org.yggdrasil.node.network.messages.enums.RequestType;
 import org.yggdrasil.node.network.messages.payloads.PingPongMessage;
+import org.yggdrasil.node.network.messages.payloads.TransactionMessage;
 
 import javax.security.auth.DestroyFailedException;
 import java.io.IOException;
@@ -52,6 +54,8 @@ public class BlockchainService {
 
     @Autowired
     private Node node;
+    @Autowired
+    private NodeConfig nodeConfig;
     @Autowired
     private Messenger messenger;
     @Autowired
@@ -94,9 +98,26 @@ public class BlockchainService {
      *
      * @param transaction
      */
-    public void addNewTransaction(Transaction transaction) {
+    public void addNewTransaction(Transaction transaction) throws IOException, NoSuchAlgorithmException {
         logger.info("New transaction: {} [{} -> {} = {}]", transaction.toString(), transaction.getOrigin(), transaction.getDestination(), transaction.getAmount());
         this.mempool.putTransaction(transaction);
+        TransactionMessage txnPayload = TransactionMessage.Builder.newBuilder()
+                .setIndex(transaction.getIndex().toString().toCharArray())
+                .setTimestamp((int) transaction.getTimestamp().toEpochSecond())
+                .setValue(transaction.getAmount())
+                .setDestinationAddress(transaction.getDestination())
+                .setOriginAddress(transaction.getOrigin())
+                .setTransactionHash(transaction.getTxnHash())
+                .setSignature(transaction.getSignature())
+                .build();
+        Message txnMsg = Message.Builder.newBuilder()
+                .setNetwork(NetworkType.valueOf(nodeConfig.getNetwork()))
+                .setRequestType(RequestType.DATA_RESP)
+                .setMessagePayload(txnPayload)
+                .setPayloadSize(BigInteger.valueOf(GraphLayout.parseInstance(txnPayload).totalSize()))
+                .setChecksum(CryptoHasher.hash(txnPayload))
+                .build();
+        this.messenger.sendBroadcastMessage(txnMsg);
     }
 
     /**

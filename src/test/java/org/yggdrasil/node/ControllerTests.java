@@ -5,8 +5,11 @@ import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.yggdrasil.core.ledger.chain.Blockchain;
+import org.yggdrasil.core.ledger.transaction.Mempool;
 import org.yggdrasil.core.ledger.transaction.Transaction;
 import org.yggdrasil.node.controller.BlockchainController;
+import org.yggdrasil.node.network.NodeConfig;
+import org.yggdrasil.node.network.messages.Messenger;
 import org.yggdrasil.node.service.BlockchainService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -34,39 +37,20 @@ public class ControllerTests {
     private Blockchain blockchain;
 
     @MockBean
+    private Mempool mempool;
+
+    @MockBean
+    private Messenger messenger;
+
+    @MockBean
+    private NodeConfig nodeConfig;
+
+    @MockBean
     private BlockchainService service;
 
     @Autowired
     private ObjectMapper objectMapper;
 
-    @Test
-    void testTransactionSubmit() throws Exception {
-        mockMvc.perform(put("/transaction")
-        .contentType(MediaType.APPLICATION_JSON)
-        .content("{\"origin\":\"TestAddr\",\"destination\":\"TestAddr2\",\"amount\": 0.12345,\"note\":\"Test\"}"))
-        .andExpect(status().isCreated());
-    }
-
-    @Test
-    void testGetTransaction() throws Exception {
-        when(service.getTransaction()).thenReturn(
-                Transaction.Builder.newSSTransactionBuilder()
-                .setOrigin("TestAddress")
-                .setDestination("TestDestination")
-                .setValue(new BigDecimal("0.1234"))
-                .setNote("Test transaction")
-                .build());
-
-        MvcResult result = mockMvc.perform(get("/transaction")
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk()).andReturn();
-
-        String responseBody = result.getResponse().getContentAsString();
-
-        assertThat(responseBody).contains("\"origin\":\"TestAddress\"");
-        assertThat(responseBody).contains("\"destination\":\"TestDestination\"");
-        assertThat(responseBody).contains("\"amount\":0.1234");
-        assertThat(responseBody).contains("\"note\":\"Test transaction\"");
-    }
+    //write the tests
 
 }

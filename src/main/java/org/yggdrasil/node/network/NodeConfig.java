@@ -9,6 +9,7 @@ import org.springframework.retry.annotation.EnableRetry;
 
 import javax.annotation.PostConstruct;
 import java.net.*;
+import java.util.Locale;
 import java.util.UUID;
 
 /**
@@ -76,7 +77,7 @@ public class NodeConfig {
     }
 
     public String getNetwork() {
-        return network;
+        return network.toUpperCase(Locale.ROOT);
     }
 
     public Integer getPort() {
