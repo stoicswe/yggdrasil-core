@@ -2,6 +2,7 @@ package org.yggdrasil.node.network.runners;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yggdrasil.node.network.exceptions.NodeDisconnectException;
 import org.yggdrasil.node.network.messages.ExpiringMessageRecord;
 import org.yggdrasil.node.network.messages.Message;
 import org.yggdrasil.node.network.messages.MessagePool;
@@ -38,8 +39,9 @@ public class MessagePoolRunner extends TimerTask {
         for(ExpiringMessageRecord exmr : expiringMessages) {
             try {
                 this.messenger.sendTargetMessage((Message) exmr.getRight(), (String) exmr.getMiddle());
-            } catch (IOException e) {
-                e.printStackTrace();
+            } catch (NodeDisconnectException | IOException e) {
+                logger.debug("Exception received when trying to resubmit message, removing expired message from message pool: [{}]", exmr.getRight().toString());
+                this.messagePool.removeMessage(((Message) exmr.getRight()).getChecksum());
             }
         }
     }

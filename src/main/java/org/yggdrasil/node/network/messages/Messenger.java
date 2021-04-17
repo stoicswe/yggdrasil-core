@@ -75,16 +75,16 @@ public class Messenger {
         return this.validator;
     }
 
-    public void sendTargetMessage(Message message, String nodeIdentifier) throws IOException {
+    public void sendTargetMessage(Message message, String nodeIdentifier) throws NodeDisconnectException, IOException {
         if(nodeIdentifier != null) {
             NodeConnection nodeConnection = this.node.getConnectedNodes().get(nodeIdentifier);
             this.sendTargetMessage(message, nodeConnection);
         } else {
-            logger.warn("Message was not sent because the nodeIdentifier passed was null.");
+            logger.debug("Message was not sent because the nodeIdentifier passed was null.");
         }
     }
 
-    public void sendTargetMessage(Message message, NodeConnection nodeConnection) throws IOException {
+    public void sendTargetMessage(Message message, NodeConnection nodeConnection) throws NodeDisconnectException, IOException {
         if(nodeConnection != null) {
             if(nodeConnection.isConnected()) {
                 nodeConnection.getNodeOutput().writeObject(message);
@@ -93,7 +93,7 @@ public class Messenger {
                 throw new NodeDisconnectException(String.format("Peer %s was disconnected and message could not be transmitted.", nodeConnection.getNodeIdentifier()));
             }
         } else {
-            logger.warn("Message not sent because the target peer was passed as null.");
+            logger.debug("Message not sent because the target peer was passed as null.");
         }
     }
 
@@ -109,6 +109,7 @@ public class Messenger {
                 }
             } else {
                 node.getConnectedNodes().remove(nck);
+                logger.debug("Message not sent to {} because the target peer was disconnected.", nck);
             }
         }
     }
