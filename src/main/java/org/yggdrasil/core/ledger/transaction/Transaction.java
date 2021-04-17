@@ -30,8 +30,8 @@ public class Transaction implements Serializable {
 
     private final UUID index;
     private final ZonedDateTime timestamp;
-    private final String origin;
-    private final String destination;
+    private final byte[] origin;
+    private final byte[] destination;
     private final BigDecimal amount;
     private final String note;
     private final byte[] signature;
@@ -56,11 +56,11 @@ public class Transaction implements Serializable {
         return timestamp;
     }
 
-    public String getOrigin() {
+    public byte[] getOrigin() {
         return origin;
     }
 
-    public String getDestination() {
+    public byte[] getDestination() {
         return destination;
     }
 
@@ -74,6 +74,10 @@ public class Transaction implements Serializable {
 
     public byte[] getTxnHash() {
         return txnHash;
+    }
+
+    public byte[] getSignature() {
+        return signature;
     }
 
     public boolean compareTxnHash(byte[] txnHash) {
@@ -105,8 +109,8 @@ public class Transaction implements Serializable {
 
         protected UUID index;
         protected ZonedDateTime timestamp;
-        protected String origin;
-        protected String destination;
+        protected byte[] origin;
+        protected byte[] destination;
         protected BigDecimal amount;
         protected String note;
         protected byte[] signature;
@@ -114,12 +118,12 @@ public class Transaction implements Serializable {
         private Builder(){}
 
         public Builder setOrigin(@JsonProperty("origin") String origin) {
-            this.origin = origin;
+            this.origin = CryptoHasher.hashByteArray(origin);;
             return this;
         }
 
         public Builder setDestination(@JsonProperty("destination") String destination) {
-            this.destination = destination;
+            this.destination = CryptoHasher.hashByteArray(destination);;
             return this;
         }
 

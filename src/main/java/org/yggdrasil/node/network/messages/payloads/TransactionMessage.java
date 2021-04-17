@@ -150,5 +150,9 @@ public class TransactionMessage implements MessagePayload {
             return this;
         }
 
+        public TransactionMessage build() {
+            return new TransactionMessage(this);
+        }
+
     }
 }

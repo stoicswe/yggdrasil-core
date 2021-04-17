@@ -1,18 +1,11 @@
 package org.yggdrasil.node.controller;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.yggdrasil.core.ledger.chain.Blockchain;
 import org.yggdrasil.core.ledger.transaction.Transaction;
 import org.yggdrasil.core.ledger.Wallet;
-import org.yggdrasil.core.utils.CryptoHasher;
 import org.yggdrasil.node.model.BlockResponse;
-import org.yggdrasil.node.network.messages.Message;
-import org.yggdrasil.node.network.messages.enums.NetworkType;
-import org.yggdrasil.node.network.messages.enums.RequestType;
-import org.yggdrasil.node.network.messages.payloads.PingPongMessage;
-import org.yggdrasil.node.network.messages.validators.MessageValidator;
 import org.yggdrasil.node.service.BlockchainService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,8 +20,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.PostConstruct;
 import java.io.IOException;
-import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.security.NoSuchAlgorithmException;
 
 /**
@@ -68,7 +59,7 @@ public class BlockchainController {
     }
 
     @RequestMapping(value = "/transaction", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Transaction> putTransaction(@RequestBody JsonNode data) throws JsonProcessingException {
+    public ResponseEntity<Transaction> putTransaction(@RequestBody JsonNode data) throws IOException, NoSuchAlgorithmException {
         logger.trace("Received new data: {}", data);
         Transaction transaction = objectMapper.treeToValue(data, Transaction.class);
         this.service.addNewTransaction(transaction);
