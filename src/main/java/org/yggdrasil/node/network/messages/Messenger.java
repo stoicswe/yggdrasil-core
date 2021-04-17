@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.yggdrasil.core.utils.CryptoHasher;
 import org.yggdrasil.node.network.Node;
+import org.yggdrasil.node.network.runners.MessagePoolRunner;
 import org.yggdrasil.node.network.runners.NodeConnection;
 import org.yggdrasil.node.network.exceptions.NodeDisconnectException;
 import org.yggdrasil.node.network.messages.enums.NetworkType;
@@ -15,10 +16,12 @@ import org.yggdrasil.node.network.messages.handlers.*;
 import org.yggdrasil.node.network.messages.payloads.*;
 import org.yggdrasil.node.network.messages.validators.MessageValidator;
 
+import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.security.NoSuchAlgorithmException;
 import java.util.Objects;
+import java.util.Timer;
 
 /**
  * The Messenger component will handle the messages from other nodes
@@ -36,6 +39,8 @@ public class Messenger {
     private Node node;
     @Autowired
     private MessagePool messagePool;
+    // Timer for checking expired messages
+    private Timer messagePoolRunnerTimer;
     @Autowired
     private MessageValidator validator;
     @Autowired
@@ -59,8 +64,24 @@ public class Messenger {
     @Autowired
     private HandshakeResponseMessageHandler handshakeResponseMessageHandler;
 
+    @PostConstruct
+    private void init() {
+        this.messagePoolRunnerTimer = new Timer();
+        //start the scheduled task in 30 seconds of checking messagePool for expired messages every 30 seconds
+        this.messagePoolRunnerTimer.schedule(new MessagePoolRunner(this, this.messagePool), 30000, 30000);
+    }
+
     public MessageValidator getValidator() {
         return this.validator;
+    }
+
+    public void sendTargetMessage(Message message, String nodeIdentifier) throws IOException {
+        if(nodeIdentifier != null) {
+            NodeConnection nodeConnection = this.node.getConnectedNodes().get(nodeIdentifier);
+            this.sendTargetMessage(message, nodeConnection);
+        } else {
+            logger.warn("Message was not sent because the nodeIdentifier passed was null.");
+        }
     }
 
     public void sendTargetMessage(Message message, NodeConnection nodeConnection) throws IOException {
@@ -72,7 +93,7 @@ public class Messenger {
                 throw new NodeDisconnectException(String.format("Peer %s was disconnected and message could not be transmitted.", nodeConnection.getNodeIdentifier()));
             }
         } else {
-            logger.warn("Target peer does not exist.");
+            logger.warn("Message not sent because the target peer was passed as null.");
         }
     }
 

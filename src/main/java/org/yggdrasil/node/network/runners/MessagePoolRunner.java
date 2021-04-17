@@ -2,8 +2,13 @@ package org.yggdrasil.node.network.runners;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yggdrasil.node.network.messages.ExpiringMessageRecord;
+import org.yggdrasil.node.network.messages.Message;
 import org.yggdrasil.node.network.messages.MessagePool;
 import org.yggdrasil.node.network.messages.Messenger;
+
+import java.io.IOException;
+import java.util.TimerTask;
 
 /**
  * The message pool runner will check the message pool periodically
@@ -14,7 +19,7 @@ import org.yggdrasil.node.network.messages.Messenger;
  * @since 0.0.15
  * @author nathanielbunch
  */
-public class MessagePoolRunner implements Runnable {
+public class MessagePoolRunner extends TimerTask {
 
     Logger logger = LoggerFactory.getLogger(MessagePoolRunner.class);
 
@@ -28,10 +33,14 @@ public class MessagePoolRunner implements Runnable {
 
     @Override
     public void run() {
-        while(true) {
-            this.messagePool.checkMessages();
-            //Only check every 30 seconds.
-            //Thread.sleep(30000);
+        logger.debug("Checking for any expired messages.");
+        ExpiringMessageRecord[] expiringMessages = this.messagePool.checkMessages();
+        for(ExpiringMessageRecord exmr : expiringMessages) {
+            try {
+                this.messenger.sendTargetMessage((Message) exmr.getRight(), (String) exmr.getMiddle());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 

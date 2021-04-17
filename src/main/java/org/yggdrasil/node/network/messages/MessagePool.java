@@ -4,13 +4,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.yggdrasil.core.utils.DateTimeUtil;
+import org.yggdrasil.node.network.runners.MessagePoolRunner;
 import org.yggdrasil.node.network.runners.NodeConnection;
 
 import javax.annotation.PostConstruct;
 import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Timer;
 
 /**
  * This class is used for storage of messages that require some sort of response. If a response
@@ -47,9 +50,8 @@ public class MessagePool {
         this.messagePool.remove(checkSum);
     }
 
-    public List<Message> checkMessages() {
-        List<Message> expiredMessages = new ArrayList<>();
-        return null;
+    public ExpiringMessageRecord[] checkMessages() {
+        return (ExpiringMessageRecord[]) this.messagePool.values().stream().filter(message -> ChronoUnit.MINUTES.between(message.timestamp, DateTimeUtil.getCurrentTimestamp()) > 1).toArray();
     }
 
 }
