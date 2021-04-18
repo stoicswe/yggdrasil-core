@@ -26,7 +26,7 @@ public class MessageValidator {
     private static final Logger logger = LoggerFactory.getLogger(MessageValidator.class);
 
     public void isValidMessage(@Valid Message message) throws NoSuchAlgorithmException {
-        logger.info("Checking message checksum.");
+        //logger.info("Checking message checksum.");
         if(message != null) {
             this.validateChecksum(message.getPayload(), message.getChecksum());
         } else {
@@ -35,12 +35,12 @@ public class MessageValidator {
     }
 
     private void validateChecksum(MessagePayload payload, byte[] messageChecksum) throws NoSuchAlgorithmException, InvalidMessageException {
-        logger.info("Hashing payload for comparison.");
+        //logger.info("Hashing payload for comparison.");
         byte[] payloadHash = CryptoHasher.hash(payload);
         try {
-            logger.info("Checking messageChecksum versus payload hash length.");
+            //logger.info("Checking messageChecksum versus payload hash length.");
             if(messageChecksum.length == payloadHash.length) {
-                logger.info("Iterating through checksums.");
+                //logger.info("Iterating through checksums.");
                 for (int i = 0; i < messageChecksum.length; i++) {
                     if (!(messageChecksum[i] == payloadHash[i])) {
                         throw new InvalidMessageException("Checksum did not match payload hash.");
