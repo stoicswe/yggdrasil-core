@@ -8,7 +8,6 @@ import org.yggdrasil.core.ledger.transaction.Transaction;
 import org.yggdrasil.core.ledger.Wallet;
 import org.yggdrasil.node.network.messages.MessagePayload;
 
-import java.nio.ByteBuffer;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
@@ -56,7 +55,7 @@ public class CryptoHasher {
         txnData = appendBytes(txnData, SerializationUtils.serialize(transaction.getTimestamp()));
         txnData = appendBytes(txnData, SerializationUtils.serialize(transaction.getOrigin()));
         txnData = appendBytes(txnData, SerializationUtils.serialize(transaction.getDestination()));
-        txnData = appendBytes(txnData, SerializationUtils.serialize(transaction.getAmount()));
+        txnData = appendBytes(txnData, SerializationUtils.serialize(transaction.getValue()));
         txnData = appendBytes(txnData, SerializationUtils.serialize(transaction.getNote()));
         return MessageDigest.getInstance(_HASH_ALGORITHM).digest(SerializationUtils.serialize(txnData));
     }

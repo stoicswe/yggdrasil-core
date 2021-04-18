@@ -33,7 +33,7 @@ public class Transaction implements Serializable {
     private final ZonedDateTime timestamp;
     private final byte[] origin;
     private final byte[] destination;
-    private final BigDecimal amount;
+    private final BigDecimal value;
     private final String note;
     private final byte[] signature;
     private final byte[] txnHash;
@@ -43,7 +43,7 @@ public class Transaction implements Serializable {
         this.timestamp = builder.timestamp;
         this.origin = builder.origin;
         this.destination = builder.destination;
-        this.amount = builder.amount;
+        this.value = builder.amount;
         this.note = builder.note;
         this.signature = builder.signature;
         this.txnHash = CryptoHasher.hash(this);
@@ -65,8 +65,8 @@ public class Transaction implements Serializable {
         return destination;
     }
 
-    public BigDecimal getAmount() {
-        return amount;
+    public BigDecimal getValue() {
+        return value;
     }
 
     public String getNote() {

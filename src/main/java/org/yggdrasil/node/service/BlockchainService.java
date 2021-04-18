@@ -94,12 +94,12 @@ public class BlockchainService {
      * @param transaction
      */
     public void addNewTransaction(Transaction transaction) throws IOException, NoSuchAlgorithmException {
-        logger.info("New transaction: {} [{} -> {} = {}]", transaction.toString(), CryptoHasher.humanReadableHash(transaction.getOrigin()), CryptoHasher.humanReadableHash(transaction.getDestination()), transaction.getAmount());
+        logger.info("New transaction: {} [{} -> {} = {}]", transaction.toString(), CryptoHasher.humanReadableHash(transaction.getOrigin()), CryptoHasher.humanReadableHash(transaction.getDestination()), transaction.getValue());
         this.mempool.putTransaction(transaction);
         TransactionMessage txnPayload = TransactionMessage.Builder.newBuilder()
                 .setIndex(transaction.getIndex().toString().toCharArray())
                 .setTimestamp((int) transaction.getTimestamp().toEpochSecond())
-                .setValue(transaction.getAmount())
+                .setValue(transaction.getValue())
                 .setDestinationAddress(transaction.getDestination())
                 .setOriginAddress(transaction.getOrigin())
                 .setTransactionHash(transaction.getTxnHash())
@@ -183,7 +183,7 @@ public class BlockchainService {
 
         this.addNewTransaction(blockMineAward);
 
-        logger.info("Block mine awarded, transaction: {} @ {}", blockMineAward.toString(), blockMineAward.getAmount());
+        logger.info("Block mine awarded, transaction: {} @ {}", blockMineAward.toString(), blockMineAward.getValue());
 
         return BlockResponse.Builder.builder()
                 .setIndex(newBlock.getIndex())
