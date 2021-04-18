@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import org.yggdrasil.core.serialization.TransactionDeserializer;
 import org.yggdrasil.core.utils.CryptoHasher;
 import org.yggdrasil.core.utils.DateTimeUtil;
+import org.yggdrasil.node.network.messages.payloads.TransactionMessage;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -118,12 +119,22 @@ public class Transaction implements Serializable {
         private Builder(){}
 
         public Builder setOrigin(@JsonProperty("origin") String origin) {
-            this.origin = CryptoHasher.hashByteArray(origin);;
+            this.origin = CryptoHasher.hashByteArray(origin);
+            return this;
+        }
+
+        public Builder setOrigin(byte[] origin) {
+            this.origin = origin;
             return this;
         }
 
         public Builder setDestination(@JsonProperty("destination") String destination) {
-            this.destination = CryptoHasher.hashByteArray(destination);;
+            this.destination = CryptoHasher.hashByteArray(destination);
+            return this;
+        }
+
+        public Builder setDestination(byte[] destination) {
+            this.destination = destination;
             return this;
         }
 
@@ -153,7 +164,18 @@ public class Transaction implements Serializable {
 
         public Transaction build() throws NoSuchAlgorithmException {
             this.index = UUID.randomUUID();
-            timestamp = DateTimeUtil.getCurrentTimestamp();
+            this.timestamp = DateTimeUtil.getCurrentTimestamp();
+            return new Transaction(this);
+        }
+
+        public Transaction buildFromMessage(TransactionMessage transactionMessage) throws NoSuchAlgorithmException {
+            this.index = UUID.fromString(String.valueOf(transactionMessage.getIndex()));
+            this.timestamp = DateTimeUtil.fromMessageTimestamp(transactionMessage.getTimestamp());
+            this.origin = transactionMessage.getOriginAddress();
+            this.destination = transactionMessage.getDestinationAddress();
+            this.amount = transactionMessage.getValue();
+            this.note = String.valueOf(transactionMessage.getNote());
+            this.signature = transactionMessage.getSignature();
             return new Transaction(this);
         }
     }

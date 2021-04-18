@@ -102,6 +102,7 @@ public class Messenger {
             NodeConnection nc = node.getConnectedNodes().get(nck);
             if(nc.isConnected()) {
                 try {
+                    logger.info("Broadcasting message: {} to: {}", message.toString(), nc.getNodeIdentifier());
                     nc.getNodeOutput().writeObject(message);
                 } catch (Exception e){
                     logger.debug("Removing bad peer connection: {}", nck);

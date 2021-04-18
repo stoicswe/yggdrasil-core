@@ -1,5 +1,6 @@
 package org.yggdrasil.core.utils;
 
+import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 
@@ -16,6 +17,10 @@ public class DateTimeUtil {
 
     public static ZonedDateTime getCurrentTimestamp() {
         return ZonedDateTime.now().withZoneSameInstant(ZoneId.of(_ZONE_ID));
+    }
+
+    public static ZonedDateTime fromMessageTimestamp(int timestamp) {
+        return ZonedDateTime.ofInstant(Instant.ofEpochSecond(timestamp), ZoneId.of(_ZONE_ID));
     }
 
 }
