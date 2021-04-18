@@ -27,7 +27,11 @@ public class MessageValidator {
 
     public void isValidMessage(@Valid Message message) throws NoSuchAlgorithmException {
         logger.info("Checking message checksum.");
-        this.validateChecksum(message.getPayload(), message.getChecksum());
+        if(message != null) {
+            this.validateChecksum(message.getPayload(), message.getChecksum());
+        } else {
+            throw new InvalidMessageException("Message was null.");
+        }
     }
 
     private void validateChecksum(MessagePayload payload, byte[] messageChecksum) throws NoSuchAlgorithmException, InvalidMessageException {
