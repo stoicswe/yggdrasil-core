@@ -83,6 +83,7 @@ public class NodeConnection implements Runnable {
             try {
                 Message m;
                 while((m = (Message) this.objectInputStream.readObject()) != null) {
+                    logger.info("Received message: {} from: {}", m.toString(), this.getNodeIdentifier());
                     this.messenger.handleMessage(m, this);
                 }
             } catch (IOException | ClassNotFoundException e) {
