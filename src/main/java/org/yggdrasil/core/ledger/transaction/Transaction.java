@@ -43,7 +43,7 @@ public class Transaction implements Serializable {
         this.timestamp = builder.timestamp;
         this.origin = builder.origin;
         this.destination = builder.destination;
-        this.value = builder.amount;
+        this.value = builder.value;
         this.note = builder.note;
         this.signature = builder.signature;
         this.txnHash = CryptoHasher.hash(this);
@@ -112,7 +112,7 @@ public class Transaction implements Serializable {
         protected ZonedDateTime timestamp;
         protected byte[] origin;
         protected byte[] destination;
-        protected BigDecimal amount;
+        protected BigDecimal value;
         protected String note;
         protected byte[] signature;
 
@@ -139,7 +139,7 @@ public class Transaction implements Serializable {
         }
 
         public Builder setValue(@JsonProperty("value") BigDecimal value) {
-            this.amount = value;
+            this.value = value;
             return this;
         }
 
@@ -173,7 +173,7 @@ public class Transaction implements Serializable {
             this.timestamp = DateTimeUtil.fromMessageTimestamp(transactionMessage.getTimestamp());
             this.origin = transactionMessage.getOriginAddress();
             this.destination = transactionMessage.getDestinationAddress();
-            this.amount = transactionMessage.getValue();
+            this.value = transactionMessage.getValue();
             this.note = String.valueOf(transactionMessage.getNote());
             this.signature = transactionMessage.getSignature();
             return new Transaction(this);

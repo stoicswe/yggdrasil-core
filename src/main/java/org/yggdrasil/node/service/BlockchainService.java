@@ -99,9 +99,10 @@ public class BlockchainService {
         TransactionMessage txnPayload = TransactionMessage.Builder.newBuilder()
                 .setIndex(transaction.getIndex().toString().toCharArray())
                 .setTimestamp((int) transaction.getTimestamp().toEpochSecond())
-                .setValue(transaction.getValue())
-                .setDestinationAddress(transaction.getDestination())
                 .setOriginAddress(transaction.getOrigin())
+                .setDestinationAddress(transaction.getDestination())
+                .setValue(transaction.getValue())
+                .setNote(transaction.getNote())
                 .setTransactionHash(transaction.getTxnHash())
                 .setSignature(transaction.getSignature())
                 .build();
