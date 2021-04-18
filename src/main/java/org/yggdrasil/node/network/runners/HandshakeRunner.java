@@ -68,7 +68,7 @@ public class HandshakeRunner implements Runnable {
                         .build();
                 // build the message
                 sentMessage = Message.Builder.newBuilder()
-                        .setNetwork(NetworkType.getByValue(nodeConfig.getNetwork().toUpperCase(Locale.ROOT).toCharArray()))
+                        .setNetwork(nodeConfig.getNetwork())
                         .setRequestType(RequestType.HANDSHAKE_OFFR)
                         .setPayloadSize(BigInteger.valueOf(GraphLayout.parseInstance(offerHandshake).totalSize()))
                         .setMessagePayload(offerHandshake)
@@ -173,7 +173,7 @@ public class HandshakeRunner implements Runnable {
                                     .build();
                             // build the message
                             sentMessage = Message.Builder.newBuilder()
-                                    .setNetwork(NetworkType.getByValue(nodeConfig.getNetwork().toUpperCase(Locale.ROOT).toCharArray()))
+                                    .setNetwork(nodeConfig.getNetwork())
                                     .setRequestType(RequestType.HANDSHAKE_RESP)
                                     .setPayloadSize(BigInteger.valueOf(GraphLayout.parseInstance(offerHandshake).totalSize()))
                                     .setMessagePayload(offerHandshake)
