@@ -133,6 +133,7 @@ public class Messenger {
                 case DATA_RESP:
                     logger.info("Handling {} message.", RequestType.DATA_RESP);
                     if (message.getPayload() instanceof HeaderMessage) {
+                        logger.info("{} message is a HeaderMessage.", RequestType.DATA_RESP);
                         messagePayload = this.headerMessageHandler.handleMessagePayload((HeaderMessage) message.getPayload(), nodeConnection);
                         returnMessage = Message.Builder.newBuilder()
                                 .setNetwork(NetworkType.getByValue(message.getNetwork()))
@@ -143,6 +144,7 @@ public class Messenger {
                                 .build();
                     }
                     if (message.getPayload() instanceof HeaderPayload) {
+                        logger.info("{} message is a HeaderPayload.", RequestType.DATA_RESP);
                         messagePayload = this.headerPayloadMessageHandler.handleMessagePayload((HeaderPayload) message.getPayload(), nodeConnection);
                         returnMessage = Message.Builder.newBuilder()
                                 .setNetwork(NetworkType.getByValue(message.getNetwork()))
@@ -153,6 +155,7 @@ public class Messenger {
                                 .build();
                     }
                     if (message.getPayload() instanceof TransactionMessage) {
+                        logger.info("{} message is a TransactionMessage.", RequestType.DATA_RESP);
                         messagePayload = this.transactionMessageHandler.handleMessagePayload((TransactionMessage) message.getPayload(), nodeConnection);
                         returnMessage = Message.Builder.newBuilder()
                                 .setNetwork(NetworkType.getByValue(message.getNetwork()))
