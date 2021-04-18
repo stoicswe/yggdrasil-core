@@ -9,6 +9,7 @@ import org.yggdrasil.node.network.messages.MessagePool;
 import org.yggdrasil.node.network.messages.Messenger;
 
 import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
 import java.util.TimerTask;
 
 /**
@@ -39,7 +40,7 @@ public class MessagePoolRunner extends TimerTask {
         for(ExpiringMessageRecord exmr : expiringMessages) {
             try {
                 this.messenger.sendTargetMessage((Message) exmr.getRight(), (String) exmr.getMiddle());
-            } catch (NodeDisconnectException | IOException e) {
+            } catch (NodeDisconnectException | IOException | NoSuchAlgorithmException e) {
                 logger.debug("Exception received when trying to resubmit message, removing expired message from message pool: [{}]", exmr.getRight().toString());
                 this.messagePool.removeMessage(((Message) exmr.getRight()).getChecksum());
             }

@@ -174,7 +174,7 @@ public class BlockchainService {
 
         logger.info("New block: {}", newBlock.toString());
 
-        Transaction blockMineAward = Transaction.Builder.newSSTransactionBuilder()
+        Transaction blockMineAward = Transaction.Builder.Builder()
                 .setOrigin("SSBlockchainNetwork")
                 .setDestination(currentWallet.getHumanReadableAddress())
                 .setValue(new BigDecimal(newBlock.toString().length() / 9.23).setScale(12, RoundingMode.FLOOR))

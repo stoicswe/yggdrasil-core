@@ -45,14 +45,14 @@ public class TransactionDeserializer extends JsonDeserializer<Transaction> {
         String note = node.get("note").asText();
 
         try {
-            return Transaction.Builder.newSSTransactionBuilder()
+            return Transaction.Builder.Builder()
                     .setOrigin(origin)
                     .setDestination(destination)
                     .setValue(value)
                     .setNote(note)
                     .build();
         } catch (NoSuchAlgorithmException e) {
-            logger.error("Deserialization of SSTransaction failed with: {}", e.toString());
+            logger.error("Deserialization of txn failed with: {}", e.toString());
         }
 
         return null;

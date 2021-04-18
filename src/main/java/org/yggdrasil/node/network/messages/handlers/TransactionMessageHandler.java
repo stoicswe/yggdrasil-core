@@ -8,7 +8,6 @@ import org.yggdrasil.core.ledger.transaction.Mempool;
 import org.yggdrasil.core.ledger.transaction.Transaction;
 import org.yggdrasil.core.utils.CryptoHasher;
 import org.yggdrasil.node.network.messages.MessagePayload;
-import org.yggdrasil.node.network.messages.MessagePool;
 import org.yggdrasil.node.network.messages.payloads.AcknowledgeMessage;
 import org.yggdrasil.node.network.messages.payloads.TransactionMessage;
 import org.yggdrasil.node.network.runners.NodeConnection;
@@ -25,7 +24,7 @@ public class TransactionMessageHandler implements MessageHandler<TransactionMess
 
     @Override
     public MessagePayload handleMessagePayload(TransactionMessage transactionMessage, NodeConnection nodeConnection) throws NoSuchAlgorithmException {
-        Transaction txn = Transaction.Builder.newSSTransactionBuilder().buildFromMessage(transactionMessage);
+        Transaction txn = Transaction.Builder.Builder().buildFromMessage(transactionMessage);
         logger.info("Handling new transaction {}", txn.toString());
         this.mempool.putTransaction(txn);
         return AcknowledgeMessage.Builder.newBuilder()

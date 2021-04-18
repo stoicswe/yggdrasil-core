@@ -158,7 +158,7 @@ public class Transaction implements Serializable {
             return this;
         }
 
-        public static Builder newSSTransactionBuilder() {
+        public static Builder Builder() {
             return new Builder();
         }
 

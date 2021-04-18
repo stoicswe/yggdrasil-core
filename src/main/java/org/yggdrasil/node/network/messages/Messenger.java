@@ -75,7 +75,7 @@ public class Messenger {
         return this.validator;
     }
 
-    public void sendTargetMessage(Message message, String nodeIdentifier) throws NodeDisconnectException, IOException {
+    public void sendTargetMessage(Message message, String nodeIdentifier) throws NodeDisconnectException, IOException, NoSuchAlgorithmException {
         if(nodeIdentifier != null) {
             NodeConnection nodeConnection = this.node.getConnectedNodes().get(nodeIdentifier);
             this.sendTargetMessage(message, nodeConnection);
@@ -84,7 +84,8 @@ public class Messenger {
         }
     }
 
-    public void sendTargetMessage(Message message, NodeConnection nodeConnection) throws NodeDisconnectException, IOException {
+    public void sendTargetMessage(Message message, NodeConnection nodeConnection) throws NodeDisconnectException, IOException, NoSuchAlgorithmException {
+        this.validator.isValidMessage(message);
         if(nodeConnection != null) {
             if(nodeConnection.isConnected()) {
                 nodeConnection.getNodeOutput().writeObject(message);
@@ -97,7 +98,8 @@ public class Messenger {
         }
     }
 
-    public void sendBroadcastMessage(Message message) throws IOException {
+    public void sendBroadcastMessage(Message message) throws IOException, NoSuchAlgorithmException {
+        this.validator.isValidMessage(message);
         for(String nck : node.getConnectedNodes().keySet()) {
             NodeConnection nc = node.getConnectedNodes().get(nck);
             if(nc.isConnected()) {
