@@ -51,7 +51,7 @@ public class MessagePool {
     }
 
     public ExpiringMessageRecord[] checkMessages() {
-        return (ExpiringMessageRecord[]) this.messagePool.values().stream().filter(message -> ChronoUnit.MINUTES.between(message.timestamp, DateTimeUtil.getCurrentTimestamp()) > 1).toArray();
+        return (ExpiringMessageRecord[]) this.messagePool.values().stream().filter(expMessage -> ChronoUnit.MINUTES.between(expMessage.getLeft(), DateTimeUtil.getCurrentTimestamp()) > 1).toArray();
     }
 
 }
