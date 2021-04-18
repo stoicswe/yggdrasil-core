@@ -41,14 +41,14 @@ public class TransactionDeserializer extends JsonDeserializer<Transaction> {
         JsonNode node = jsonParser.getCodec().readTree(jsonParser);
         String origin = node.get("origin").asText();
         String destination = node.get("destination").asText();
-        BigDecimal amount = new BigDecimal(node.get("amount").asText());
+        BigDecimal value = new BigDecimal(node.get("value").asText());
         String note = node.get("note").asText();
 
         try {
             return Transaction.Builder.newSSTransactionBuilder()
                     .setOrigin(origin)
                     .setDestination(destination)
-                    .setValue(amount)
+                    .setValue(value)
                     .setNote(note)
                     .build();
         } catch (NoSuchAlgorithmException e) {
