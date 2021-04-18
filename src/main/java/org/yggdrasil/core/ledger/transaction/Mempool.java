@@ -7,8 +7,10 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * This component in the blockchain is used for temporary storage of transactions.
@@ -50,6 +52,26 @@ public class Mempool {
         } else {
             logger.debug("Tried to get a transaction from an empty mempool.");
             return null;
+        }
+    }
+
+    public List<Transaction> peekTransaction(int numberToPeek) {
+        logger.trace("In peekTransaction");
+        List<Transaction> peekedTxns = new ArrayList<>();
+        if(transactionPool.size() > 0) {
+            if(numberToPeek >= transactionPool.size()) {
+                numberToPeek = 0;
+            } else {
+                numberToPeek = transactionPool.size() - numberToPeek;
+            }
+            for(int i = transactionPool.size()-1; i >= numberToPeek; i--){
+                peekedTxns.add(transactionPool.get(i));
+            }
+            logger.debug("Retrieved {} transactions from the mempool", numberToPeek);
+            return peekedTxns;
+        } else {
+            logger.debug("Tried to get a transaction from an empty mempool.");
+            return new ArrayList<>();
         }
     }
 

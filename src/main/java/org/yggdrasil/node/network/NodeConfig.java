@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import org.springframework.retry.annotation.EnableRetry;
+import org.yggdrasil.node.network.messages.enums.NetworkType;
 
 import javax.annotation.PostConstruct;
 import java.net.*;
@@ -76,8 +77,8 @@ public class NodeConfig {
         return peers;
     }
 
-    public String getNetwork() {
-        return network.toUpperCase(Locale.ROOT);
+    public NetworkType getNetwork() {
+        return NetworkType.getByValue(network.toUpperCase(Locale.ROOT).toCharArray());
     }
 
     public Integer getPort() {

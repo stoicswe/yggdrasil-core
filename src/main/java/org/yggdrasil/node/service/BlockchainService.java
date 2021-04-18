@@ -82,15 +82,10 @@ public class BlockchainService {
      * @return
      * @throws NoSuchAlgorithmException
      */
-    public Transaction getTransaction() throws NoSuchAlgorithmException {
+    public List<Transaction> getTransaction(int numberOfTransactions) throws NoSuchAlgorithmException {
         // This returns a dummy transaction for now, but at some point may have a lookup service.
         // Primarily for testing serialization.
-        return Transaction.Builder.newSSTransactionBuilder()
-                .setOrigin("TestAddress")
-                .setDestination("TestDestination")
-                .setValue(new BigDecimal("0.1234"))
-                .setNote("Test transaction")
-                .build();
+        return this.mempool.peekTransaction(numberOfTransactions);
     }
 
     /**
@@ -99,7 +94,7 @@ public class BlockchainService {
      * @param transaction
      */
     public void addNewTransaction(Transaction transaction) throws IOException, NoSuchAlgorithmException {
-        logger.info("New transaction: {} [{} -> {} = {}]", transaction.toString(), transaction.getOrigin(), transaction.getDestination(), transaction.getAmount());
+        logger.info("New transaction: {} [{} -> {} = {}]", transaction.toString(), CryptoHasher.humanReadableHash(transaction.getOrigin()), CryptoHasher.humanReadableHash(transaction.getDestination()), transaction.getAmount());
         this.mempool.putTransaction(transaction);
         TransactionMessage txnPayload = TransactionMessage.Builder.newBuilder()
                 .setIndex(transaction.getIndex().toString().toCharArray())
@@ -111,7 +106,7 @@ public class BlockchainService {
                 .setSignature(transaction.getSignature())
                 .build();
         Message txnMsg = Message.Builder.newBuilder()
-                .setNetwork(NetworkType.valueOf(nodeConfig.getNetwork()))
+                .setNetwork(nodeConfig.getNetwork())
                 .setRequestType(RequestType.DATA_RESP)
                 .setMessagePayload(txnPayload)
                 .setPayloadSize(BigInteger.valueOf(GraphLayout.parseInstance(txnPayload).totalSize()))
