@@ -232,13 +232,15 @@ public class Messenger {
             logger.warn("Error while processing message: [{}] -> [{}].", message.toString(), e.getMessage());
         }
 
-        try {
-            // write the return message back to the nodeconnection
-            this.validator.isValidMessage(returnMessage);
-            this.sendTargetMessage(returnMessage, nodeConnection);
-            this.messagePool.putMessage(returnMessage, nodeConnection);
-        } catch (IOException | NoSuchAlgorithmException e) {
-            logger.error("Error while sending response message: {}.", e.getMessage());
+        if(returnMessage != null) {
+            try {
+                // write the return message back to the nodeconnection
+                this.validator.isValidMessage(returnMessage);
+                this.sendTargetMessage(returnMessage, nodeConnection);
+                this.messagePool.putMessage(returnMessage, nodeConnection);
+            } catch (IOException | NoSuchAlgorithmException e) {
+                logger.error("Error while sending response message: {}.", e.getMessage());
+            }
         }
     }
 
