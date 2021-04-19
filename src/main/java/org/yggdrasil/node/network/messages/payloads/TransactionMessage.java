@@ -26,6 +26,8 @@ public class TransactionMessage implements MessagePayload {
     @NotNull
     private final BigDecimal value;
     @NotNull
+    private final char[] note;
+    @NotNull
     private final byte[] transactionHash;
     @NotNull
     private final byte[] signature;
@@ -38,6 +40,7 @@ public class TransactionMessage implements MessagePayload {
         this.originAddress = builder.originAddress;
         this.destinationAddress = builder.destinationAddress;
         this.value = builder.value;
+        this.note = builder.note;
         this.transactionHash = builder.transactionHash;
         this.signature = builder.signature;
         this.blockHash = builder.blockHash;
@@ -61,6 +64,10 @@ public class TransactionMessage implements MessagePayload {
 
     public BigDecimal getValue() {
         return value;
+    }
+
+    public char[] getNote() {
+        return this.note;
     }
 
     public byte[] getTransactionHash() {
@@ -100,6 +107,7 @@ public class TransactionMessage implements MessagePayload {
         private byte[] originAddress;
         private byte[] destinationAddress;
         private BigDecimal value;
+        private char[] note;
         private byte[] transactionHash;
         private byte[] signature;
         private byte[] blockHash;
@@ -132,6 +140,11 @@ public class TransactionMessage implements MessagePayload {
 
         public Builder setValue(BigDecimal value) {
             this.value = value;
+            return this;
+        }
+
+        public Builder setNote(String note) {
+            this.note = note.toCharArray();
             return this;
         }
 

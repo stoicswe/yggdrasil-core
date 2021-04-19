@@ -75,7 +75,7 @@ public class Messenger {
         return this.validator;
     }
 
-    public void sendTargetMessage(Message message, String nodeIdentifier) throws NodeDisconnectException, IOException {
+    public void sendTargetMessage(Message message, String nodeIdentifier) throws NodeDisconnectException, IOException, NoSuchAlgorithmException {
         if(nodeIdentifier != null) {
             NodeConnection nodeConnection = this.node.getConnectedNodes().get(nodeIdentifier);
             this.sendTargetMessage(message, nodeConnection);
@@ -84,7 +84,8 @@ public class Messenger {
         }
     }
 
-    public void sendTargetMessage(Message message, NodeConnection nodeConnection) throws NodeDisconnectException, IOException {
+    public void sendTargetMessage(Message message, NodeConnection nodeConnection) throws NodeDisconnectException, IOException, NoSuchAlgorithmException {
+        this.validator.isValidMessage(message);
         if(nodeConnection != null) {
             if(nodeConnection.isConnected()) {
                 nodeConnection.getNodeOutput().writeObject(message);
@@ -97,11 +98,13 @@ public class Messenger {
         }
     }
 
-    public void sendBroadcastMessage(Message message) throws IOException {
+    public void sendBroadcastMessage(Message message) throws IOException, NoSuchAlgorithmException {
+        this.validator.isValidMessage(message);
         for(String nck : node.getConnectedNodes().keySet()) {
             NodeConnection nc = node.getConnectedNodes().get(nck);
             if(nc.isConnected()) {
                 try {
+                    logger.info("Broadcasting message: {} to: {}", message.toString(), nc.getNodeIdentifier());
                     nc.getNodeOutput().writeObject(message);
                 } catch (Exception e){
                     logger.debug("Removing bad peer connection: {}", nck);
@@ -130,6 +133,7 @@ public class Messenger {
                 case DATA_RESP:
                     logger.info("Handling {} message.", RequestType.DATA_RESP);
                     if (message.getPayload() instanceof HeaderMessage) {
+                        logger.info("{} message is a HeaderMessage.", RequestType.DATA_RESP);
                         messagePayload = this.headerMessageHandler.handleMessagePayload((HeaderMessage) message.getPayload(), nodeConnection);
                         returnMessage = Message.Builder.newBuilder()
                                 .setNetwork(NetworkType.getByValue(message.getNetwork()))
@@ -140,6 +144,7 @@ public class Messenger {
                                 .build();
                     }
                     if (message.getPayload() instanceof HeaderPayload) {
+                        logger.info("{} message is a HeaderPayload.", RequestType.DATA_RESP);
                         messagePayload = this.headerPayloadMessageHandler.handleMessagePayload((HeaderPayload) message.getPayload(), nodeConnection);
                         returnMessage = Message.Builder.newBuilder()
                                 .setNetwork(NetworkType.getByValue(message.getNetwork()))
@@ -150,6 +155,7 @@ public class Messenger {
                                 .build();
                     }
                     if (message.getPayload() instanceof TransactionMessage) {
+                        logger.info("{} message is a TransactionMessage.", RequestType.DATA_RESP);
                         messagePayload = this.transactionMessageHandler.handleMessagePayload((TransactionMessage) message.getPayload(), nodeConnection);
                         returnMessage = Message.Builder.newBuilder()
                                 .setNetwork(NetworkType.getByValue(message.getNetwork()))
@@ -226,13 +232,15 @@ public class Messenger {
             logger.warn("Error while processing message: [{}] -> [{}].", message.toString(), e.getMessage());
         }
 
-        try {
-            // write the return message back to the nodeconnection
-            this.validator.isValidMessage(returnMessage);
-            this.sendTargetMessage(returnMessage, nodeConnection);
-            this.messagePool.putMessage(returnMessage, nodeConnection);
-        } catch (IOException | NoSuchAlgorithmException e) {
-            logger.error("Error while sending response message: {}.", e.getMessage());
+        if(returnMessage != null) {
+            try {
+                // write the return message back to the nodeconnection
+                this.validator.isValidMessage(returnMessage);
+                this.sendTargetMessage(returnMessage, nodeConnection);
+                this.messagePool.putMessage(returnMessage, nodeConnection);
+            } catch (IOException | NoSuchAlgorithmException e) {
+                logger.error("Error while sending response message: {}.", e.getMessage());
+            }
         }
     }
 

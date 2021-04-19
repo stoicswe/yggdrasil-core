@@ -94,14 +94,15 @@ public class BlockchainService {
      * @param transaction
      */
     public void addNewTransaction(Transaction transaction) throws IOException, NoSuchAlgorithmException {
-        logger.info("New transaction: {} [{} -> {} = {}]", transaction.toString(), CryptoHasher.humanReadableHash(transaction.getOrigin()), CryptoHasher.humanReadableHash(transaction.getDestination()), transaction.getAmount());
+        logger.info("New transaction: {} [{} -> {} = {}]", transaction.toString(), CryptoHasher.humanReadableHash(transaction.getOrigin()), CryptoHasher.humanReadableHash(transaction.getDestination()), transaction.getValue());
         this.mempool.putTransaction(transaction);
         TransactionMessage txnPayload = TransactionMessage.Builder.newBuilder()
                 .setIndex(transaction.getIndex().toString().toCharArray())
                 .setTimestamp((int) transaction.getTimestamp().toEpochSecond())
-                .setValue(transaction.getAmount())
-                .setDestinationAddress(transaction.getDestination())
                 .setOriginAddress(transaction.getOrigin())
+                .setDestinationAddress(transaction.getDestination())
+                .setValue(transaction.getValue())
+                .setNote(transaction.getNote())
                 .setTransactionHash(transaction.getTxnHash())
                 .setSignature(transaction.getSignature())
                 .build();
@@ -174,7 +175,7 @@ public class BlockchainService {
 
         logger.info("New block: {}", newBlock.toString());
 
-        Transaction blockMineAward = Transaction.Builder.newSSTransactionBuilder()
+        Transaction blockMineAward = Transaction.Builder.Builder()
                 .setOrigin("SSBlockchainNetwork")
                 .setDestination(currentWallet.getHumanReadableAddress())
                 .setValue(new BigDecimal(newBlock.toString().length() / 9.23).setScale(12, RoundingMode.FLOOR))
@@ -183,7 +184,7 @@ public class BlockchainService {
 
         this.addNewTransaction(blockMineAward);
 
-        logger.info("Block mine awarded, transaction: {} @ {}", blockMineAward.toString(), blockMineAward.getAmount());
+        logger.info("Block mine awarded, transaction: {} @ {}", blockMineAward.toString(), blockMineAward.getValue());
 
         return BlockResponse.Builder.builder()
                 .setIndex(newBlock.getIndex())
