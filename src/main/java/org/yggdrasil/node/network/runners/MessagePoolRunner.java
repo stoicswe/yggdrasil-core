@@ -10,6 +10,7 @@ import org.yggdrasil.node.network.messages.Messenger;
 
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
+import java.util.List;
 import java.util.TimerTask;
 
 /**
@@ -36,7 +37,7 @@ public class MessagePoolRunner extends TimerTask {
     @Override
     public void run() {
         logger.debug("Checking for any expired messages.");
-        ExpiringMessageRecord[] expiringMessages = this.messagePool.checkMessages();
+        List<ExpiringMessageRecord> expiringMessages = this.messagePool.checkMessages();
         for(ExpiringMessageRecord exmr : expiringMessages) {
             try {
                 this.messenger.sendTargetMessage((Message) exmr.getRight(), (String) exmr.getMiddle());
