@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Timer;
+import java.util.stream.Collectors;
 
 /**
  * This class is used for storage of messages that require some sort of response. If a response
@@ -27,7 +28,7 @@ public class MessagePool {
 
     private static final Logger logger = LoggerFactory.getLogger(MessagePool.class);
 
-    private HashMap<byte[], ExpiringMessageRecord<ZonedDateTime, String, Message>> messagePool;
+    private HashMap<byte[], ExpiringMessageRecord> messagePool;
 
     @PostConstruct
     private void init() {
@@ -36,11 +37,11 @@ public class MessagePool {
 
     public void putMessage(Message message, NodeConnection nodeConnection) {
         logger.trace("In putMessage");
-        this.messagePool.put(message.getChecksum(), new ExpiringMessageRecord<>(DateTimeUtil.getCurrentTimestamp(), nodeConnection.getNodeIdentifier(), message));
+        this.messagePool.put(message.getChecksum(), new ExpiringMessageRecord(DateTimeUtil.getCurrentTimestamp(), nodeConnection.getNodeIdentifier(), message));
         logger.trace("New message added to the message pool: {}", message.toString());
     }
 
-    public ExpiringMessageRecord<ZonedDateTime, String, Message> getMessage(byte[] checkSum) {
+    public ExpiringMessageRecord getMessage(byte[] checkSum) {
         logger.trace("In getMessage");
         return messagePool.get(checkSum);
     }
@@ -50,8 +51,8 @@ public class MessagePool {
         this.messagePool.remove(checkSum);
     }
 
-    public ExpiringMessageRecord[] checkMessages() {
-        return (ExpiringMessageRecord[]) this.messagePool.values().stream().filter(expMessage -> ChronoUnit.MINUTES.between(expMessage.getLeft(), DateTimeUtil.getCurrentTimestamp()) > 1).toArray();
+    public List<ExpiringMessageRecord> checkMessages() {
+        return this.messagePool.values().stream().filter(expMessage -> ChronoUnit.MINUTES.between(expMessage.getLeft(), DateTimeUtil.getCurrentTimestamp()) > 1).collect(Collectors.toList());
     }
 
 }

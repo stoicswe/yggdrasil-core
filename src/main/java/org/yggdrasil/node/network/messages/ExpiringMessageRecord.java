@@ -2,7 +2,9 @@ package org.yggdrasil.node.network.messages;
 
 import org.apache.commons.lang3.tuple.Triple;
 
-public class ExpiringMessageRecord<ZonedDateTime, String, Message> extends Triple<ZonedDateTime, String, Message> {
+import java.time.ZonedDateTime;
+
+public class ExpiringMessageRecord extends Triple<ZonedDateTime, String, Message> {
 
     ZonedDateTime timestamp;
     String destination;
