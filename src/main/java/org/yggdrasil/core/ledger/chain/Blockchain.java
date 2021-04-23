@@ -16,6 +16,7 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  * This is the class definition for the blockchain object. Its purpose
@@ -68,6 +69,10 @@ public class Blockchain implements Cloneable {
             this.blocks.addAll(blocks);
         }
         this.checkBlocks();
+    }
+
+    public List<Block> getBlock(byte[] blockHash) {
+        return this.blocks.stream().filter(block -> block.compareBlockHash(blockHash)).collect(Collectors.toList());
     }
 
     public void checkBlocks() throws CloneNotSupportedException {

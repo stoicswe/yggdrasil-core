@@ -88,6 +88,19 @@ public final class Block implements Serializable {
         return nonce;
     }
 
+    public boolean compareBlockHash(byte[] blockHash) {
+        try {
+            for (int i = 0; i < blockHash.length; i++) {
+                if (blockHash[i] != this.blockHash[i]) {
+                    return false;
+                }
+            }
+        } catch (Exception e) {
+            return false;
+        }
+        return true;
+    }
+
     @Override
     public String toString() {
         return CryptoHasher.humanReadableHash(blockHash);

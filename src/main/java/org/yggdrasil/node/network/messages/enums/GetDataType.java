@@ -14,6 +14,7 @@ public enum GetDataType {
     MEMPOOL("MMPL");
 
     private String value;
+    private static final GetDataType[] values = new GetDataType[]{BLOCKCHAIN, BLOCK, TRANSACTION, MEMPOOL};
 
     GetDataType(String value) {
         this.value = value;
@@ -27,8 +28,17 @@ public enum GetDataType {
         return value.toCharArray();
     }
 
-    public boolean equals(char[] messageValue) {
-        return this.value.contentEquals(String.valueOf(messageValue));
+    public boolean isEqualToLiteral(char[] literal){
+        return this.value.contentEquals(String.valueOf(literal));
+    }
+
+    public static GetDataType getByValue(char[] messageValue) {
+        for(GetDataType rt : values) {
+            if(rt.isEqualToLiteral(messageValue)){
+                return rt;
+            }
+        }
+        return null;
     }
 
     @Override

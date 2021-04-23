@@ -82,7 +82,6 @@ public class Transaction implements Serializable {
     }
 
     public boolean compareTxnHash(byte[] txnHash) {
-
         try {
             for (int i = 0; i < txnHash.length; i++) {
                 if (this.txnHash[i] != txnHash[i]) {
@@ -92,9 +91,7 @@ public class Transaction implements Serializable {
         } catch (IndexOutOfBoundsException e) {
             return false;
         }
-
         return true;
-
     }
 
     @Override
