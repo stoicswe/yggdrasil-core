@@ -18,6 +18,8 @@ import javax.validation.constraints.NotNull;
 public class HeaderPayload implements MessagePayload {
 
     @NotNull
+    private final char[] index;
+    @NotNull
     private final byte[] hash;
     @NotNull
     private final byte[] prevHash;
@@ -29,11 +31,16 @@ public class HeaderPayload implements MessagePayload {
     private final int nonce;
 
     private HeaderPayload(Builder builder) {
+        this.index = builder.index;
         this.hash = builder.hash;
         this.prevHash = builder.previousHash;
         this.transactionCount = builder.transactionCount;
         this.time = builder.time;
         this.nonce = builder.nonce;
+    }
+
+    public char[] getIndex() {
+        return index;
     }
 
     public byte[] getHash() {
@@ -59,6 +66,7 @@ public class HeaderPayload implements MessagePayload {
     @Override
     public byte[] getDataBytes() {
         byte[] messageBytes = new byte[0];
+        messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(index));
         messageBytes = appendBytes(messageBytes, hash);
         messageBytes = appendBytes(messageBytes, prevHash);
         messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(transactionCount));
@@ -73,6 +81,7 @@ public class HeaderPayload implements MessagePayload {
 
     public static class Builder {
 
+        private char[] index;
         private byte[] hash;
         private byte[] previousHash;
         private int transactionCount;
@@ -83,6 +92,11 @@ public class HeaderPayload implements MessagePayload {
 
         public static Builder newBuilder() {
             return new Builder();
+        }
+
+        public Builder setIndex(char[] index) {
+            this.index = index;
+            return this;
         }
 
         public Builder setHash(byte[] hash) {

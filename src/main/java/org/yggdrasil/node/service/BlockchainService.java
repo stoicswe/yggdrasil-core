@@ -163,7 +163,7 @@ public class BlockchainService {
             }
         }
         Block newBlock;
-        newBlock = Block.BBuilder.newSSBlockBuilder()
+        newBlock = Block.Builder.newBuilder()
                 .setData(blockData)
                 .setPreviousBlock(this.blockchain.getBlocks()[this.blockchain.getBlocks().length - 1].getBlockHash())
                 .build();
@@ -198,7 +198,7 @@ public class BlockchainService {
     private Block proofOfWork(int prefix, Block currentBlock) throws Exception {
         List<Transaction> blockTransactions = new ArrayList<>(Arrays.asList((Transaction[]) currentBlock.getData()));
         blockTransactions.sort(Comparator.comparing(Transaction::getTimestamp));
-        Block sortedBlock = Block.BBuilder.newSSBlockBuilder()
+        Block sortedBlock = Block.Builder.newBuilder()
                 .setPreviousBlock(currentBlock.getPreviousBlockHash())
                 .setData(blockTransactions)
                 .build();

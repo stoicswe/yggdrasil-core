@@ -108,6 +108,19 @@ public class CryptoHasher {
         return HexUtils.fromHexString(stringHash);
     }
 
+    public static boolean compareHashes(byte[] val0, byte[] val1) {
+        try {
+            for (int i = 0; i < val1.length; i++) {
+                if (val0[i] != val1[i]) {
+                    return false;
+                }
+            }
+        } catch (IndexOutOfBoundsException e) {
+            return false;
+        }
+        return true;
+    }
+
     private static byte[] appendBytes(byte[] base, byte[] extension) {
         return ArrayUtils.addAll(base, extension);
     }

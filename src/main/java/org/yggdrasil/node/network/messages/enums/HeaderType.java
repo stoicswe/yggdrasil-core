@@ -13,6 +13,7 @@ public enum HeaderType {
     TXN_HEADER("TXNH");
 
     private String value;
+    private static final HeaderType[] values = new HeaderType[] {BLOCK_HEADER, TXN_HEADER};
 
     HeaderType(String value) {
         this.value = value;
@@ -26,8 +27,17 @@ public enum HeaderType {
         return value.toCharArray();
     }
 
-    public boolean equals(char[] messageValue) {
-        return this.value.contentEquals(String.valueOf(messageValue));
+    public boolean isEqualToLiteral(char[] literal){
+        return this.value.contentEquals(String.valueOf(literal));
+    }
+
+    public static HeaderType getByValue(char[] messageValue) {
+        for(HeaderType rt : values) {
+            if(rt.isEqualToLiteral(messageValue)){
+                return rt;
+            }
+        }
+        return null;
     }
 
     @Override

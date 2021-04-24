@@ -12,7 +12,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 /**
  * The Block is the main unit of data in Yggdrasil. Blocks contain
@@ -37,7 +36,7 @@ public final class Block implements Serializable {
     private byte[] signature;
     private int nonce;
 
-    private Block(BBuilder blockBuilder) throws Exception {
+    private Block(Builder blockBuilder) throws Exception {
         this.index = blockBuilder.index;
         this.timestamp = blockBuilder.timestamp;
         this.data = blockBuilder.data;
@@ -121,7 +120,7 @@ public final class Block implements Serializable {
     }
 
     public static Block genesis() throws Exception {
-        return new Block.BBuilder()
+        return new Builder()
                 .setPreviousBlock(null)
                 .setData("'Think Different' - Steve Jobs")
                 .build();
@@ -131,25 +130,25 @@ public final class Block implements Serializable {
      * BBuilder class is the SSBlock builder. This is to ensure some level
      * of data protection by enforcing non-direct data access and immutable data.
      */
-    public static class BBuilder {
+    public static class Builder {
 
         private UUID index;
         private ZonedDateTime timestamp;
         private Object data;
         private byte[] previousBlock;
 
-        private BBuilder(){}
+        private Builder(){}
 
-        public static BBuilder newSSBlockBuilder(){
-            return new BBuilder();
+        public static Builder newBuilder(){
+            return new Builder();
         }
 
-        public BBuilder setData(Object data){
+        public Builder setData(Object data){
             this.data = data;
             return this;
         }
 
-        public BBuilder setPreviousBlock(byte[] previousBlock){
+        public Builder setPreviousBlock(byte[] previousBlock){
             this.previousBlock = previousBlock;
             return this;
         }

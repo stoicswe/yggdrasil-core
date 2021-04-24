@@ -59,10 +59,6 @@ public class Messenger {
     private AddressResponseMessageHandler addressResponseHandler;
     @Autowired
     private GetAddressMessageHandler getAddressMessageHandler;
-    @Autowired
-    private HandshakeOfferMessageHandler handshakeOfferMessageHandler;
-    @Autowired
-    private HandshakeResponseMessageHandler handshakeResponseMessageHandler;
 
     @PostConstruct
     private void init() {
