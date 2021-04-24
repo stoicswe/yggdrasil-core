@@ -24,11 +24,11 @@ import java.util.Optional;
 public class GetDataMessageHandler implements MessageHandler<GetDataMessage> {
 
     @Autowired
+    private Mempool mempool;
+    @Autowired
     private MessagePool messagePool;
     @Autowired
     private Blockchain blockchain;
-    @Autowired
-    private Mempool mempool;
 
     @Override
     public MessagePayload handleMessagePayload(GetDataMessage getDataMessage, NodeConnection nodeConnection) {
@@ -39,57 +39,32 @@ public class GetDataMessageHandler implements MessageHandler<GetDataMessage> {
         switch (Objects.requireNonNull(GetDataType.getByValue(getDataMessage.getType()))) {
             case BLOCK:
                 headers = new ArrayList<>();
-                if(getDataMessage.getHashCount() == 1) {
-                    Optional<Block> bs = blockchain.getBlock(getDataMessage.getStopHash());
-                    if (bs.isPresent()) {
-                        Block b = bs.get();
-                        HeaderPayload hp;
-                        Object[] txns = null;
-                        if(b.getData() instanceof Object[]) {
-                            txns = (Object[]) b.getData();
-                            for(Object txnObj : txns) {
-                                Transaction txn = (Transaction) txnObj;
-                                hp = HeaderPayload.Builder.newBuilder()
-                                        .setHash(txn.getTxnHash())
-                                        .setNonce(txn.getNonce())
-                                        .setPreviousHash(new byte[0])
-                                        .setTime((int) txn.getTimestamp().toEpochSecond())
-                                        .setTransactionCount(-1)
-                                        .build();
-                                headers.add(hp);
-                            }
-                        } else {
+                Optional<Block> opBlock = blockchain.getBlock(getDataMessage.getStopHash());
+                if (opBlock.isPresent()) {
+                    Block b = opBlock.get();
+                    HeaderPayload hp;
+                    List<Transaction> txns = null;
+                    if(b.getData() instanceof List) {
+                        txns = (List<Transaction>) b.getData();
+                        for(Object txnObj : txns) {
+                            Transaction txn = (Transaction) txnObj;
                             hp = HeaderPayload.Builder.newBuilder()
-                                    .setHash(b.getBlockHash())
-                                    .setNonce(b.getNonce())
-                                    .setPreviousHash((b.getPreviousBlockHash() != null) ? b.getPreviousBlockHash() : new byte[0])
-                                    .setTime((int) b.getTimestamp().toEpochSecond())
-                                    .setTransactionCount(0)
+                                    .setIndex(txn.getIndex().toString().toCharArray())
+                                    .setHash(txn.getTxnHash())
+                                    .setNonce(txn.getNonce())
+                                    .setPreviousHash(new byte[0])
+                                    .setTime((int) txn.getTimestamp().toEpochSecond())
+                                    .setTransactionCount(-1)
                                     .build();
                             headers.add(hp);
                         }
-                    }
-                    messagePayload = HeaderMessage.Builder.newBuilder()
-                            .setHeaderType(HeaderType.TXN_HEADER)
-                            .setHeaderCount(headers.size())
-                            .setHeaders((HeaderPayload[]) headers.toArray())
-                            .build();
-                } else {
-                    throw new InvalidMessageException("Message received reported requested too many items for the type.");
-                }
-                break;
-            case BLOCKCHAIN:
-                if(getDataMessage.getHashCount() == getDataMessage.getObjectHashes().length) {
-                headers = new ArrayList<>();
-                for (byte[] blockHash : getDataMessage.getObjectHashes()) {
-                    Optional<Block> bs = blockchain.getBlock(blockHash);
-                    if(bs.isPresent()) {
-                        Block b = bs.get();
-                        HeaderPayload hp = HeaderPayload.Builder.newBuilder()
-                                .setTime((int) b.getTimestamp().toEpochSecond())
+                    } else {
+                        hp = HeaderPayload.Builder.newBuilder()
                                 .setHash(b.getBlockHash())
-                                .setTransactionCount((b.getData() instanceof Object[]) ? ((Object[]) b.getData()).length : 0)
-                                .setPreviousHash(b.getPreviousBlockHash())
+                                .setNonce(b.getNonce())
+                                .setPreviousHash((b.getPreviousBlockHash() != null) ? b.getPreviousBlockHash() : new byte[0])
+                                .setTime((int) b.getTimestamp().toEpochSecond())
+                                .setTransactionCount(0)
                                 .build();
                         headers.add(hp);
                     }
@@ -97,17 +72,40 @@ public class GetDataMessageHandler implements MessageHandler<GetDataMessage> {
                 messagePayload = HeaderMessage.Builder.newBuilder()
                         .setHeaderType(HeaderType.TXN_HEADER)
                         .setHeaderCount(headers.size())
-                        .setHeaders((HeaderPayload[]) headers.toArray())
+                        .setHeaders(headers.toArray(HeaderPayload[]::new))
                         .build();
+                break;
+            case BLOCKCHAIN:
+                if(getDataMessage.getHashCount() == getDataMessage.getObjectHashes().length) {
+                    headers = new ArrayList<>();
+                    for (byte[] blockHash : getDataMessage.getObjectHashes()) {
+                        Optional<Block> bs = blockchain.getBlock(blockHash);
+                        if(bs.isPresent()) {
+                            Block b = bs.get();
+                            HeaderPayload hp = HeaderPayload.Builder.newBuilder()
+                                    .setIndex(b.getIndex().toString().toCharArray())
+                                    .setTime((int) b.getTimestamp().toEpochSecond())
+                                    .setHash(b.getBlockHash())
+                                    .setTransactionCount((b.getData() instanceof Object[]) ? ((Object[]) b.getData()).length : 0)
+                                    .setPreviousHash(b.getPreviousBlockHash())
+                                    .build();
+                            headers.add(hp);
+                        }
+                    }
+                    messagePayload = HeaderMessage.Builder.newBuilder()
+                            .setHeaderType(HeaderType.BLOCK_HEADER)
+                            .setHeaderCount(headers.size())
+                            .setHeaders(headers.toArray(HeaderPayload[]::new))
+                            .build();
                 } else {
                     throw new InvalidMessageException("Message received reported wrong hash count versus data provided.");
                 }
                 break;
             case TRANSACTION:
                 if(getDataMessage.getHashCount() == 1) {
-                    Optional<Block> bs = blockchain.getBlock(getDataMessage.getStopHash());
-                    if(bs.isPresent()){
-                        Block b = bs.get();
+                    Optional<Block> txnOpBlock = blockchain.getBlock(getDataMessage.getStopHash());
+                    if(txnOpBlock.isPresent()){
+                        Block b = txnOpBlock.get();
                         Optional<Transaction> txnObj = b.getTransaction(getDataMessage.getStopHash());
                         if(txnObj.isPresent()) {
                             Transaction txn = txnObj.get();
@@ -148,7 +146,7 @@ public class GetDataMessageHandler implements MessageHandler<GetDataMessage> {
                 }
                 break;
             default:
-                break;
+                throw new InvalidMessageException("Message received reported unknown type.");
         }
         return messagePayload;
     }

@@ -82,6 +82,10 @@ public class GetDataMessage implements MessagePayload {
 
         private Builder(){}
 
+        public static Builder newBuilder() {
+            return new Builder();
+        }
+
         public Builder setVersion(int version) {
             this.version = version;
             return this;
@@ -105,6 +109,10 @@ public class GetDataMessage implements MessagePayload {
         public Builder setStopHash(byte[] stopHash) {
             this.stopHash = stopHash;
             return this;
+        }
+
+        public GetDataMessage build() {
+            return new GetDataMessage(this);
         }
 
     }
