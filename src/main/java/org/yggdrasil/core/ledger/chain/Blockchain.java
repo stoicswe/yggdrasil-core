@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -71,8 +72,8 @@ public class Blockchain implements Cloneable {
         this.checkBlocks();
     }
 
-    public List<Block> getBlock(byte[] blockHash) {
-        return this.blocks.stream().filter(block -> block.compareBlockHash(blockHash)).collect(Collectors.toList());
+    public Optional<Block> getBlock(byte[] blockHash) {
+        return this.blocks.stream().filter(block -> block.compareBlockHash(blockHash)).findFirst();
     }
 
     public void checkBlocks() throws CloneNotSupportedException {

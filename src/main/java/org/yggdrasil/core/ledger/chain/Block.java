@@ -2,12 +2,17 @@ package org.yggdrasil.core.ledger.chain;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import org.yggdrasil.core.ledger.transaction.Transaction;
 import org.yggdrasil.core.utils.CryptoHasher;
 import org.yggdrasil.core.utils.DateTimeUtil;
 
 import java.io.Serializable;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  * The Block is the main unit of data in Yggdrasil. Blocks contain
@@ -86,6 +91,15 @@ public final class Block implements Serializable {
 
     public int getNonce() {
         return nonce;
+    }
+
+    public Optional<Transaction> getTransaction(byte[] txnHash) {
+        if(this.data instanceof List) {
+            List<Transaction> txns = (ArrayList<Transaction>) this.data;
+            Optional<Transaction> txn = txns.stream().filter(ftxn -> ftxn.compareTxnHash(txnHash)).findFirst();
+            return txn;
+        }
+        return Optional.empty();
     }
 
     public boolean compareBlockHash(byte[] blockHash) {

@@ -8,7 +8,7 @@ import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 
 /**
- * The Transaction Message contains the full information of a transaction.
+ * The Transaction Message contains a list of transaction message data.
  *
  * @since 0.0.10
  * @author nathanielbunch
@@ -16,83 +16,30 @@ import java.math.BigDecimal;
 public class TransactionMessage implements MessagePayload {
 
     @NotNull
-    private final char[] index;
+    private final int txnCount;
     @NotNull
-    private final int timestamp;
-    @NotNull
-    private final byte[] originAddress;
-    @NotNull
-    private final byte[] destinationAddress;
-    @NotNull
-    private final BigDecimal value;
-    @NotNull
-    private final char[] note;
-    @NotNull
-    private final byte[] transactionHash;
-    @NotNull
-    private final byte[] signature;
-    @NotNull
-    private final byte[] blockHash;
+    private final TransactionPayload[] txns;
 
-    private TransactionMessage(Builder builder){
-        this.index = builder.index;
-        this.timestamp = builder.timestamp;
-        this.originAddress = builder.originAddress;
-        this.destinationAddress = builder.destinationAddress;
-        this.value = builder.value;
-        this.note = builder.note;
-        this.transactionHash = builder.transactionHash;
-        this.signature = builder.signature;
-        this.blockHash = builder.blockHash;
+    private TransactionMessage(Builder builder) {
+        this.txnCount = builder.txnCount;
+        this.txns = builder.txns;
     }
 
-    public char[] getIndex() {
-        return index;
+    public int getTxnCount() {
+        return txnCount;
     }
 
-    public int getTimestamp() {
-        return timestamp;
-    }
-
-    public byte[] getOriginAddress() {
-        return originAddress;
-    }
-
-    public byte[] getDestinationAddress() {
-        return destinationAddress;
-    }
-
-    public BigDecimal getValue() {
-        return value;
-    }
-
-    public char[] getNote() {
-        return this.note;
-    }
-
-    public byte[] getTransactionHash() {
-        return transactionHash;
-    }
-
-    public byte[] getSignature() {
-        return this.signature;
-    }
-
-    public byte[] getBlockHash() {
-        return blockHash;
+    public TransactionPayload[] getTxns() {
+        return txns;
     }
 
     @Override
     public byte[] getDataBytes() {
         byte[] messageBytes = new byte[0];
-        messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(index));
-        messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(timestamp));
-        messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(originAddress));
-        messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(destinationAddress));
-        messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(value));
-        messageBytes = appendBytes(messageBytes, transactionHash);
-        messageBytes = appendBytes(messageBytes, signature);
-        messageBytes = appendBytes(messageBytes, blockHash);
+        messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(txnCount));
+        for(TransactionPayload txnp : txns) {
+            messageBytes = appendBytes(messageBytes, txnp.getDataBytes());
+        }
         return messageBytes;
     }
 
@@ -102,64 +49,22 @@ public class TransactionMessage implements MessagePayload {
 
     public static class Builder {
 
-        private char[] index;
-        private int timestamp;
-        private byte[] originAddress;
-        private byte[] destinationAddress;
-        private BigDecimal value;
-        private char[] note;
-        private byte[] transactionHash;
-        private byte[] signature;
-        private byte[] blockHash;
+        private int txnCount;
+        private TransactionPayload[] txns;
 
         private Builder(){}
 
-        public static Builder newBuilder() {
+        public static Builder newBuilder(){
             return new Builder();
         }
 
-        public Builder setIndex(char[] index) {
-            this.index = index;
+        public Builder setTxnCount(int txnCount) {
+            this.txnCount = txnCount;
             return this;
         }
 
-        public Builder setTimestamp(int timestamp) {
-            this.timestamp = timestamp;
-            return this;
-        }
-
-        public Builder setOriginAddress(byte[] originAddress) {
-            this.originAddress = originAddress;
-            return this;
-        }
-
-        public Builder setDestinationAddress(byte[] destinationAddress) {
-            this.destinationAddress = destinationAddress;
-            return this;
-        }
-
-        public Builder setValue(BigDecimal value) {
-            this.value = value;
-            return this;
-        }
-
-        public Builder setNote(String note) {
-            this.note = note.toCharArray();
-            return this;
-        }
-
-        public Builder setTransactionHash(byte[] transactionHash) {
-            this.transactionHash = transactionHash;
-            return this;
-        }
-
-        public Builder setSignature(byte[] signature) {
-            this.signature = signature;
-            return this;
-        }
-
-        public Builder setBlockHash(byte[] blockHash) {
-            this.blockHash = blockHash;
+        public Builder setTxns(TransactionPayload[] txns) {
+            this.txns = txns;
             return this;
         }
 
@@ -168,4 +73,5 @@ public class TransactionMessage implements MessagePayload {
         }
 
     }
+
 }

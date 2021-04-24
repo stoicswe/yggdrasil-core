@@ -22,6 +22,7 @@ import org.yggdrasil.node.network.messages.enums.NetworkType;
 import org.yggdrasil.node.network.messages.enums.RequestType;
 import org.yggdrasil.node.network.messages.payloads.PingPongMessage;
 import org.yggdrasil.node.network.messages.payloads.TransactionMessage;
+import org.yggdrasil.node.network.messages.payloads.TransactionPayload;
 
 import javax.security.auth.DestroyFailedException;
 import java.io.IOException;
@@ -96,20 +97,18 @@ public class BlockchainService {
     public void addNewTransaction(Transaction transaction) throws IOException, NoSuchAlgorithmException {
         logger.info("New transaction: {} [{} -> {} = {}]", transaction.toString(), CryptoHasher.humanReadableHash(transaction.getOrigin()), CryptoHasher.humanReadableHash(transaction.getDestination()), transaction.getValue());
         this.mempool.putTransaction(transaction);
-        TransactionMessage txnPayload = TransactionMessage.Builder.newBuilder()
-                .setIndex(transaction.getIndex().toString().toCharArray())
-                .setTimestamp((int) transaction.getTimestamp().toEpochSecond())
-                .setOriginAddress(transaction.getOrigin())
-                .setDestinationAddress(transaction.getDestination())
-                .setValue(transaction.getValue())
-                .setNote(transaction.getNote())
-                .setTransactionHash(transaction.getTxnHash())
-                .setSignature(transaction.getSignature())
+        TransactionPayload txnPayload = TransactionPayload.Builder.newBuilder()
+                .buildFromTransaction(transaction)
+                .setBlockHash(new byte[0])
+                .build();
+        TransactionMessage txnMessage = TransactionMessage.Builder.newBuilder()
+                .setTxnCount(1)
+                .setTxns(new TransactionPayload[]{txnPayload})
                 .build();
         Message txnMsg = Message.Builder.newBuilder()
                 .setNetwork(nodeConfig.getNetwork())
                 .setRequestType(RequestType.DATA_RESP)
-                .setMessagePayload(txnPayload)
+                .setMessagePayload(txnMessage)
                 .setPayloadSize(BigInteger.valueOf(GraphLayout.parseInstance(txnPayload).totalSize()))
                 .setChecksum(CryptoHasher.hash(txnPayload))
                 .build();
@@ -165,7 +164,7 @@ public class BlockchainService {
         }
         Block newBlock;
         newBlock = Block.BBuilder.newSSBlockBuilder()
-                .setData(blockData.toArray(Transaction[]::new))
+                .setData(blockData)
                 .setPreviousBlock(this.blockchain.getBlocks()[this.blockchain.getBlocks().length - 1].getBlockHash())
                 .build();
 

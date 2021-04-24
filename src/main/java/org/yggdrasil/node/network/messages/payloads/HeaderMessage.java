@@ -23,11 +23,14 @@ public class HeaderMessage implements MessagePayload {
     private final char[] headerType;
     @NotNull
     private final HeaderPayload[] headers;
+    @NotNull
+    private final byte[] headerHash;
 
     private HeaderMessage(Builder builder) {
         this.headerCount = builder.headerCount;
         this.headerType = builder.headerType;
         this.headers = builder.headers;
+        this.headerHash = builder.headerHash;
     }
 
     public int getHeaderCount() {
@@ -42,6 +45,10 @@ public class HeaderMessage implements MessagePayload {
         return headers;
     }
 
+    public byte[] getHeaderHash() {
+        return this.headerHash;
+    }
+
     @Override
     public byte[] getDataBytes() {
         byte[] messageBytes = new byte[0];
@@ -50,6 +57,7 @@ public class HeaderMessage implements MessagePayload {
         for(HeaderPayload hp : headers) {
             messageBytes = appendBytes(messageBytes, hp.getDataBytes());
         }
+        messageBytes = appendBytes(messageBytes, headerHash);
         return messageBytes;
     }
 
@@ -62,6 +70,7 @@ public class HeaderMessage implements MessagePayload {
         private int headerCount;
         private char[] headerType;
         private HeaderPayload[] headers;
+        private byte[] headerHash;
 
         private Builder(){}
 
@@ -81,6 +90,11 @@ public class HeaderMessage implements MessagePayload {
 
         public Builder setHeaders(HeaderPayload[] headers) {
             this.headers = headers;
+            return this;
+        }
+
+        public Builder setHeaderHash(byte[] headerHash) {
+            this.headerHash = headerHash;
             return this;
         }
 

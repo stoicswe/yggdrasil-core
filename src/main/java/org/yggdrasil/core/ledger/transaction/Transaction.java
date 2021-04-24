@@ -7,6 +7,7 @@ import org.yggdrasil.core.serialization.TransactionDeserializer;
 import org.yggdrasil.core.utils.CryptoHasher;
 import org.yggdrasil.core.utils.DateTimeUtil;
 import org.yggdrasil.node.network.messages.payloads.TransactionMessage;
+import org.yggdrasil.node.network.messages.payloads.TransactionPayload;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -36,7 +37,8 @@ public class Transaction implements Serializable {
     private final BigDecimal value;
     private final String note;
     private final byte[] signature;
-    private final byte[] txnHash;
+    private byte[] txnHash;
+    private int nonce;
 
     protected Transaction(Builder builder) throws NoSuchAlgorithmException {
         this.index = builder.index;
@@ -79,6 +81,19 @@ public class Transaction implements Serializable {
 
     public byte[] getSignature() {
         return signature;
+    }
+
+    public byte[] rehash() throws NoSuchAlgorithmException {
+        this.txnHash = CryptoHasher.hash(this);
+        return this.txnHash;
+    }
+
+    public void incrementNonce() {
+        this.nonce++;
+    }
+
+    public int getNonce() {
+        return nonce;
     }
 
     public boolean compareTxnHash(byte[] txnHash) {
@@ -165,7 +180,7 @@ public class Transaction implements Serializable {
             return new Transaction(this);
         }
 
-        public Transaction buildFromMessage(TransactionMessage transactionMessage) throws NoSuchAlgorithmException {
+        public Transaction buildFromMessage(TransactionPayload transactionMessage) throws NoSuchAlgorithmException {
             this.index = UUID.fromString(String.valueOf(transactionMessage.getIndex()));
             this.timestamp = DateTimeUtil.fromMessageTimestamp(transactionMessage.getTimestamp());
             this.origin = transactionMessage.getOriginAddress();
