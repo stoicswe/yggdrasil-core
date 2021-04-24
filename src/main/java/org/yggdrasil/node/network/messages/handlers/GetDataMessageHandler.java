@@ -39,6 +39,9 @@ public class GetDataMessageHandler implements MessageHandler<GetDataMessage> {
         switch (Objects.requireNonNull(GetDataType.getByValue(getDataMessage.getType()))) {
             case BLOCK:
                 headers = new ArrayList<>();
+                if(getDataMessage.getHashCount() > 0 || getDataMessage.getObjectHashes().length > 0){
+                    throw new InvalidMessageException("Message received is invalid for this type of data.");
+                }
                 Optional<Block> opBlock = blockchain.getBlock(getDataMessage.getStopHash());
                 if (opBlock.isPresent()) {
                     Block b = opBlock.get();
@@ -76,52 +79,50 @@ public class GetDataMessageHandler implements MessageHandler<GetDataMessage> {
                         .build();
                 break;
             case BLOCKCHAIN:
-                if(getDataMessage.getHashCount() == getDataMessage.getObjectHashes().length) {
-                    headers = new ArrayList<>();
-                    for (byte[] blockHash : getDataMessage.getObjectHashes()) {
-                        Optional<Block> bs = blockchain.getBlock(blockHash);
-                        if(bs.isPresent()) {
-                            Block b = bs.get();
-                            HeaderPayload hp = HeaderPayload.Builder.newBuilder()
-                                    .setIndex(b.getIndex().toString().toCharArray())
-                                    .setTime((int) b.getTimestamp().toEpochSecond())
-                                    .setHash(b.getBlockHash())
-                                    .setTransactionCount((b.getData() instanceof Object[]) ? ((Object[]) b.getData()).length : 0)
-                                    .setPreviousHash(b.getPreviousBlockHash())
-                                    .build();
-                            headers.add(hp);
-                        }
-                    }
-                    messagePayload = HeaderMessage.Builder.newBuilder()
-                            .setHeaderType(HeaderType.BLOCK_HEADER)
-                            .setHeaderCount(headers.size())
-                            .setHeaders(headers.toArray(HeaderPayload[]::new))
-                            .build();
-                } else {
+                if(getDataMessage.getHashCount() != getDataMessage.getObjectHashes().length) {
                     throw new InvalidMessageException("Message received reported wrong hash count versus data provided.");
                 }
+                headers = new ArrayList<>();
+                for (byte[] blockHash : getDataMessage.getObjectHashes()) {
+                    Optional<Block> bs = blockchain.getBlock(blockHash);
+                    if(bs.isPresent()) {
+                        Block b = bs.get();
+                        HeaderPayload hp = HeaderPayload.Builder.newBuilder()
+                                .setIndex(b.getIndex().toString().toCharArray())
+                                .setTime((int) b.getTimestamp().toEpochSecond())
+                                .setHash(b.getBlockHash())
+                                .setTransactionCount((b.getData() instanceof Object[]) ? ((Object[]) b.getData()).length : 0)
+                                .setPreviousHash(b.getPreviousBlockHash())
+                                .build();
+                        headers.add(hp);
+                    }
+                }
+                messagePayload = HeaderMessage.Builder.newBuilder()
+                        .setHeaderType(HeaderType.BLOCK_HEADER)
+                        .setHeaderCount(headers.size())
+                        .setHeaders(headers.toArray(HeaderPayload[]::new))
+                        .build();
                 break;
             case TRANSACTION:
-                if(getDataMessage.getHashCount() == 1) {
-                    Optional<Block> txnOpBlock = blockchain.getBlock(getDataMessage.getStopHash());
-                    if(txnOpBlock.isPresent()){
-                        Block b = txnOpBlock.get();
-                        Optional<Transaction> txnObj = b.getTransaction(getDataMessage.getStopHash());
-                        if(txnObj.isPresent()) {
-                            Transaction txn = txnObj.get();
-                            TransactionPayload txnPayload = TransactionPayload.Builder.newBuilder()
-                                    .buildFromTransaction(txn)
-                                    .setBlockHash(b.getBlockHash())
-                                    .build();
-                            // make a transaction message
-                            messagePayload = TransactionMessage.Builder.newBuilder()
-                                    .setTxnCount(1)
-                                    .setTxns(new TransactionPayload[]{txnPayload})
-                                    .build();
-                        }
-                    }
-                } else {
+                if(getDataMessage.getHashCount() > 0 || getDataMessage.getObjectHashes().length > 0) {
                     throw new InvalidMessageException("Message received reported requested too many items for the type.");
+                }
+                Optional<Block> txnOpBlock = blockchain.getBlock(getDataMessage.getStopHash());
+                if(txnOpBlock.isPresent()){
+                    Block b = txnOpBlock.get();
+                    Optional<Transaction> txnObj = b.getTransaction(getDataMessage.getStopHash());
+                    if(txnObj.isPresent()) {
+                        Transaction txn = txnObj.get();
+                        TransactionPayload txnPayload = TransactionPayload.Builder.newBuilder()
+                                .buildFromTransaction(txn)
+                                .setBlockHash(b.getBlockHash())
+                                .build();
+                        // make a transaction message
+                        messagePayload = TransactionMessage.Builder.newBuilder()
+                                .setTxnCount(1)
+                                .setTxns(new TransactionPayload[]{txnPayload})
+                                .build();
+                    }
                 }
                 break;
             case MEMPOOL:
