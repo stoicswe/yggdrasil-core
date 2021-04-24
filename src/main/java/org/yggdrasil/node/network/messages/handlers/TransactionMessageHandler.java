@@ -10,6 +10,7 @@ import org.yggdrasil.core.utils.CryptoHasher;
 import org.yggdrasil.node.network.messages.MessagePayload;
 import org.yggdrasil.node.network.messages.payloads.AcknowledgeMessage;
 import org.yggdrasil.node.network.messages.payloads.TransactionMessage;
+import org.yggdrasil.node.network.messages.payloads.TransactionPayload;
 import org.yggdrasil.node.network.runners.NodeConnection;
 
 import java.security.NoSuchAlgorithmException;
@@ -24,11 +25,18 @@ public class TransactionMessageHandler implements MessageHandler<TransactionMess
 
     @Override
     public MessagePayload handleMessagePayload(TransactionMessage transactionMessage, NodeConnection nodeConnection) throws NoSuchAlgorithmException {
-        Transaction txn = Transaction.Builder.Builder().buildFromMessage(transactionMessage);
-        logger.info("Handling new transaction {}", txn.toString());
-        this.mempool.putTransaction(txn);
+
+        if(transactionMessage.getTxns().length == transactionMessage.getTxnCount()) {
+            for(TransactionPayload txnp : transactionMessage.getTxns()) {
+                Transaction txn = Transaction.Builder.Builder().buildFromMessage(txnp);
+                logger.info("Handling new transaction {}", txn.toString());
+                this.mempool.putTransaction(txn);
+            }
+        }
+
         return AcknowledgeMessage.Builder.newBuilder()
                 .setAcknowledgeChecksum(CryptoHasher.hash(transactionMessage))
                 .build();
+
     }
 }

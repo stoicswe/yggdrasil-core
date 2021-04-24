@@ -36,7 +36,7 @@ public class MessagePoolRunner extends TimerTask {
 
     @Override
     public void run() {
-        logger.debug("Checking for any expired messages.");
+        logger.info("Checking for any expired messages.");
         List<ExpiringMessageRecord> expiringMessages = this.messagePool.checkMessages();
         for(ExpiringMessageRecord exmr : expiringMessages) {
             try {

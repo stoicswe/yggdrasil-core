@@ -3,6 +3,7 @@ package org.yggdrasil.node.network.messages.payloads;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.SerializationUtils;
 import org.yggdrasil.node.network.messages.MessagePayload;
+import org.yggdrasil.node.network.messages.enums.GetDataType;
 
 import javax.validation.constraints.NotNull;
 
@@ -24,7 +25,7 @@ public class GetDataMessage implements MessagePayload {
     @NotNull
     private final int hashCount;
     @NotNull
-    private final byte[] objectHashes;
+    private final byte[][] objectHashes;
     @NotNull
     private final byte[] stopHash;
 
@@ -48,7 +49,7 @@ public class GetDataMessage implements MessagePayload {
         return hashCount;
     }
 
-    public byte[] getObjectHashes() {
+    public byte[][] getObjectHashes() {
         return objectHashes;
     }
 
@@ -76,7 +77,7 @@ public class GetDataMessage implements MessagePayload {
         private int version;
         private char[] type;
         private int hashCount;
-        private byte[] objectHashes;
+        private byte[][] objectHashes;
         private byte[] stopHash;
 
         private Builder(){}
@@ -86,8 +87,8 @@ public class GetDataMessage implements MessagePayload {
             return this;
         }
 
-        public Builder setType(char[] type) {
-            this.type = type;
+        public Builder setDataType(GetDataType type) {
+            this.type = type.getMessageValue();
             return this;
         }
 
@@ -96,7 +97,7 @@ public class GetDataMessage implements MessagePayload {
             return this;
         }
 
-        public Builder setObjectHashes(byte[] objectHashes) {
+        public Builder setObjectHashes(byte[][] objectHashes) {
             this.objectHashes = objectHashes;
             return this;
         }

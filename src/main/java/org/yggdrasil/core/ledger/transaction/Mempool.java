@@ -32,6 +32,10 @@ public class Mempool {
         this.transactionPool = new ArrayList<>();
     }
 
+    public int size() {
+        return transactionPool.size();
+    }
+
     public void putTransaction(Transaction transaction) {
         logger.trace("In putTransaction");
         this.transactionPool.add(transaction);
