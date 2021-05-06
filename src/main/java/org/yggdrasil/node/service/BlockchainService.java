@@ -196,7 +196,7 @@ public class BlockchainService {
     // This will be replaced with the validator, using PoS as the system for validation
     // This will could eventually be used for customizing the hash.
     private Block proofOfWork(int prefix, Block currentBlock) throws Exception {
-        List<Transaction> blockTransactions = new ArrayList<>(Arrays.asList((Transaction[]) currentBlock.getData()));
+        List<Transaction> blockTransactions = currentBlock.getData();
         blockTransactions.sort(Comparator.comparing(Transaction::getTimestamp));
         Block sortedBlock = Block.Builder.newBuilder()
                 .setPreviousBlock(currentBlock.getPreviousBlockHash())

@@ -15,18 +15,18 @@ import javax.validation.constraints.NotNull;
  * @since 0.0.10
  * @author nathanielbunch
  */
-public class HeaderMessage implements MessagePayload {
+public class BlockchainMessage implements MessagePayload {
 
     @NotNull
     private final int headerCount;
     @NotNull
     private final char[] headerType;
     @NotNull
-    private final HeaderPayload[] headers;
+    private final BlockHeaderPayload[] headers;
     @NotNull
     private final byte[] headerHash;
 
-    private HeaderMessage(Builder builder) {
+    private BlockchainMessage(Builder builder) {
         this.headerCount = builder.headerCount;
         this.headerType = builder.headerType;
         this.headers = builder.headers;
@@ -41,7 +41,7 @@ public class HeaderMessage implements MessagePayload {
         return headerType;
     }
 
-    public HeaderPayload[] getHeaders() {
+    public BlockHeaderPayload[] getHeaders() {
         return headers;
     }
 
@@ -54,7 +54,7 @@ public class HeaderMessage implements MessagePayload {
         byte[] messageBytes = new byte[0];
         messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(headerCount));
         messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(headerType));
-        for(HeaderPayload hp : headers) {
+        for(BlockHeaderPayload hp : headers) {
             messageBytes = appendBytes(messageBytes, hp.getDataBytes());
         }
         messageBytes = appendBytes(messageBytes, headerHash);
@@ -69,7 +69,7 @@ public class HeaderMessage implements MessagePayload {
 
         private int headerCount;
         private char[] headerType;
-        private HeaderPayload[] headers;
+        private BlockHeaderPayload[] headers;
         private byte[] headerHash;
 
         private Builder(){}
@@ -88,7 +88,7 @@ public class HeaderMessage implements MessagePayload {
             return this;
         }
 
-        public Builder setHeaders(HeaderPayload[] headers) {
+        public Builder setHeaders(BlockHeaderPayload[] headers) {
             this.headers = headers;
             return this;
         }
@@ -98,8 +98,8 @@ public class HeaderMessage implements MessagePayload {
             return this;
         }
 
-        public HeaderMessage build() {
-            return new HeaderMessage(this);
+        public BlockchainMessage build() {
+            return new BlockchainMessage(this);
         }
 
     }

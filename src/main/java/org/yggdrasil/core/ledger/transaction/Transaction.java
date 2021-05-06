@@ -48,6 +48,7 @@ public class Transaction implements Serializable {
         this.value = builder.value;
         this.note = builder.note;
         this.signature = builder.signature;
+        this.nonce = builder.nonce;
         this.txnHash = CryptoHasher.hash(this);
     }
 
@@ -126,6 +127,7 @@ public class Transaction implements Serializable {
         protected byte[] destination;
         protected BigDecimal value;
         protected String note;
+        protected int nonce;
         protected byte[] signature;
 
         private Builder(){}
@@ -188,6 +190,7 @@ public class Transaction implements Serializable {
             this.value = transactionMessage.getValue();
             this.note = String.valueOf(transactionMessage.getNote());
             this.signature = transactionMessage.getSignature();
+            this.nonce = transactionMessage.getNonce();
             return new Transaction(this);
         }
     }

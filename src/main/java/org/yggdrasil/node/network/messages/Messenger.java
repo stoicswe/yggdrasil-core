@@ -46,9 +46,9 @@ public class Messenger {
     @Autowired
     private GetDataMessageHandler getDataMessageHandler;
     @Autowired
-    private HeaderMessageHandler headerMessageHandler;
+    private BlockMessageHandler blockMessageHandler;
     @Autowired
-    private HeaderPayloadMessageHandler headerPayloadMessageHandler;
+    private BlockchainMessageHandler blockchainMessageHandler;
     @Autowired
     private TransactionMessageHandler transactionMessageHandler;
     @Autowired
@@ -125,12 +125,19 @@ public class Messenger {
                 case GET_DATA:
                     logger.info("Handling {} message.", RequestType.GET_DATA);
                     messagePayload = this.getDataMessageHandler.handleMessagePayload((GetDataMessage) message.getPayload(), nodeConnection);
+                    returnMessage = Message.Builder.newBuilder()
+                            .setNetwork(NetworkType.getByValue(message.getNetwork()))
+                            .setRequestType(RequestType.DATA_RESP)
+                            .setMessagePayload(messagePayload)
+                            .setPayloadSize(BigInteger.valueOf(GraphLayout.parseInstance(messagePayload).totalSize()))
+                            .setChecksum(CryptoHasher.hash(messagePayload))
+                            .build();
                     break;
                 case DATA_RESP:
                     logger.info("Handling {} message.", RequestType.DATA_RESP);
-                    if (message.getPayload() instanceof HeaderMessage) {
-                        logger.info("{} message is a HeaderMessage.", RequestType.DATA_RESP);
-                        messagePayload = this.headerMessageHandler.handleMessagePayload((HeaderMessage) message.getPayload(), nodeConnection);
+                    if (message.getPayload() instanceof BlockchainMessage) {
+                        logger.info("{} message is a BlockchainMessage.", RequestType.DATA_RESP);
+                        messagePayload = this.blockchainMessageHandler.handleMessagePayload((BlockchainMessage) message.getPayload(), nodeConnection);
                         returnMessage = Message.Builder.newBuilder()
                                 .setNetwork(NetworkType.getByValue(message.getNetwork()))
                                 .setRequestType(RequestType.ACKNOWLEDGE)
@@ -139,9 +146,9 @@ public class Messenger {
                                 .setChecksum(CryptoHasher.hash(messagePayload))
                                 .build();
                     }
-                    if (message.getPayload() instanceof HeaderPayload) {
-                        logger.info("{} message is a HeaderPayload.", RequestType.DATA_RESP);
-                        messagePayload = this.headerPayloadMessageHandler.handleMessagePayload((HeaderPayload) message.getPayload(), nodeConnection);
+                    if (message.getPayload() instanceof BlockMessage) {
+                        logger.info("{} message is a BlockMessage", RequestType.DATA_RESP);
+                        messagePayload = this.blockMessageHandler.handleMessagePayload((BlockMessage) message.getPayload(), nodeConnection);
                         returnMessage = Message.Builder.newBuilder()
                                 .setNetwork(NetworkType.getByValue(message.getNetwork()))
                                 .setRequestType(RequestType.ACKNOWLEDGE)
