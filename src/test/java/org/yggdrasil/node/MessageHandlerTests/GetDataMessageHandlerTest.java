@@ -19,7 +19,6 @@ import org.yggdrasil.node.network.exceptions.InvalidMessageException;
 import org.yggdrasil.node.network.messages.MessagePayload;
 import org.yggdrasil.node.network.messages.MessagePool;
 import org.yggdrasil.node.network.messages.enums.GetDataType;
-import org.yggdrasil.node.network.messages.enums.HeaderType;
 import org.yggdrasil.node.network.messages.handlers.GetDataMessageHandler;
 import org.yggdrasil.node.network.messages.payloads.*;
 

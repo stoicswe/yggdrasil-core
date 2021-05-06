@@ -6,7 +6,6 @@ import org.yggdrasil.core.ledger.chain.Block;
 import org.yggdrasil.core.ledger.chain.Blockchain;
 import org.yggdrasil.core.utils.CryptoHasher;
 import org.yggdrasil.node.network.messages.MessagePayload;
-import org.yggdrasil.node.network.messages.enums.HeaderType;
 import org.yggdrasil.node.network.messages.payloads.AcknowledgeMessage;
 import org.yggdrasil.node.network.messages.payloads.BlockchainMessage;
 import org.yggdrasil.node.network.messages.payloads.BlockHeaderPayload;
@@ -26,7 +25,6 @@ public class BlockchainMessageHandler implements MessageHandler<BlockchainMessag
     public MessagePayload handleMessagePayload(BlockchainMessage blockchainMessage, NodeConnection nodeConnection) throws NoSuchAlgorithmException {
 
         if(blockchainMessage.getHeaders().length == blockchainMessage.getHeaderCount()) {
-            HeaderType headerType = HeaderType.getByValue(blockchainMessage.getHeaderType());
             List<Block> blcks = new ArrayList<>();
             for(BlockHeaderPayload hp : blockchainMessage.getHeaders()) {
 
