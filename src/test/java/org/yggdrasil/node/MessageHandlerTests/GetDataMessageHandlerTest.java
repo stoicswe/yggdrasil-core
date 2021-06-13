@@ -121,7 +121,6 @@ public class GetDataMessageHandlerTest {
         assertThat(returnMessagePayload instanceof BlockchainMessage);
         BlockchainMessage blockchainMessage = (BlockchainMessage) returnMessagePayload;
         assertThat(blockchainMessage.getHeaderCount() == 1);
-        assertThat(HeaderType.BLOCK_HEADER.equals(HeaderType.getByValue(blockchainMessage.getHeaderType())));
         BlockHeaderPayload blockHeaderPayload = (BlockHeaderPayload) blockchainMessage.getHeaders()[0];
         assertThat(this.block.getIndex().toString().contentEquals(String.valueOf(blockHeaderPayload.getIndex())));
         assertThat(this.block.compareBlockHash(blockHeaderPayload.getHash()));

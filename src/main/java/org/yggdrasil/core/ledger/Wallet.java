@@ -1,6 +1,8 @@
 package org.yggdrasil.core.ledger;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import org.yggdrasil.core.serialization.HashSerializer;
 import org.yggdrasil.core.utils.CryptoHasher;
 import org.yggdrasil.core.utils.DateTimeUtil;
 
@@ -27,8 +29,10 @@ public class Wallet implements Serializable {
     private final PublicKey publicKey;
     private final UUID index;
     private final ZonedDateTime creationDate;
+    @JsonSerialize(using = HashSerializer.class)
     private final byte[] address;
     private final BigDecimal balance;
+    @JsonSerialize(using = HashSerializer.class)
     private final byte[] walletHash;
 
     private Wallet(WBuilder builder) throws NoSuchAlgorithmException {
@@ -80,7 +84,7 @@ public class Wallet implements Serializable {
     }
 
     public String getHumanReadableAddress() {
-        return "0x" + CryptoHasher.humanReadableHash(address);
+        return CryptoHasher.humanReadableHash(address);
     }
 
     @Override

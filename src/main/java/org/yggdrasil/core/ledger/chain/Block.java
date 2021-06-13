@@ -2,7 +2,9 @@ package org.yggdrasil.core.ledger.chain;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.yggdrasil.core.ledger.transaction.Transaction;
+import org.yggdrasil.core.serialization.HashSerializer;
 import org.yggdrasil.core.utils.CryptoHasher;
 import org.yggdrasil.core.utils.DateTimeUtil;
 import org.yggdrasil.node.network.messages.payloads.BlockHeaderPayload;
@@ -31,9 +33,13 @@ public final class Block implements Serializable {
     private final UUID index;
     private final ZonedDateTime timestamp;
     private final List<Transaction> data;
+    @JsonSerialize(using = HashSerializer.class)
     private final byte[] previousBlockHash;
+    @JsonSerialize(using = HashSerializer.class)
     private byte[] blockHash;
+    @JsonSerialize(using = HashSerializer.class)
     private byte[] validator;
+    @JsonSerialize(using = HashSerializer.class)
     private byte[] signature;
     private int nonce;
 

@@ -27,7 +27,7 @@ public class BlockchainMessageHandler implements MessageHandler<BlockchainMessag
         if(blockchainMessage.getHeaders().length == blockchainMessage.getHeaderCount()) {
             List<Block> blcks = new ArrayList<>();
             for(BlockHeaderPayload hp : blockchainMessage.getHeaders()) {
-
+                
             }
         }
 
