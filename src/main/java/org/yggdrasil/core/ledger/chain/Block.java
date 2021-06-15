@@ -2,16 +2,19 @@ package org.yggdrasil.core.ledger.chain;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.yggdrasil.core.ledger.transaction.Transaction;
+import org.yggdrasil.core.serialization.HashSerializer;
 import org.yggdrasil.core.utils.CryptoHasher;
 import org.yggdrasil.core.utils.DateTimeUtil;
+import org.yggdrasil.node.network.messages.payloads.BlockHeaderPayload;
+import org.yggdrasil.node.network.messages.payloads.TransactionPayload;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
+import java.security.NoSuchAlgorithmException;
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * The Block is the main unit of data in Yggdrasil. Blocks contain
@@ -29,18 +32,23 @@ public final class Block implements Serializable {
     // Make the different fields of the block immutable
     private final UUID index;
     private final ZonedDateTime timestamp;
-    private final Object data;
+    private final List<Transaction> data;
+    @JsonSerialize(using = HashSerializer.class)
     private final byte[] previousBlockHash;
+    @JsonSerialize(using = HashSerializer.class)
     private byte[] blockHash;
+    @JsonSerialize(using = HashSerializer.class)
     private byte[] validator;
+    @JsonSerialize(using = HashSerializer.class)
     private byte[] signature;
     private int nonce;
 
-    private Block(Builder blockBuilder) throws Exception {
+    private Block(Builder blockBuilder) throws NoSuchAlgorithmException {
         this.index = blockBuilder.index;
         this.timestamp = blockBuilder.timestamp;
         this.data = blockBuilder.data;
         this.previousBlockHash = blockBuilder.previousBlock;
+        this.nonce = blockBuilder.nonce;
         this.blockHash = CryptoHasher.hash(this);
     }
 
@@ -52,7 +60,7 @@ public final class Block implements Serializable {
         return timestamp;
     }
 
-    public Object getData() {
+    public List<Transaction> getData() {
         return data;
     }
 
@@ -93,12 +101,7 @@ public final class Block implements Serializable {
     }
 
     public Optional<Transaction> getTransaction(byte[] txnHash) {
-        if(this.data instanceof List) {
-            List<Transaction> txns = (ArrayList<Transaction>) this.data;
-            Optional<Transaction> txn = txns.stream().filter(ftxn -> ftxn.compareTxnHash(txnHash)).findFirst();
-            return txn;
-        }
-        return Optional.empty();
+        return this.data.stream().filter(ftxn -> ftxn.compareTxnHash(txnHash)).findFirst();
     }
 
     public boolean compareBlockHash(byte[] blockHash) {
@@ -122,7 +125,13 @@ public final class Block implements Serializable {
     public static Block genesis() throws Exception {
         return new Builder()
                 .setPreviousBlock(null)
-                .setData("'Think Different' - Steve Jobs")
+                .setData(Collections.singletonList(Transaction.Builder.Builder()
+                        .setOrigin(new byte[0])
+                        .setDestination(new byte[0])
+                        .setNote("'Stay thinking different' - Steve Jobs")
+                        .setSignature(new byte[0])
+                        .setValue(BigDecimal.valueOf(10, 7))
+                        .build()))
                 .build();
     }
 
@@ -134,8 +143,10 @@ public final class Block implements Serializable {
 
         private UUID index;
         private ZonedDateTime timestamp;
-        private Object data;
+        private List<Transaction> data;
         private byte[] previousBlock;
+        private byte[] blockHash;
+        private int nonce;
 
         private Builder(){}
 
@@ -143,7 +154,7 @@ public final class Block implements Serializable {
             return new Builder();
         }
 
-        public Builder setData(Object data){
+        public Builder setData(List<Transaction> data){
             this.data = data;
             return this;
         }
@@ -157,6 +168,18 @@ public final class Block implements Serializable {
             this.index = UUID.randomUUID();
             timestamp = DateTimeUtil.getCurrentTimestamp();
             return new Block(this);
+        }
+
+        public Block buildFromBlockHeaderMessage(BlockHeaderPayload blockHeaderPayload) throws NoSuchAlgorithmException {
+            this.previousBlock = blockHeaderPayload.getPrevHash();
+            this.index = UUID.fromString(String.valueOf(blockHeaderPayload.getIndex()));
+            this.timestamp = DateTimeUtil.fromMessageTimestamp(blockHeaderPayload.getTimestamp());
+            this.nonce = blockHeaderPayload.getNonce();
+            this.blockHash = blockHeaderPayload.getHash();
+            this.data = new ArrayList<>();
+            Block blck = new Block(this);
+            blck.setBlockHash(this.blockHash);
+            return blck;
         }
 
     }

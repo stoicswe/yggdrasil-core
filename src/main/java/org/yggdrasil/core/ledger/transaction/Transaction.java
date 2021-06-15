@@ -3,6 +3,8 @@ package org.yggdrasil.core.ledger.transaction;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import org.yggdrasil.core.serialization.HashSerializer;
 import org.yggdrasil.core.serialization.TransactionDeserializer;
 import org.yggdrasil.core.utils.CryptoHasher;
 import org.yggdrasil.core.utils.DateTimeUtil;
@@ -32,11 +34,15 @@ public class Transaction implements Serializable {
 
     private final UUID index;
     private final ZonedDateTime timestamp;
+    @JsonSerialize(using = HashSerializer.class)
     private final byte[] origin;
+    @JsonSerialize(using = HashSerializer.class)
     private final byte[] destination;
     private final BigDecimal value;
     private final String note;
+    @JsonSerialize(using = HashSerializer.class)
     private final byte[] signature;
+    @JsonSerialize(using = HashSerializer.class)
     private byte[] txnHash;
     private int nonce;
 
@@ -48,6 +54,7 @@ public class Transaction implements Serializable {
         this.value = builder.value;
         this.note = builder.note;
         this.signature = builder.signature;
+        this.nonce = builder.nonce;
         this.txnHash = CryptoHasher.hash(this);
     }
 
@@ -126,6 +133,7 @@ public class Transaction implements Serializable {
         protected byte[] destination;
         protected BigDecimal value;
         protected String note;
+        protected int nonce;
         protected byte[] signature;
 
         private Builder(){}
@@ -188,6 +196,7 @@ public class Transaction implements Serializable {
             this.value = transactionMessage.getValue();
             this.note = String.valueOf(transactionMessage.getNote());
             this.signature = transactionMessage.getSignature();
+            this.nonce = transactionMessage.getNonce();
             return new Transaction(this);
         }
     }

@@ -10,8 +10,6 @@ import org.yggdrasil.node.network.exceptions.InvalidMessageException;
 import org.yggdrasil.node.network.messages.MessagePayload;
 import org.yggdrasil.node.network.messages.MessagePool;
 import org.yggdrasil.node.network.messages.enums.GetDataType;
-import org.yggdrasil.node.network.messages.enums.HeaderType;
-import org.yggdrasil.node.network.messages.enums.RequestType;
 import org.yggdrasil.node.network.messages.payloads.*;
 import org.yggdrasil.node.network.runners.NodeConnection;
 
@@ -35,48 +33,44 @@ public class GetDataMessageHandler implements MessageHandler<GetDataMessage> {
 
         MessagePayload messagePayload = null;
 
-        List<HeaderPayload> headers;
+        List<BlockHeaderPayload> headers;
         switch (Objects.requireNonNull(GetDataType.getByValue(getDataMessage.getType()))) {
             case BLOCK:
-                headers = new ArrayList<>();
                 if(getDataMessage.getHashCount() > 0 || getDataMessage.getObjectHashes().length > 0){
                     throw new InvalidMessageException("Message received is invalid for this type of data.");
                 }
                 Optional<Block> opBlock = blockchain.getBlock(getDataMessage.getStopHash());
                 if (opBlock.isPresent()) {
                     Block b = opBlock.get();
-                    HeaderPayload hp;
-                    List<Transaction> txns = null;
+                    BlockMessage bm;
+                    List<TransactionPayload> txnps = new ArrayList<>();
                     if(b.getData() instanceof List) {
-                        txns = (List<Transaction>) b.getData();
+                        List<Transaction> txns = b.getData();
                         for(Object txnObj : txns) {
                             Transaction txn = (Transaction) txnObj;
-                            hp = HeaderPayload.Builder.newBuilder()
+                            txnps.add(TransactionPayload.Builder.newBuilder()
                                     .setIndex(txn.getIndex().toString().toCharArray())
-                                    .setHash(txn.getTxnHash())
+                                    .setTimestamp((int) txn.getTimestamp().toEpochSecond())
+                                    .setDestinationAddress(txn.getDestination())
+                                    .setOriginAddress(txn.getOrigin())
+                                    .setValue(txn.getValue())
+                                    .setNote(txn.getNote())
                                     .setNonce(txn.getNonce())
-                                    .setPreviousHash(new byte[0])
-                                    .setTime((int) txn.getTimestamp().toEpochSecond())
-                                    .setTransactionCount(-1)
-                                    .build();
-                            headers.add(hp);
+                                    .setBlockHash(b.getBlockHash())
+                                    .setSignature(txn.getSignature())
+                                    .build());
                         }
-                    } else {
-                        hp = HeaderPayload.Builder.newBuilder()
-                                .setHash(b.getBlockHash())
-                                .setNonce(b.getNonce())
-                                .setPreviousHash((b.getPreviousBlockHash() != null) ? b.getPreviousBlockHash() : new byte[0])
-                                .setTime((int) b.getTimestamp().toEpochSecond())
-                                .setTransactionCount(0)
+                        messagePayload = BlockMessage.Builder.newBuilder()
+                                .setIndex(b.getIndex())
+                                .setTimestamp((int) b.getTimestamp().toEpochSecond())
+                                .setTxnPayloads(txnps.toArray(TransactionPayload[]::new))
+                                .setBlockHash(b.getBlockHash())
+                                .setPreviousBlockHash(b.getPreviousBlockHash())
+                                .setValidator(b.getValidator())
+                                .setSignature(b.getSignature())
                                 .build();
-                        headers.add(hp);
                     }
                 }
-                messagePayload = HeaderMessage.Builder.newBuilder()
-                        .setHeaderType(HeaderType.TXN_HEADER)
-                        .setHeaderCount(headers.size())
-                        .setHeaders(headers.toArray(HeaderPayload[]::new))
-                        .build();
                 break;
             case BLOCKCHAIN:
                 if(getDataMessage.getHashCount() != getDataMessage.getObjectHashes().length) {
@@ -87,20 +81,19 @@ public class GetDataMessageHandler implements MessageHandler<GetDataMessage> {
                     Optional<Block> bs = blockchain.getBlock(blockHash);
                     if(bs.isPresent()) {
                         Block b = bs.get();
-                        HeaderPayload hp = HeaderPayload.Builder.newBuilder()
+                        BlockHeaderPayload hp = BlockHeaderPayload.Builder.newBuilder()
                                 .setIndex(b.getIndex().toString().toCharArray())
-                                .setTime((int) b.getTimestamp().toEpochSecond())
+                                .setTimestamp((int) b.getTimestamp().toEpochSecond())
                                 .setHash(b.getBlockHash())
-                                .setTransactionCount((b.getData() instanceof Object[]) ? ((Object[]) b.getData()).length : 0)
+                                .setTransactionCount(b.getData().size())
                                 .setPreviousHash(b.getPreviousBlockHash())
                                 .build();
                         headers.add(hp);
                     }
                 }
-                messagePayload = HeaderMessage.Builder.newBuilder()
-                        .setHeaderType(HeaderType.BLOCK_HEADER)
+                messagePayload = BlockchainMessage.Builder.newBuilder()
                         .setHeaderCount(headers.size())
-                        .setHeaders(headers.toArray(HeaderPayload[]::new))
+                        .setHeaders(headers.toArray(BlockHeaderPayload[]::new))
                         .build();
                 break;
             case TRANSACTION:

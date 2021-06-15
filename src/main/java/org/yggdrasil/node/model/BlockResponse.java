@@ -1,6 +1,8 @@
 package org.yggdrasil.node.model;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import org.yggdrasil.core.serialization.HashSerializer;
 
 import java.time.ZonedDateTime;
 import java.util.UUID;
@@ -19,6 +21,7 @@ public class BlockResponse {
     private final UUID index;
     private final ZonedDateTime timestamp;
     private final Long size;
+    @JsonSerialize(using = HashSerializer.class)
     private final byte[] blockHash;
 
     private BlockResponse(Builder builder) {

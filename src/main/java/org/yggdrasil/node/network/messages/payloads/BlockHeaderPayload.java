@@ -15,7 +15,7 @@ import javax.validation.constraints.NotNull;
  * @since 0.0.10
  * @author nathanielbunch
  */
-public class HeaderPayload implements MessagePayload {
+public class BlockHeaderPayload implements MessagePayload {
 
     @NotNull
     private final char[] index;
@@ -26,16 +26,16 @@ public class HeaderPayload implements MessagePayload {
     @NotNull
     private final int transactionCount;
     @NotNull
-    private final int time;
+    private final int timestamp;
     @NotNull
     private final int nonce;
 
-    private HeaderPayload(Builder builder) {
+    private BlockHeaderPayload(Builder builder) {
         this.index = builder.index;
         this.hash = builder.hash;
         this.prevHash = builder.previousHash;
         this.transactionCount = builder.transactionCount;
-        this.time = builder.time;
+        this.timestamp = builder.timestamp;
         this.nonce = builder.nonce;
     }
 
@@ -55,8 +55,8 @@ public class HeaderPayload implements MessagePayload {
         return transactionCount;
     }
 
-    public int getTime() {
-        return time;
+    public int getTimestamp() {
+        return timestamp;
     }
 
     public int getNonce() {
@@ -70,7 +70,7 @@ public class HeaderPayload implements MessagePayload {
         messageBytes = appendBytes(messageBytes, hash);
         messageBytes = appendBytes(messageBytes, prevHash);
         messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(transactionCount));
-        messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(time));
+        messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(timestamp));
         messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(nonce));
         return messageBytes;
     }
@@ -85,7 +85,7 @@ public class HeaderPayload implements MessagePayload {
         private byte[] hash;
         private byte[] previousHash;
         private int transactionCount;
-        private int time;
+        private int timestamp;
         private int nonce;
 
         private Builder(){}
@@ -114,8 +114,8 @@ public class HeaderPayload implements MessagePayload {
             return this;
         }
 
-        public Builder setTime(int time) {
-            this.time = time;
+        public Builder setTimestamp(int timestamp) {
+            this.timestamp = timestamp;
             return this;
         }
 
@@ -124,8 +124,8 @@ public class HeaderPayload implements MessagePayload {
             return this;
         }
 
-        public HeaderPayload build() {
-            return new HeaderPayload(this);
+        public BlockHeaderPayload build() {
+            return new BlockHeaderPayload(this);
         }
 
     }

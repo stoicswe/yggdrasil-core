@@ -109,8 +109,8 @@ public class BlockchainService {
                 .setNetwork(nodeConfig.getNetwork())
                 .setRequestType(RequestType.DATA_RESP)
                 .setMessagePayload(txnMessage)
-                .setPayloadSize(BigInteger.valueOf(GraphLayout.parseInstance(txnPayload).totalSize()))
-                .setChecksum(CryptoHasher.hash(txnPayload))
+                .setPayloadSize(BigInteger.valueOf(GraphLayout.parseInstance(txnMessage).totalSize()))
+                .setChecksum(CryptoHasher.hash(txnMessage))
                 .build();
         this.messenger.sendBroadcastMessage(txnMsg);
     }
@@ -175,7 +175,7 @@ public class BlockchainService {
         logger.info("New block: {}", newBlock.toString());
 
         Transaction blockMineAward = Transaction.Builder.Builder()
-                .setOrigin("SSBlockchainNetwork")
+                .setOrigin("7c5ec4b1ad5bdfc593587f3a9d50327ede02076b")
                 .setDestination(currentWallet.getHumanReadableAddress())
                 .setValue(new BigDecimal(newBlock.toString().length() / 9.23).setScale(12, RoundingMode.FLOOR))
                 .setNote("Happy mining!")
@@ -196,7 +196,7 @@ public class BlockchainService {
     // This will be replaced with the validator, using PoS as the system for validation
     // This will could eventually be used for customizing the hash.
     private Block proofOfWork(int prefix, Block currentBlock) throws Exception {
-        List<Transaction> blockTransactions = new ArrayList<>(Arrays.asList((Transaction[]) currentBlock.getData()));
+        List<Transaction> blockTransactions = currentBlock.getData();
         blockTransactions.sort(Comparator.comparing(Transaction::getTimestamp));
         Block sortedBlock = Block.Builder.newBuilder()
                 .setPreviousBlock(currentBlock.getPreviousBlockHash())

@@ -4,9 +4,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.yggdrasil.core.ledger.chain.Block;
+import org.yggdrasil.core.ledger.chain.Blockchain;
 import org.yggdrasil.core.ledger.transaction.Mempool;
 import org.yggdrasil.core.ledger.transaction.Transaction;
 import org.yggdrasil.core.utils.CryptoHasher;
+import org.yggdrasil.node.network.exceptions.InvalidMessageException;
 import org.yggdrasil.node.network.messages.MessagePayload;
 import org.yggdrasil.node.network.messages.payloads.AcknowledgeMessage;
 import org.yggdrasil.node.network.messages.payloads.TransactionMessage;
@@ -14,12 +17,17 @@ import org.yggdrasil.node.network.messages.payloads.TransactionPayload;
 import org.yggdrasil.node.network.runners.NodeConnection;
 
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 @Component
 public class TransactionMessageHandler implements MessageHandler<TransactionMessage> {
 
     private Logger logger = LoggerFactory.getLogger(TransactionMessageHandler.class);
 
+    @Autowired
+    private Blockchain blockchain;
     @Autowired
     private Mempool mempool;
 
@@ -30,7 +38,19 @@ public class TransactionMessageHandler implements MessageHandler<TransactionMess
             for(TransactionPayload txnp : transactionMessage.getTxns()) {
                 Transaction txn = Transaction.Builder.Builder().buildFromMessage(txnp);
                 logger.info("Handling new transaction {}", txn.toString());
-                this.mempool.putTransaction(txn);
+                if(txnp.getBlockHash() != null && txnp.getBlockHash().length > 0){
+                    Optional<Block> blck =  blockchain.getBlock(txnp.getBlockHash());
+                    if(blck.isPresent()) {
+                        if(blck.get().getData() instanceof ArrayList) {
+                            List<Transaction> txns = (ArrayList<Transaction>) blck.get().getData();
+                            txns.add(txn);
+                        }
+                    } else {
+                        throw new InvalidMessageException("Transaction message had a non-existent block hash.");
+                    }
+                } else {
+                    this.mempool.putTransaction(txn);
+                }
             }
         }
 
