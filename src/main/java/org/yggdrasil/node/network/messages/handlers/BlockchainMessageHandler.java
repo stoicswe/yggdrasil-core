@@ -27,7 +27,12 @@ public class BlockchainMessageHandler implements MessageHandler<BlockchainMessag
         if(blockchainMessage.getHeaders().length == blockchainMessage.getHeaderCount()) {
             List<Block> blcks = new ArrayList<>();
             for(BlockHeaderPayload hp : blockchainMessage.getHeaders()) {
-                
+                blcks.add(Block.Builder.newBuilder().buildFromBlockHeaderMessage(hp));
+            }
+            try {
+                blockchain.addBlocks(blcks);
+            } catch (CloneNotSupportedException e) {
+                // do nothing
             }
         }
 
