@@ -54,8 +54,6 @@ public class Messenger {
     @Autowired
     private PingMessageHandler pingMessageHandler;
     @Autowired
-    private PongMessageHandler pongMessageHandler;
-    @Autowired
     private AddressResponseMessageHandler addressResponseHandler;
     @Autowired
     private GetAddressMessageHandler getAddressMessageHandler;
@@ -197,7 +195,6 @@ public class Messenger {
                     break;
                 case PONG:
                     logger.info("Handling {} message.", RequestType.PONG);
-                    this.pongMessageHandler.handleMessagePayload((PingPongMessage) message.getPayload(), nodeConnection);
                     messagePayload = AcknowledgeMessage.Builder.newBuilder()
                             .setAcknowledgeChecksum(message.getChecksum())
                             .build();
