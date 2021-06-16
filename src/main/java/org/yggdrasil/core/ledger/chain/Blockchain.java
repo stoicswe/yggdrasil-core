@@ -13,10 +13,7 @@ import org.springframework.stereotype.Component;
 import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -43,14 +40,15 @@ public class Blockchain implements Cloneable {
 
     private UUID nodeIndex;
     private ZonedDateTime timestamp;
-    private List<Block> blocks;
+    private HashMap<byte[], Block> blocks;
 
     @PostConstruct
     public void init() throws Exception {
         this.nodeIndex = nodeConfig.getNodeIndex();
         this.timestamp = DateTimeUtil.getCurrentTimestamp();
-        this.blocks = new ArrayList<>();
-        this.blocks.add(Block.genesis());
+        this.blocks = new HashMap<>();
+        Block genBlock = Block.genesis();
+        this.blocks.put(genBlock.getBlockHash(), genBlock);
     }
 
     public UUID getNodeIndex() {
@@ -62,18 +60,38 @@ public class Blockchain implements Cloneable {
     }
 
     public Block[] getBlocks() {
-        return blocks.toArray(Block[]::new);
+        return blocks.values().toArray(Block[]::new);
+    }
+
+    public void addBlock(Block block) {
+        logger.trace("Received a block to evaluate for adding to the chain");
+        synchronized (lock) {
+            Block storedBlck = this.blocks.get(block.getBlockHash());
+            if (storedBlck != null) {
+                if (storedBlck.getTimestamp().compareTo(block.getTimestamp()) > 0) {
+                    this.blocks.replace(block.getBlockHash(), block);
+                } else if (storedBlck.getTimestamp().compareTo(block.getTimestamp()) == 0) {
+                    if (storedBlck.getData().size() < block.getData().size()) {
+                        this.blocks.replace(block.getBlockHash(), block);
+                    }
+                }
+            } else {
+                this.blocks.put(block.getBlockHash(), block);
+            }
+        }
     }
 
     public void addBlocks(List<Block> blocks) throws CloneNotSupportedException {
         synchronized (lock) {
-            this.blocks.addAll(blocks);
+            for(Block b : blocks) {
+                this.blocks.put(b.getBlockHash(), b);
+            }
         }
         this.checkBlocks();
     }
 
     public Optional<Block> getBlock(byte[] blockHash) {
-        return this.blocks.stream().filter(block -> block.compareBlockHash(blockHash)).findFirst();
+        return Optional.ofNullable(this.blocks.get(blockHash));
     }
 
     public void checkBlocks() throws CloneNotSupportedException {
@@ -83,7 +101,7 @@ public class Blockchain implements Cloneable {
                 if (this.blocks.size() > hotblocks) {
                     try {
                         blockchainIO.dumpChain((Blockchain) this.clone());
-                        this.blocks = new ArrayList<>();
+                        this.blocks = new HashMap<>();
                     } catch (IOException ie) {
                         logger.error("Cannot dump blocks to storage.");
                     }
@@ -92,7 +110,7 @@ public class Blockchain implements Cloneable {
         }
     }
 
-    public void replaceChain(List<Block> newChain) throws Exception {
+    public void replaceChain(HashMap<byte[], Block> newChain) throws Exception {
 
         if(newChain.size() <= this.blocks.size()) {
             logger.debug("Received chain of length [{}] is not longer than local chain size [{}].", newChain.size(), this.blocks.size());
@@ -107,13 +125,14 @@ public class Blockchain implements Cloneable {
 
     }
 
-    public static boolean isValidChain(List<Block> chain) throws Exception {
-        if(!chain.get(0).toString().contentEquals(Block.genesis().toString())){
+    public static boolean isValidChain(HashMap<byte[], Block> chain) throws Exception {
+        List<Block> chainBlocks = (List<Block>) chain.values();
+        if(!chainBlocks.get(0).toString().contentEquals(Block.genesis().toString())){
             return false;
         }
-        for(int i = 1; i < chain.size(); i++){
-            Block b0 = chain.get(i-1);
-            Block b1 = chain.get(i);
+        for(int i = 1; i < chainBlocks.size(); i++){
+            Block b0 = chainBlocks.get(i-1);
+            Block b1 = chainBlocks.get(i);
             if(!CryptoHasher.humanReadableHash(b1.getPreviousBlockHash()).contentEquals(CryptoHasher.humanReadableHash(b0.getBlockHash())) ||
                     !CryptoHasher.humanReadableHash(b1.getBlockHash()).contentEquals(CryptoHasher.humanReadableHash(CryptoHasher.hash(b1)))){
                 return false;
