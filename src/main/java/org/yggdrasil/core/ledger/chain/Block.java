@@ -3,11 +3,14 @@ package org.yggdrasil.core.ledger.chain;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.yggdrasil.core.ledger.transaction.Transaction;
 import org.yggdrasil.core.serialization.HashSerializer;
 import org.yggdrasil.core.utils.CryptoHasher;
 import org.yggdrasil.core.utils.DateTimeUtil;
 import org.yggdrasil.node.network.messages.payloads.BlockHeaderPayload;
+import org.yggdrasil.node.network.messages.payloads.BlockMessage;
 import org.yggdrasil.node.network.messages.payloads.TransactionPayload;
 
 import java.io.Serializable;
@@ -141,6 +144,8 @@ public final class Block implements Serializable {
      */
     public static class Builder {
 
+        private final static Logger logger = LoggerFactory.getLogger(Block.class);
+
         private UUID index;
         private ZonedDateTime timestamp;
         private List<Transaction> data;
@@ -179,6 +184,29 @@ public final class Block implements Serializable {
             this.data = new ArrayList<>();
             Block blck = new Block(this);
             blck.setBlockHash(this.blockHash);
+            return blck;
+        }
+
+        public Block buildFromBlockMessage(BlockMessage blockMessage) throws NoSuchAlgorithmException {
+            this.index = UUID.fromString(String.valueOf(blockMessage.getIndex()));
+            this.timestamp = DateTimeUtil.fromMessageTimestamp(blockMessage.getTimestamp());
+            this.nonce = blockMessage.getNonce();
+            this.blockHash = blockMessage.getBlockHash();
+            this.previousBlock = blockMessage.getPreviousBlockHash();
+            List<Transaction> data = new ArrayList<>();
+            for(TransactionPayload txnPayload : blockMessage.getTxnPayloads()){
+                data.add(Transaction.Builder.Builder().buildFromMessage(txnPayload));
+            }
+            this.data = data;
+            Block blck = new Block(this);
+            if(CryptoHasher.compareHashes(this.blockHash, blck.blockHash)){
+                logger.debug("Locally generated blockhash matched incoming blockhash from payload");
+            } else {
+                logger.debug("Locally generated blockhash did not match, manually setting blockhaash from payload");
+                blck.setBlockHash(this.blockHash);
+            }
+            blck.setSignature(blockMessage.getSignature());
+            blck.setValidator(blockMessage.getValidator());
             return blck;
         }
 
