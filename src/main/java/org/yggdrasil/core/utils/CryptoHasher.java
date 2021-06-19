@@ -39,6 +39,8 @@ public class CryptoHasher {
         blockData = appendBytes(blockData, SerializationUtils.serialize(block.getData().hashCode()));
         blockData = appendBytes(blockData, SerializationUtils.serialize(block.getPreviousBlockHash()));
         blockData = appendBytes(blockData, SerializationUtils.serialize(block.getNonce()));
+        blockData = appendBytes(blockData, block.getValidator());
+        blockData = appendBytes(blockData, block.getSignature());
         return MessageDigest.getInstance(_HASH_ALGORITHM).digest(SerializationUtils.serialize(blockData));
     }
 
@@ -57,6 +59,7 @@ public class CryptoHasher {
         txnData = appendBytes(txnData, SerializationUtils.serialize(transaction.getDestination()));
         txnData = appendBytes(txnData, SerializationUtils.serialize(transaction.getValue()));
         txnData = appendBytes(txnData, SerializationUtils.serialize(transaction.getNote()));
+        txnData = appendBytes(txnData, SerializationUtils.serialize(transaction.getSignature()));
         return MessageDigest.getInstance(_HASH_ALGORITHM).digest(SerializationUtils.serialize(txnData));
     }
 

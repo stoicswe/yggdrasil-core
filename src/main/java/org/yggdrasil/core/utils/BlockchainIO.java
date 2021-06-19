@@ -24,9 +24,8 @@ import java.time.ZonedDateTime;
 @Component
 public class BlockchainIO {
 
-    Logger logger = LoggerFactory.getLogger(BlockchainIO.class);
-
-    private final String _CURRENT_DIRECTORY = System.getProperty("user.dir") + "/.blockchain-data/blockcahin";
+    private final Logger logger = LoggerFactory.getLogger(BlockchainIO.class);
+    private final String _CURRENT_DIRECTORY = System.getProperty("user.dir") + "/.yggdrasil/blockcahin";
     private final String _FILE_EXTENSION = ".0x";
 
     @PostConstruct
@@ -39,7 +38,7 @@ public class BlockchainIO {
     public void dumpChain(Blockchain blockchain) throws IOException {
         Block[] blocks = blockchain.getBlocks();
         for(Block b : blocks) {
-            writeBlock(b);
+            this.writeBlock(b);
         }
     }
 

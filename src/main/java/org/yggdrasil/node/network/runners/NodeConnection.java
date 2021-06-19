@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yggdrasil.node.network.messages.Message;
 import org.yggdrasil.node.network.messages.Messenger;
+import org.yggdrasil.node.network.peer.PeerRecord;
 
 import java.io.*;
 import java.math.BigInteger;
@@ -19,11 +20,11 @@ public class NodeConnection implements Runnable {
 
     Logger logger = LoggerFactory.getLogger(NodeConnection.class);
 
+    private final Messenger messenger;
+    private final Socket nodeSocket;
+    private final ObjectOutputStream objectOutputStream;
+    private final ObjectInputStream objectInputStream;
     private String nodeIdentifier;
-    private Messenger messenger;
-    private Socket nodeSocket;
-    private ObjectOutputStream objectOutputStream;
-    private ObjectInputStream objectInputStream;
     private BigInteger supportedServices;
 
     public NodeConnection(Socket node, Messenger messenger) throws IOException {
@@ -63,6 +64,16 @@ public class NodeConnection implements Runnable {
 
     public boolean isConnected() {
         return this.nodeSocket.isConnected();
+    }
+
+    public PeerRecord toPeerRecord() {
+        String[] ip = this.nodeSocket.getInetAddress().getHostAddress().split(":");
+        return PeerRecord.Builder.newBuilder()
+                .setNodeIdentifier(this.nodeIdentifier)
+                .setSupportedServices(this.supportedServices)
+                .setIpAddress(ip[0])
+                .setPort(Integer.parseInt(ip[1]))
+                .build();
     }
 
     @Override

@@ -1,5 +1,6 @@
 package org.yggdrasil.node.network.messages;
 
+import org.apache.tomcat.jni.Address;
 import org.openjdk.jol.info.GraphLayout;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -169,10 +170,11 @@ public class Messenger {
                     break;
                 case GET_ADDR:
                     logger.info("Handling {} message.", RequestType.GET_ADDR);
+                    // Return an AddressMessage, with AddressPayloads
                     messagePayload = this.getAddressMessageHandler.handleMessagePayload((AddressMessage) message.getPayload(), nodeConnection);
                     returnMessage = Message.Builder.newBuilder()
                             .setNetwork(NetworkType.getByValue(message.getNetwork()))
-                            .setRequestType(RequestType.PONG)
+                            .setRequestType(RequestType.ADDR_RESP)
                             .setMessagePayload(messagePayload)
                             .setPayloadSize(BigInteger.valueOf(GraphLayout.parseInstance(messagePayload).totalSize()))
                             .setChecksum(CryptoHasher.hash(messagePayload))
@@ -180,7 +182,14 @@ public class Messenger {
                     break;
                 case ADDR_RESP:
                     logger.info("Handling {} message.", RequestType.ADDR_RESP);
-                    messagePayload = this.addressResponseHandler.handleMessagePayload((AddressPayload) message.getPayload(), nodeConnection);
+                    messagePayload = this.addressResponseHandler.handleMessagePayload((AddressMessage) message.getPayload(), nodeConnection);
+                    returnMessage = Message.Builder.newBuilder()
+                            .setNetwork(NetworkType.getByValue(message.getNetwork()))
+                            .setRequestType(RequestType.ACKNOWLEDGE)
+                            .setPayloadSize(BigInteger.valueOf(GraphLayout.parseInstance(messagePayload).totalSize()))
+                            .setMessagePayload(messagePayload)
+                            .setChecksum(CryptoHasher.hash(messagePayload))
+                            .build();
                     break;
                 case PING:
                     logger.info("Handling {} message.", RequestType.PING);
