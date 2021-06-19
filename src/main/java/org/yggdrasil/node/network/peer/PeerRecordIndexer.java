@@ -23,6 +23,7 @@ public class PeerRecordIndexer {
     private PeerRecordIO peerRecordIO;
     private List<PeerRecord> peerRecords;
     private Timer recordKeeperTimer;
+    private transient final Object lock = new Object();
 
     @PostConstruct
     private void init() {
@@ -35,13 +36,28 @@ public class PeerRecordIndexer {
         return this.peerRecords;
     }
 
+    public List<PeerRecord> getPeerRecords(int count) {
+        synchronized (lock) {
+            List<PeerRecord> returnList = new ArrayList<>();
+            if (count > this.peerRecords.size()) {
+                count = peerRecords.size();
+            }
+            for (int i = 0; i < count; i++) {
+                returnList.add(peerRecords.get(i));
+            }
+            return returnList;
+        }
+    }
+
     public void addPeerRecord(PeerRecord peerRecord) {
         logger.debug("Adding new peer record, {}", peerRecord.getNodeIdentifier());
         if(this.containsPeerRecord(peerRecord.getIpAddress())){
             PeerRecord oldPeerRecord = peerRecords.stream().filter(pr -> pr.getIpAddress().contentEquals(peerRecord.getIpAddress())).findFirst().get();
             if(oldPeerRecord.getTimeStamp().isBefore(peerRecord.getTimeStamp())) {
-                logger.debug("Old record with the same name, removing, {}", peerRecord.getNodeIdentifier());
-                peerRecords.remove(oldPeerRecord);
+                synchronized (lock) {
+                    logger.debug("Old record with the same name, removing, {}", peerRecord.getNodeIdentifier());
+                    peerRecords.remove(oldPeerRecord);
+                }
             }
         }
         peerRecords.add(peerRecord);

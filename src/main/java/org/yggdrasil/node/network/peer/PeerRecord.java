@@ -43,6 +43,16 @@ public class PeerRecord implements Serializable {
         return port;
     }
 
+    public AddressPayload toAddressPayload() {
+        return AddressPayload.Builder.newBuilder()
+                .setNodeIdentifier(this.nodeIdentifier.toString().toCharArray())
+                .setTimestamp((int) this.timeStamp.toEpochSecond())
+                .setServices(this.supportedServices)
+                .setIpAddress(this.ipAddress.toCharArray())
+                .setPort(this.port)
+                .build();
+    }
+
     public static class Builder {
 
         private UUID nodeIdentifier;
