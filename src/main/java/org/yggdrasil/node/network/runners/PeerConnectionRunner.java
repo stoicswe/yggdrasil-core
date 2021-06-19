@@ -15,8 +15,7 @@ import java.io.IOException;
  */
 public class PeerConnectionRunner implements Runnable {
 
-    Logger logger = LoggerFactory.getLogger(PeerConnectionRunner.class);
-
+    private Logger logger = LoggerFactory.getLogger(PeerConnectionRunner.class);
     private Node node;
 
     public PeerConnectionRunner(Node node) {

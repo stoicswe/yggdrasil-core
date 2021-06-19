@@ -15,6 +15,7 @@ import org.yggdrasil.node.network.messages.enums.NetworkType;
 import org.yggdrasil.node.network.messages.enums.RequestType;
 import org.yggdrasil.node.network.messages.payloads.AcknowledgeMessage;
 import org.yggdrasil.node.network.messages.payloads.HandshakeMessage;
+import org.yggdrasil.node.network.peer.PeerRecordIndexer;
 
 import java.io.IOException;
 import java.math.BigInteger;
@@ -37,13 +38,15 @@ public class HandshakeRunner implements Runnable {
     NodeConfig nodeConfig;
     Messenger messenger;
     NodeConnection nodeConnection;
+    PeerRecordIndexer peerRecordIndexer;
     boolean initializeHandShake;
 
-    public HandshakeRunner(Node node, NodeConfig nodeConfig, Messenger messenger, NodeConnection nodeConnection, boolean initializeHandshake) {
+    public HandshakeRunner(Node node, NodeConfig nodeConfig, Messenger messenger, NodeConnection nodeConnection, PeerRecordIndexer peerRecordIndexer, boolean initializeHandshake) {
         this.node = node;
         this.nodeConfig = nodeConfig;
         this.messenger = messenger;
         this.nodeConnection = nodeConnection;
+        this.peerRecordIndexer = peerRecordIndexer;
         this.initializeHandShake = initializeHandshake;
     }
 
@@ -195,6 +198,7 @@ public class HandshakeRunner implements Runnable {
                                     // verify the acknowledgement was for the correct message
                                     if(CryptoHasher.humanReadableHash(sentMessage.getChecksum()).contentEquals(CryptoHasher.humanReadableHash(rackm.getAcknowledgeChecksum()))){
                                         this.node.getConnectedNodes().put(nodeConnection.getNodeIdentifier(), nodeConnection);
+                                        this.peerRecordIndexer.addPeerRecord(this.nodeConnection.toPeerRecord());
                                         // make the connection live
                                         logger.info("Connection with {} going live.", this.nodeConnection.getNodeIdentifier());
                                         new Thread(nodeConnection).start();

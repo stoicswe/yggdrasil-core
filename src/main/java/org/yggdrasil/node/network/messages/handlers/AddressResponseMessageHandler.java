@@ -10,6 +10,7 @@ import org.yggdrasil.node.network.messages.payloads.AcknowledgeMessage;
 import org.yggdrasil.node.network.messages.payloads.AddressMessage;
 import org.yggdrasil.node.network.messages.payloads.AddressPayload;
 import org.yggdrasil.node.network.peer.PeerRecord;
+import org.yggdrasil.node.network.peer.PeerRecordIndexer;
 import org.yggdrasil.node.network.runners.NodeConnection;
 
 import java.security.NoSuchAlgorithmException;
@@ -18,7 +19,7 @@ import java.security.NoSuchAlgorithmException;
 public class AddressResponseMessageHandler implements MessageHandler<AddressMessage> {
 
     @Autowired
-    private Node node;
+    private PeerRecordIndexer peerRecordIndexer;
 
     @Override
     public MessagePayload handleMessagePayload(AddressMessage addressMessage, NodeConnection nodeConnection) throws NoSuchAlgorithmException {
@@ -29,7 +30,7 @@ public class AddressResponseMessageHandler implements MessageHandler<AddressMess
                 // add connections to the active connections and store connection data
                 PeerRecord peerRecord = PeerRecord.Builder.newBuilder()
                         .buildFromAddressPayload(addressPayload);
-                node.addPeerRecord(peerRecord);
+                this.peerRecordIndexer.addPeerRecord(peerRecord);
             }
         }
 

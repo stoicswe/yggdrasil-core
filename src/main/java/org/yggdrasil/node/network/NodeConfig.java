@@ -53,12 +53,12 @@ public class NodeConfig {
             // Will require port forward in order to open across internet
             this.nodeIp = InetAddress.getByName(socket.getLocalAddress().getHostAddress());
             logger.debug("Current node ip address: {}", nodeIp);
-            logger.info("This node's identification: {}", this.getNodeIdentifier());
+            logger.info("This node's identification: {}", String.format("%s-[%s]", this.nodeName, this.getNodeIdentifier()));
         }
     }
 
     public String getNodeIdentifier() {
-        return String.format("%s-[%s]", this.getNodeName(), this.getNodeIndex().toString());
+        return String.format("%s", this.getNodeIndex().toString());
     }
 
     public UUID getNodeIndex() {

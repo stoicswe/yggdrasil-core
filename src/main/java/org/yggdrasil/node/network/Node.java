@@ -7,10 +7,8 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 import org.yggdrasil.node.network.messages.Messenger;
 import org.yggdrasil.node.network.peer.PeerRecord;
-import org.yggdrasil.node.network.runners.HandshakeRunner;
-import org.yggdrasil.node.network.runners.NodeConnection;
-import org.yggdrasil.node.network.runners.NodeRunner;
-import org.yggdrasil.node.network.runners.PeerConnectionRunner;
+import org.yggdrasil.node.network.peer.PeerRecordIndexer;
+import org.yggdrasil.node.network.runners.*;
 
 import javax.annotation.PostConstruct;
 import java.io.IOException;
@@ -37,16 +35,17 @@ public class Node {
     private NodeConfig nodeConfig;
     @Autowired
     private Messenger messenger;
+    @Autowired
+    private PeerRecordIndexer peerRecordIndexer;
     private ServerSocket serverSocket;
     private NodeConnectionHashMap<String, NodeConnection> connectedNodes;
-    private List<PeerRecord> peerRecords;
 
     @PostConstruct
     public void init() throws IOException, ClassNotFoundException {
         this.connectedNodes = new NodeConnectionHashMap<>(nodeConfig.getActiveConnections());
-        this.peerRecords = new ArrayList<>();
         this.serverSocket = new ServerSocket(nodeConfig.getPort(), 3, nodeConfig.getNodeIp());
         logger.info("P2P Server listening on {}:{}", nodeConfig.getNodeIp(), nodeConfig.getPort());
+        new Thread(new PeerRecordConnectionRunner(this.nodeConfig, this.peerRecordIndexer)).start();
         new Thread(new PeerConnectionRunner(this)).start();
         new Thread(new NodeRunner(this)).start();
     }
@@ -55,34 +54,15 @@ public class Node {
         return this.connectedNodes;
     }
 
-    public List<PeerRecord> getPeerRecords() {
-        return this.peerRecords;
-    }
-
-    public void addPeerRecord(PeerRecord peerRecord) {
-        if(this.containsPeerRecord(peerRecord.getIpAddress())){
-            peerRecords.remove(peerRecords.stream().filter(pr -> pr.getIpAddress().contentEquals(peerRecord.getIpAddress())).findFirst().get());
-        }
-        peerRecords.add(peerRecord);
-    }
-
-    public boolean containsPeerRecord(String ipAddress) {
-        return (peerRecords.stream().anyMatch(peerRecord -> peerRecord.getIpAddress().contentEquals(ipAddress)));
-    }
-
-    public boolean containsPeerRecord(UUID nodeIdentifier) {
-        return (peerRecords.stream().anyMatch(peerRecord -> peerRecord.getNodeIdentifier().compareTo(nodeIdentifier) == 0));
-    }
-
     public void establishConnections() throws IOException {
-        //int peerNum = 0;
+        logger.info("Reading pre-configured peers");
         for (String ipString : nodeConfig.getPeers()) {
             logger.info("Attempting to connect to peer: {}", ipString);
             try {
                 Socket peer = new Socket(ipString, nodeConfig.getPort());
                 peer.setKeepAlive(true);
-                if(!peer.getInetAddress().equals(nodeConfig.getNodeIp())) {
-                    new Thread(new HandshakeRunner(this, this.nodeConfig, this.messenger, new NodeConnection(peer, this.messenger), true)).start();
+                if (!peer.getInetAddress().equals(nodeConfig.getNodeIp())) {
+                    new Thread(new HandshakeRunner(this, this.nodeConfig, this.messenger, new NodeConnection(peer, this.messenger), this.peerRecordIndexer, true)).start();
                 } else {
                     peer.close();
                 }
@@ -105,7 +85,7 @@ public class Node {
                 if (connectedNodes.size() < nodeConfig.getActiveConnections()) {
                     try {
                         logger.info("Attempting handshake with: [{}]", peer.getInetAddress());
-                        new Thread(new HandshakeRunner(this, this.nodeConfig, this.messenger, new NodeConnection(peer, this.messenger), false)).start();
+                        new Thread(new HandshakeRunner(this, this.nodeConfig, this.messenger, new NodeConnection(peer, this.messenger), this.peerRecordIndexer, false)).start();
                     } catch (Exception e) {
                         logger.error("Error while attempting handshake: {}", e.getMessage());
                         peer.close();

@@ -36,8 +36,6 @@ public class PeerRecord implements Serializable {
         return port;
     }
 
-    
-
     public static class Builder {
 
         private UUID nodeIdentifier;
