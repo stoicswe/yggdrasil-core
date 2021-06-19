@@ -13,8 +13,7 @@ import org.yggdrasil.node.network.messages.Message;
 import org.yggdrasil.node.network.messages.Messenger;
 import org.yggdrasil.node.network.messages.enums.NetworkType;
 import org.yggdrasil.node.network.messages.enums.RequestType;
-import org.yggdrasil.node.network.messages.payloads.AcknowledgeMessage;
-import org.yggdrasil.node.network.messages.payloads.HandshakeMessage;
+import org.yggdrasil.node.network.messages.payloads.*;
 import org.yggdrasil.node.network.peer.PeerRecordIndexer;
 
 import java.io.IOException;
@@ -202,6 +201,20 @@ public class HandshakeRunner implements Runnable {
                                         // make the connection live
                                         logger.info("Connection with {} going live.", this.nodeConnection.getNodeIdentifier());
                                         new Thread(nodeConnection).start();
+                                        if(peerRecordIndexer.getPeerRecordCount() < nodeConfig.getPeerRecordLimit()) {
+                                            AddressMessage am = AddressMessage.Builder.newBuilder()
+                                                    .setIpAddressCount(nodeConfig.getPeerRecordLimit() - peerRecordIndexer.getPeerRecordCount())
+                                                    .setIpAddresses(new AddressPayload[0])
+                                                    .build();
+                                            Message message = Message.Builder.newBuilder()
+                                                    .setRequestType(RequestType.GET_ADDR)
+                                                    .setNetwork(nodeConfig.getNetwork())
+                                                    .setMessagePayload(am)
+                                                    .setPayloadSize(BigInteger.valueOf(GraphLayout.parseInstance(am).totalSize()))
+                                                    .setChecksum(CryptoHasher.hash(am))
+                                                    .build();
+                                            messenger.sendTargetMessage(message, this.nodeConnection);
+                                        }
                                         return;
                                     } else {
                                         throw new HandshakeInitializeException("Peer failed to acknowledge handshake response.");

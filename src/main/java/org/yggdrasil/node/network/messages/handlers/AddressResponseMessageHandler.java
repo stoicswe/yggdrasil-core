@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.yggdrasil.core.utils.CryptoHasher;
 import org.yggdrasil.node.network.Node;
+import org.yggdrasil.node.network.NodeConfig;
 import org.yggdrasil.node.network.messages.MessagePayload;
 import org.yggdrasil.node.network.messages.MessagePool;
 import org.yggdrasil.node.network.messages.payloads.AcknowledgeMessage;
@@ -20,6 +21,8 @@ public class AddressResponseMessageHandler implements MessageHandler<AddressMess
 
     @Autowired
     private PeerRecordIndexer peerRecordIndexer;
+    @Autowired
+    private NodeConfig nodeConfig;
 
     @Override
     public MessagePayload handleMessagePayload(AddressMessage addressMessage, NodeConnection nodeConnection) throws NoSuchAlgorithmException {

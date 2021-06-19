@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.yggdrasil.node.network.NodeConfig;
 import org.yggdrasil.node.network.runners.PeerRecordKeeperRunner;
 
 import javax.annotation.PostConstruct;
@@ -21,6 +22,8 @@ public class PeerRecordIndexer {
 
     @Autowired
     private PeerRecordIO peerRecordIO;
+    @Autowired
+    private NodeConfig nodeConfig;
     private List<PeerRecord> peerRecords;
     private Timer recordKeeperTimer;
     private transient final Object lock = new Object();
@@ -30,6 +33,10 @@ public class PeerRecordIndexer {
         this.peerRecords = new ArrayList<>();
         this.recordKeeperTimer = new Timer();
         this.recordKeeperTimer.schedule(new PeerRecordKeeperRunner(this), 60000, 60000);
+    }
+
+    public int getPeerRecordCount() {
+        return this.peerRecords.size();
     }
 
     public List<PeerRecord> getPeerRecords() {
@@ -50,18 +57,20 @@ public class PeerRecordIndexer {
     }
 
     public void addPeerRecord(PeerRecord peerRecord) {
-        logger.debug("Adding new peer record, {}", peerRecord.getNodeIdentifier());
-        if(this.containsPeerRecord(peerRecord.getIpAddress())){
-            PeerRecord oldPeerRecord = peerRecords.stream().filter(pr -> pr.getIpAddress().contentEquals(peerRecord.getIpAddress())).findFirst().get();
-            if(oldPeerRecord.getTimeStamp().isBefore(peerRecord.getTimeStamp())) {
-                synchronized (lock) {
-                    logger.debug("Old record with the same name, removing, {}", peerRecord.getNodeIdentifier());
-                    peerRecords.remove(oldPeerRecord);
+        if (this.nodeConfig.getNodeIndex().compareTo(peerRecord.getNodeIdentifier()) != 0) {
+            logger.debug("Adding new peer record, {}", peerRecord.getNodeIdentifier());
+            if (this.containsPeerRecord(peerRecord.getIpAddress())) {
+                PeerRecord oldPeerRecord = peerRecords.stream().filter(pr -> pr.getIpAddress().contentEquals(peerRecord.getIpAddress())).findFirst().get();
+                if (oldPeerRecord.getTimeStamp().isBefore(peerRecord.getTimeStamp())) {
+                    synchronized (lock) {
+                        logger.debug("Old record with the same name, removing, {}", peerRecord.getNodeIdentifier());
+                        peerRecords.remove(oldPeerRecord);
+                    }
                 }
             }
+            peerRecords.add(peerRecord);
+            logger.debug("Added peer record: {}", peerRecord.getNodeIdentifier());
         }
-        peerRecords.add(peerRecord);
-        logger.debug("Added peer record: {}", peerRecord.getNodeIdentifier());
     }
 
     public boolean containsPeerRecord(String ipAddress) {

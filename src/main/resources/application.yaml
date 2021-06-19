@@ -11,4 +11,5 @@ blockchain:
     active-connections: 10
     node-name: "yggdrasil-branch"
     peers: "192.168.1.42,192.168.1.2"
+    peer-records: 25
     #connection-timeout: 30000

@@ -39,6 +39,8 @@ public class NodeConfig {
     private String[] peers;
     @Value("${blockchain.p2p.active-connections}")
     private Integer activeConnections;
+    @Value("${blockchain.p2p.peer-records}")
+    private Integer peerRecordLimit;
     @Value("${blockchain.p2p.connection-timeout: 30000}")
     private Integer connectionTimeout;
 
@@ -87,6 +89,10 @@ public class NodeConfig {
 
     public Integer getActiveConnections() {
         return activeConnections;
+    }
+
+    public Integer getPeerRecordLimit() {
+        return peerRecordLimit;
     }
 
     public Integer getConnectionTimeout() {
