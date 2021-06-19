@@ -19,11 +19,11 @@ public class NodeConnection implements Runnable {
 
     Logger logger = LoggerFactory.getLogger(NodeConnection.class);
 
+    private final Messenger messenger;
+    private final Socket nodeSocket;
+    private final ObjectOutputStream objectOutputStream;
+    private final ObjectInputStream objectInputStream;
     private String nodeIdentifier;
-    private Messenger messenger;
-    private Socket nodeSocket;
-    private ObjectOutputStream objectOutputStream;
-    private ObjectInputStream objectInputStream;
     private BigInteger supportedServices;
 
     public NodeConnection(Socket node, Messenger messenger) throws IOException {

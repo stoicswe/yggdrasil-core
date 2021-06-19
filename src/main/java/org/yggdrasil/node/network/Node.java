@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 import org.yggdrasil.node.network.messages.Messenger;
+import org.yggdrasil.node.network.peer.PeerRecord;
 import org.yggdrasil.node.network.runners.HandshakeRunner;
 import org.yggdrasil.node.network.runners.NodeConnection;
 import org.yggdrasil.node.network.runners.NodeRunner;
@@ -15,6 +16,9 @@ import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
 /**
  * The node class handles the binding of the socket, and initial openeing
@@ -35,10 +39,12 @@ public class Node {
     private Messenger messenger;
     private ServerSocket serverSocket;
     private NodeConnectionHashMap<String, NodeConnection> connectedNodes;
+    private List<PeerRecord> peerRecords;
 
     @PostConstruct
     public void init() throws IOException, ClassNotFoundException {
         this.connectedNodes = new NodeConnectionHashMap<>(nodeConfig.getActiveConnections());
+        this.peerRecords = new ArrayList<>();
         this.serverSocket = new ServerSocket(nodeConfig.getPort(), 3, nodeConfig.getNodeIp());
         logger.info("P2P Server listening on {}:{}", nodeConfig.getNodeIp(), nodeConfig.getPort());
         new Thread(new PeerConnectionRunner(this)).start();
@@ -47,6 +53,25 @@ public class Node {
 
     public NodeConnectionHashMap<String, NodeConnection> getConnectedNodes() {
         return this.connectedNodes;
+    }
+
+    public List<PeerRecord> getPeerRecords() {
+        return this.peerRecords;
+    }
+
+    public void addPeerRecord(PeerRecord peerRecord) {
+        if(this.containsPeerRecord(peerRecord.getIpAddress())){
+            peerRecords.remove(peerRecords.stream().filter(pr -> pr.getIpAddress().contentEquals(peerRecord.getIpAddress())).findFirst().get());
+        }
+        peerRecords.add(peerRecord);
+    }
+
+    public boolean containsPeerRecord(String ipAddress) {
+        return (peerRecords.stream().anyMatch(peerRecord -> peerRecord.getIpAddress().contentEquals(ipAddress)));
+    }
+
+    public boolean containsPeerRecord(UUID nodeIdentifier) {
+        return (peerRecords.stream().anyMatch(peerRecord -> peerRecord.getNodeIdentifier().compareTo(nodeIdentifier) == 0));
     }
 
     public void establishConnections() throws IOException {
