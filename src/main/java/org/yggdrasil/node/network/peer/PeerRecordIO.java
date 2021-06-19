@@ -21,7 +21,7 @@ public class PeerRecordIO {
     private final Logger logger = LoggerFactory.getLogger(PeerRecordIO.class);
 
     private static final String _HASH_ALGORITHM = "MD5";
-    private final String _CURRENT_DIRECTORY = System.getProperty("user.dir") + "/.blockchain-data/peers";
+    private final String _CURRENT_DIRECTORY = System.getProperty("user.dir") + "/.yggdrasil/peers";
     private final String _FILE_EXTENSION = ".0x";
 
     private Random random = new Random();
