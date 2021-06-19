@@ -6,7 +6,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 import org.yggdrasil.node.network.messages.Messenger;
-import org.yggdrasil.node.network.peer.PeerRecord;
 import org.yggdrasil.node.network.peer.PeerRecordIndexer;
 import org.yggdrasil.node.network.runners.*;
 
@@ -14,9 +13,7 @@ import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.Timer;
 
 /**
  * The node class handles the binding of the socket, and initial openeing
@@ -39,13 +36,16 @@ public class Node {
     private PeerRecordIndexer peerRecordIndexer;
     private ServerSocket serverSocket;
     private NodeConnectionHashMap<String, NodeConnection> connectedNodes;
+    private Timer peerRecordConnectTimer;
 
     @PostConstruct
     public void init() throws IOException, ClassNotFoundException {
         this.connectedNodes = new NodeConnectionHashMap<>(nodeConfig.getActiveConnections());
         this.serverSocket = new ServerSocket(nodeConfig.getPort(), 3, nodeConfig.getNodeIp());
         logger.info("P2P Server listening on {}:{}", nodeConfig.getNodeIp(), nodeConfig.getPort());
-        new Thread(new PeerRecordConnectionRunner(this.nodeConfig, this.peerRecordIndexer)).start();
+        this.peerRecordConnectTimer = new Timer();
+        this.peerRecordConnectTimer.schedule(new PeerRecordConnectionRunner(this, this.nodeConfig, this.messenger, this.peerRecordIndexer), 90000, 90000);
+        new Thread(new PeerRecordStartupRunner(this.nodeConfig, this.peerRecordIndexer)).start();
         new Thread(new PeerConnectionRunner(this)).start();
         new Thread(new NodeRunner(this)).start();
     }

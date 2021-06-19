@@ -22,7 +22,7 @@ public class PeerRecordKeeperRunner extends TimerTask {
             logger.info("Dumping peer records to storage.");
             this.peerRecordIndexer.dumpPeerRecords();
         } catch (Exception e) {
-            logger.info("There was an issue dumping peer records.");
+            logger.error("There was an issue dumping peer records: {}", e.getMessage());
         }
     }
 

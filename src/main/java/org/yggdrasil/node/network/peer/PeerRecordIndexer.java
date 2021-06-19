@@ -38,8 +38,11 @@ public class PeerRecordIndexer {
     public void addPeerRecord(PeerRecord peerRecord) {
         logger.debug("Adding new peer record, {}", peerRecord.getNodeIdentifier());
         if(this.containsPeerRecord(peerRecord.getIpAddress())){
-            logger.debug("Old record with the same name, removing, {}", peerRecord.getNodeIdentifier());
-            peerRecords.remove(peerRecords.stream().filter(pr -> pr.getIpAddress().contentEquals(peerRecord.getIpAddress())).findFirst().get());
+            PeerRecord oldPeerRecord = peerRecords.stream().filter(pr -> pr.getIpAddress().contentEquals(peerRecord.getIpAddress())).findFirst().get();
+            if(oldPeerRecord.getTimeStamp().isBefore(peerRecord.getTimeStamp())) {
+                logger.debug("Old record with the same name, removing, {}", peerRecord.getNodeIdentifier());
+                peerRecords.remove(oldPeerRecord);
+            }
         }
         peerRecords.add(peerRecord);
         logger.debug("Added peer record: {}", peerRecord.getNodeIdentifier());

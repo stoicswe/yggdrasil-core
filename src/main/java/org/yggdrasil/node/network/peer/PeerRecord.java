@@ -1,14 +1,17 @@
 package org.yggdrasil.node.network.peer;
 
+import org.yggdrasil.core.utils.DateTimeUtil;
 import org.yggdrasil.node.network.messages.payloads.AddressPayload;
 
 import java.io.Serializable;
 import java.math.BigInteger;
+import java.time.ZonedDateTime;
 import java.util.UUID;
 
 public class PeerRecord implements Serializable {
 
     private final UUID nodeIdentifier;
+    private ZonedDateTime timeStamp;
     private final BigInteger supportedServices;
     private final String ipAddress;
     private final int port;
@@ -22,6 +25,10 @@ public class PeerRecord implements Serializable {
 
     public UUID getNodeIdentifier() {
         return nodeIdentifier;
+    }
+
+    public ZonedDateTime getTimeStamp() {
+        return timeStamp;
     }
 
     public BigInteger getSupportedServices() {
@@ -39,6 +46,7 @@ public class PeerRecord implements Serializable {
     public static class Builder {
 
         private UUID nodeIdentifier;
+        private ZonedDateTime timeStamp;
         private BigInteger supportedServices;
         private String ipAddress;
         private int port;
@@ -56,6 +64,11 @@ public class PeerRecord implements Serializable {
 
         public Builder setNodeIdentifier(String nodeIdentifier) {
             this.nodeIdentifier = UUID.fromString(nodeIdentifier);
+            return this;
+        }
+
+        public Builder setTimeStamp(ZonedDateTime timeStamp) {
+            this.timeStamp = timeStamp;
             return this;
         }
 
@@ -80,6 +93,7 @@ public class PeerRecord implements Serializable {
 
         public PeerRecord buildFromAddressPayload(AddressPayload addressPayload) {
             this.nodeIdentifier = UUID.fromString(String.valueOf(addressPayload.getNodeIdentifier()));
+            this.timeStamp = DateTimeUtil.fromMessageTimestamp(addressPayload.getTimestamp());
             this.supportedServices = addressPayload.getServices();
             this.ipAddress = String.valueOf(addressPayload.getIpAddress());
             this.port = addressPayload.getPort();
