@@ -18,6 +18,7 @@ public class PeerRecord implements Serializable {
 
     private PeerRecord(Builder builder) {
         this.nodeIdentifier = builder.nodeIdentifier;
+        this.timeStamp = builder.timeStamp;
         this.supportedServices = builder.supportedServices;
         this.ipAddress = builder.ipAddress;
         this.port = builder.port;

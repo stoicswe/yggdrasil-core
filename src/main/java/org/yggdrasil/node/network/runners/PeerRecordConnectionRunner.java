@@ -37,7 +37,7 @@ public class PeerRecordConnectionRunner extends TimerTask {
                         Socket peer = new Socket(pr.getIpAddress(), pr.getPort());
                         new Thread(new HandshakeRunner(this.node, this.nodeConfig, this.messenger, new NodeConnection(peer, this.messenger), this.peerRecordIndexer, true)).start();
                         logger.debug("Sleeping for a second, giving time for handshake to complete.");
-                        Thread.sleep(1000);
+                        Thread.sleep(5000);
                     }
                 }
             }

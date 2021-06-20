@@ -21,6 +21,7 @@ public class PeerRecordIO {
     private final Logger logger = LoggerFactory.getLogger(PeerRecordIO.class);
 
     private static final String _HASH_ALGORITHM = "MD5";
+    private final String _BASE_PATH = System.getProperty("user.dir") + "/.yggdrasil";
     private final String _CURRENT_DIRECTORY = System.getProperty("user.dir") + "/.yggdrasil/peers";
     private final String _FILE_EXTENSION = ".0x";
 
@@ -28,6 +29,9 @@ public class PeerRecordIO {
 
     @PostConstruct
     public void init() throws Exception {
+        if(!Files.exists(Path.of(_BASE_PATH))) {
+            new File(_BASE_PATH).mkdir();
+        }
         if(!Files.exists(Path.of(_CURRENT_DIRECTORY))) {
             new File(_CURRENT_DIRECTORY).mkdir();
         }
@@ -41,11 +45,12 @@ public class PeerRecordIO {
 
     public void writePeerRecord(PeerRecord peerRecord) throws NoSuchAlgorithmException, IOException {
         logger.debug("Writing new peer to storage: {}", peerRecord.getNodeIdentifier().toString());
-        File f = new File(_CURRENT_DIRECTORY + "/" + this.humanReadableHash(this.hashPeerRecord(peerRecord)) + _FILE_EXTENSION);
+        String fileName = _CURRENT_DIRECTORY + "/" + this.humanReadableHash(this.hashPeerRecord(peerRecord)) + _FILE_EXTENSION;
+        File f = new File(fileName);
         if(f.exists()){
             f.delete();
         }
-        try(FileOutputStream currentPeerRecord = new FileOutputStream(f)) {
+        try(FileOutputStream currentPeerRecord = new FileOutputStream(new File(fileName))) {
             try(ObjectOutputStream currentBlockObject = new ObjectOutputStream(currentPeerRecord)) {
                 currentBlockObject.writeObject(peerRecord);
             }
@@ -66,7 +71,10 @@ public class PeerRecordIO {
 
     public PeerRecord readPeerRecord(String peerRecordIndex) throws IOException, ClassNotFoundException {
         logger.debug("Reading random peer record from storage...");
-        FileInputStream currentPeerRecord = new FileInputStream(new File(_CURRENT_DIRECTORY + "/" + peerRecordIndex + _FILE_EXTENSION));
+        if(!peerRecordIndex.contains(".0x")){
+            peerRecordIndex += ".0x";
+        }
+        FileInputStream currentPeerRecord = new FileInputStream(new File(_CURRENT_DIRECTORY + "/" + peerRecordIndex));
         ObjectInputStream currentPeerRecordObj = new ObjectInputStream(currentPeerRecord);
         PeerRecord peerRecord = (PeerRecord) currentPeerRecordObj.readObject();
         logger.debug("Peer read successfully: {}", peerRecord.getNodeIdentifier());

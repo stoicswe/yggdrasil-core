@@ -65,6 +65,7 @@ public class HandshakeRunner implements Runnable {
                         .setSenderIdentifier(this.nodeConfig.getNodeIdentifier().toCharArray())
                         .setSenderAddress(this.nodeConfig.getNodeIp().getHostAddress().toCharArray())
                         .setSenderPort(this.nodeConnection.getNodeSocket().getLocalPort())
+                        .setSenderListeningPort(this.nodeConfig.getPort())
                         .setReceiverAddress(this.nodeConnection.getNodeSocket().getInetAddress().getHostAddress().toCharArray())
                         .setReceiverPort(this.nodeConnection.getNodeSocket().getPort())
                         .build();
@@ -107,6 +108,7 @@ public class HandshakeRunner implements Runnable {
                             nodeConnection.setNodeIdentifier(String.valueOf(rhm.getSenderIdentifier()));
                             // add the node connection to the pool
                             logger.info("Handshake validated from [{}], identified as: '{}'", this.nodeConnection.getNodeSocket().getInetAddress(), nodeConnection.getNodeIdentifier());
+                            this.nodeConnection.setPort(rhm.getSenderListeningPort());
                             this.node.getConnectedNodes().put(nodeConnection.getNodeIdentifier(), nodeConnection);
                             // make and send acknowledgement message
                             logger.info("Build an acknowledgement to send to {}", nodeConnection.getNodeIdentifier());
@@ -125,6 +127,20 @@ public class HandshakeRunner implements Runnable {
                             // make the connection live
                             logger.info("Connection with {} going live.", this.nodeConnection.getNodeIdentifier());
                             new Thread(nodeConnection).start();
+                            if(peerRecordIndexer.getPeerRecordCount() < nodeConfig.getPeerRecordLimit()) {
+                                AddressMessage am = AddressMessage.Builder.newBuilder()
+                                        .setIpAddressCount(nodeConfig.getPeerRecordLimit() - peerRecordIndexer.getPeerRecordCount())
+                                        .setIpAddresses(new AddressPayload[0])
+                                        .build();
+                                Message message = Message.Builder.newBuilder()
+                                        .setRequestType(RequestType.GET_ADDR)
+                                        .setNetwork(nodeConfig.getNetwork())
+                                        .setMessagePayload(am)
+                                        .setPayloadSize(BigInteger.valueOf(GraphLayout.parseInstance(am).totalSize()))
+                                        .setChecksum(CryptoHasher.hash(am))
+                                        .build();
+                                messenger.sendTargetMessage(message, this.nodeConnection);
+                            }
                             return;
                         } else {
                             throw new HandshakeInitializeException("Handshake failed evaluation.");
@@ -158,6 +174,8 @@ public class HandshakeRunner implements Runnable {
                             nodeConnection.setSupportedServices(rhm.getServices());
                             // set the identifier
                             nodeConnection.setNodeIdentifier(String.valueOf(rhm.getSenderIdentifier()));
+                            // set the port the peer is listening on
+                            nodeConnection.setPort(rhm.getSenderListeningPort());
                             // add the node connection to the pool
                             logger.info("Handshake offer validated from [{}], identified as: '{}'", this.nodeConnection.getNodeSocket().getInetAddress(), nodeConnection.getNodeIdentifier());
                             // respond to the request for an offer to handshake
@@ -170,6 +188,7 @@ public class HandshakeRunner implements Runnable {
                                     .setSenderIdentifier(this.nodeConfig.getNodeIdentifier().toCharArray())
                                     .setSenderAddress(this.nodeConfig.getNodeIp().getHostAddress().toCharArray())
                                     .setSenderPort(this.nodeConnection.getNodeSocket().getLocalPort())
+                                    .setSenderListeningPort(this.nodeConfig.getPort())
                                     .setReceiverAddress(this.nodeConnection.getNodeSocket().getInetAddress().getHostAddress().toCharArray())
                                     .setReceiverPort(this.nodeConnection.getNodeSocket().getPort())
                                     .build();
@@ -201,20 +220,6 @@ public class HandshakeRunner implements Runnable {
                                         // make the connection live
                                         logger.info("Connection with {} going live.", this.nodeConnection.getNodeIdentifier());
                                         new Thread(nodeConnection).start();
-                                        if(peerRecordIndexer.getPeerRecordCount() < nodeConfig.getPeerRecordLimit()) {
-                                            AddressMessage am = AddressMessage.Builder.newBuilder()
-                                                    .setIpAddressCount(nodeConfig.getPeerRecordLimit() - peerRecordIndexer.getPeerRecordCount())
-                                                    .setIpAddresses(new AddressPayload[0])
-                                                    .build();
-                                            Message message = Message.Builder.newBuilder()
-                                                    .setRequestType(RequestType.GET_ADDR)
-                                                    .setNetwork(nodeConfig.getNetwork())
-                                                    .setMessagePayload(am)
-                                                    .setPayloadSize(BigInteger.valueOf(GraphLayout.parseInstance(am).totalSize()))
-                                                    .setChecksum(CryptoHasher.hash(am))
-                                                    .build();
-                                            messenger.sendTargetMessage(message, this.nodeConnection);
-                                        }
                                         return;
                                     } else {
                                         throw new HandshakeInitializeException("Peer failed to acknowledge handshake response.");

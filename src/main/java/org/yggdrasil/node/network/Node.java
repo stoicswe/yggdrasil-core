@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 import org.yggdrasil.node.network.messages.Messenger;
+import org.yggdrasil.node.network.peer.PeerRecord;
 import org.yggdrasil.node.network.peer.PeerRecordIndexer;
 import org.yggdrasil.node.network.runners.*;
 
@@ -56,10 +57,11 @@ public class Node {
 
     public void establishConnections() throws IOException {
         logger.info("Reading pre-configured peers");
+        Socket peer;
         for (String ipString : nodeConfig.getPeers()) {
             logger.info("Attempting to connect to peer: {}", ipString);
             try {
-                Socket peer = new Socket(ipString, nodeConfig.getPort());
+                peer = new Socket(ipString, nodeConfig.getPort());
                 peer.setKeepAlive(true);
                 if (!peer.getInetAddress().equals(nodeConfig.getNodeIp())) {
                     new Thread(new HandshakeRunner(this, this.nodeConfig, this.messenger, new NodeConnection(peer, this.messenger), this.peerRecordIndexer, true)).start();
