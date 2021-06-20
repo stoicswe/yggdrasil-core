@@ -23,6 +23,7 @@ public class NodeConnection implements Runnable {
 
     private final Messenger messenger;
     private final Socket nodeSocket;
+    private int port;
     private final ObjectOutputStream objectOutputStream;
     private final ObjectInputStream objectInputStream;
     private String nodeIdentifier;
@@ -45,6 +46,10 @@ public class NodeConnection implements Runnable {
 
     public Socket getNodeSocket() {
         return this.nodeSocket;
+    }
+
+    public void setPort(int port) {
+        this.port = port;
     }
 
     public String getNodeIdentifier() {
@@ -73,7 +78,7 @@ public class NodeConnection implements Runnable {
                 .setTimeStamp(DateTimeUtil.getCurrentTimestamp())
                 .setSupportedServices(this.supportedServices)
                 .setIpAddress(this.nodeSocket.getInetAddress().getHostAddress())
-                .setPort(this.nodeSocket.getPort())
+                .setPort(this.port)
                 .build();
     }
 

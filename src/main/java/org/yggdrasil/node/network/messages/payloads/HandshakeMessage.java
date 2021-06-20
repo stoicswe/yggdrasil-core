@@ -30,6 +30,8 @@ public class HandshakeMessage implements MessagePayload {
     @NotNull
     private final char[] senderAddress;
     @NotNull
+    private final int senderListeningPort;
+    @NotNull
     private final int senderPort;
     @NotNull
     private final char[] senderIdentifier;
@@ -41,6 +43,7 @@ public class HandshakeMessage implements MessagePayload {
         this.receiverAddress = builder.receiverAddress;
         this.receiverPort = builder.receiverPort;
         this.senderAddress = builder.senderAddress;
+        this.senderListeningPort = builder.senderListeningPort;
         this.senderPort = builder.senderPort;
         this.senderIdentifier = builder.senderIdentifier;
     }
@@ -69,6 +72,10 @@ public class HandshakeMessage implements MessagePayload {
         return senderAddress;
     }
 
+    public int getSenderListeningPort() {
+        return senderListeningPort;
+    }
+
     public int getSenderPort() {
         return senderPort;
     }
@@ -87,6 +94,7 @@ public class HandshakeMessage implements MessagePayload {
         messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(receiverPort));
         messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(senderAddress));
         messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(senderIdentifier));
+        messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(senderListeningPort));
         messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(senderPort));
         return messageBytes;
     }
@@ -103,6 +111,7 @@ public class HandshakeMessage implements MessagePayload {
         private char[] receiverAddress;
         private int receiverPort;
         private char[] senderAddress;
+        private int senderListeningPort;
         private int senderPort;
         private char[] senderIdentifier;
 
@@ -137,6 +146,11 @@ public class HandshakeMessage implements MessagePayload {
 
         public Builder setSenderAddress(char[] senderAddress) {
             this.senderAddress = senderAddress;
+            return this;
+        }
+
+        public Builder setSenderListeningPort(int senderListeningPort) {
+            this.senderListeningPort = senderListeningPort;
             return this;
         }
 
