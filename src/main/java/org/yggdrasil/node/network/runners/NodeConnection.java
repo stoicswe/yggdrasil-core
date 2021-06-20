@@ -2,6 +2,7 @@ package org.yggdrasil.node.network.runners;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yggdrasil.core.utils.DateTimeUtil;
 import org.yggdrasil.node.network.messages.Message;
 import org.yggdrasil.node.network.messages.Messenger;
 import org.yggdrasil.node.network.peer.PeerRecord;
@@ -67,12 +68,12 @@ public class NodeConnection implements Runnable {
     }
 
     public PeerRecord toPeerRecord() {
-        String[] ip = this.nodeSocket.getInetAddress().getHostAddress().split(":");
         return PeerRecord.Builder.newBuilder()
                 .setNodeIdentifier(this.nodeIdentifier)
+                .setTimeStamp(DateTimeUtil.getCurrentTimestamp())
                 .setSupportedServices(this.supportedServices)
-                .setIpAddress(ip[0])
-                .setPort(Integer.parseInt(ip[1]))
+                .setIpAddress(this.nodeSocket.getInetAddress().getHostAddress())
+                .setPort(this.nodeSocket.getPort())
                 .build();
     }
 
