@@ -136,7 +136,10 @@ public class Messenger {
                     logger.info("Handling {} message.", RequestType.DATA_RESP);
                     if (message.getPayload() instanceof BlockchainMessage) {
                         logger.info("{} message is a BlockchainMessage.", RequestType.DATA_RESP);
-                        messagePayload = this.blockchainMessageHandler.handleMessagePayload((BlockchainMessage) message.getPayload(), nodeConnection);
+                        this.blockchainMessageHandler.handleMessagePayload((BlockchainMessage) message.getPayload(), nodeConnection);
+                        messagePayload = AcknowledgeMessage.Builder.newBuilder()
+                                .setAcknowledgeChecksum(message.getChecksum())
+                                .build();
                         returnMessage = Message.Builder.newBuilder()
                                 .setNetwork(NetworkType.getByValue(message.getNetwork()))
                                 .setRequestType(RequestType.ACKNOWLEDGE)
@@ -147,7 +150,10 @@ public class Messenger {
                     }
                     if (message.getPayload() instanceof BlockMessage) {
                         logger.info("{} message is a BlockMessage", RequestType.DATA_RESP);
-                        messagePayload = this.blockMessageHandler.handleMessagePayload((BlockMessage) message.getPayload(), nodeConnection);
+                        this.blockMessageHandler.handleMessagePayload((BlockMessage) message.getPayload(), nodeConnection);
+                        messagePayload = AcknowledgeMessage.Builder.newBuilder()
+                                .setAcknowledgeChecksum(message.getChecksum())
+                                .build();
                         returnMessage = Message.Builder.newBuilder()
                                 .setNetwork(NetworkType.getByValue(message.getNetwork()))
                                 .setRequestType(RequestType.ACKNOWLEDGE)
@@ -158,7 +164,10 @@ public class Messenger {
                     }
                     if (message.getPayload() instanceof TransactionMessage) {
                         logger.info("{} message is a TransactionMessage.", RequestType.DATA_RESP);
-                        messagePayload = this.transactionMessageHandler.handleMessagePayload((TransactionMessage) message.getPayload(), nodeConnection);
+                        this.transactionMessageHandler.handleMessagePayload((TransactionMessage) message.getPayload(), nodeConnection);
+                        messagePayload = AcknowledgeMessage.Builder.newBuilder()
+                                .setAcknowledgeChecksum(message.getChecksum())
+                                .build();
                         returnMessage = Message.Builder.newBuilder()
                                 .setNetwork(NetworkType.getByValue(message.getNetwork()))
                                 .setRequestType(RequestType.ACKNOWLEDGE)
@@ -182,7 +191,10 @@ public class Messenger {
                     break;
                 case ADDR_RESP:
                     logger.info("Handling {} message.", RequestType.ADDR_RESP);
-                    messagePayload = this.addressResponseHandler.handleMessagePayload((AddressMessage) message.getPayload(), nodeConnection);
+                    this.addressResponseHandler.handleMessagePayload((AddressMessage) message.getPayload(), nodeConnection);
+                    messagePayload = AcknowledgeMessage.Builder.newBuilder()
+                            .setAcknowledgeChecksum(message.getChecksum())
+                            .build();
                     returnMessage = Message.Builder.newBuilder()
                             .setNetwork(NetworkType.getByValue(message.getNetwork()))
                             .setRequestType(RequestType.ACKNOWLEDGE)
@@ -227,9 +239,12 @@ public class Messenger {
                     logger.info("Handling {} message.", RequestType.ACKNOWLEDGE);
                     logger.debug("Acknowledgement received for the checksum: {}", CryptoHasher.humanReadableHash(message.getChecksum()));
                     AcknowledgeMessage ackPayload = (AcknowledgeMessage) message.getPayload();
-                    Message mAck = this.messagePool.getMessage(ackPayload.getAcknowledgeChecksum()).getRight();
-                    if(mAck != null){
-                        this.messagePool.removeMessage(ackPayload.getAcknowledgeChecksum());
+                    ExpiringMessageRecord emr = this.messagePool.getMessage(ackPayload.getAcknowledgeChecksum());
+                    if(emr != null) {
+                        Message mAck = emr.getRight();
+                        if (mAck != null) {
+                            this.messagePool.removeMessage(ackPayload.getAcknowledgeChecksum());
+                        }
                     } else {
                         logger.debug("Received an acknowledgement for nonexistent message, maybe other node is confused?");
                     }
