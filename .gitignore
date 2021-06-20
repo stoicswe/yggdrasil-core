@@ -6,7 +6,7 @@
 target
 
 # Ignore Blockchain Data
-.ssblockchain-data
+.yggdrasil
 
 # Ignore other OS Specific files
 .DS_Store
