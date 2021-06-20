@@ -10,6 +10,6 @@ blockchain:
     port: 9090
     active-connections: 10
     node-name: "yggdrasil-branch"
-    peers: "192.168.64.2"
+    peers: "192.168.1.122"
     peer-records: 25
     #connection-timeout: 30000
