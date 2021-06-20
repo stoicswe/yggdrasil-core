@@ -90,7 +90,13 @@ public class PeerRecordIndexer {
         }
         logger.debug("Loading {} peer records.", numberOfRecords);
         for(int i = 0; i < numberOfRecords; i++){
-            this.addPeerRecord(this.peerRecordIO.readPeerRecord(peerRecords[i]));
+            PeerRecord pr = null;
+            try{
+                pr = this.peerRecordIO.readPeerRecord(peerRecords[i]);
+            } catch (Exception e){}
+            if (pr != null) {
+                this.addPeerRecord(pr);
+            }
         }
     }
 
