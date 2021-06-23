@@ -39,7 +39,6 @@ public class Transaction implements Serializable {
     @JsonSerialize(using = HashSerializer.class)
     private final byte[] destination;
     private final BigDecimal value;
-    private final String note;
     @JsonSerialize(using = HashSerializer.class)
     private final byte[] signature;
     @JsonSerialize(using = HashSerializer.class)
@@ -52,7 +51,6 @@ public class Transaction implements Serializable {
         this.origin = builder.origin;
         this.destination = builder.destination;
         this.value = builder.value;
-        this.note = builder.note;
         this.signature = builder.signature;
         this.nonce = builder.nonce;
         this.txnHash = CryptoHasher.hash(this);
@@ -76,10 +74,6 @@ public class Transaction implements Serializable {
 
     public BigDecimal getValue() {
         return value;
-    }
-
-    public String getNote() {
-        return note;
     }
 
     public byte[] getTxnHash() {
@@ -132,7 +126,6 @@ public class Transaction implements Serializable {
         protected byte[] origin;
         protected byte[] destination;
         protected BigDecimal value;
-        protected String note;
         protected int nonce;
         protected byte[] signature;
 
@@ -163,11 +156,6 @@ public class Transaction implements Serializable {
             return this;
         }
 
-        public Builder setNote(@JsonProperty("note") String note) {
-            this.note = note;
-            return this;
-        }
-
         public Builder setSignature(@JsonProperty("signature") String signature) {
             this.signature = CryptoHasher.hashByteArray(signature);
             return this;
@@ -194,7 +182,6 @@ public class Transaction implements Serializable {
             this.origin = transactionMessage.getOriginAddress();
             this.destination = transactionMessage.getDestinationAddress();
             this.value = transactionMessage.getValue();
-            this.note = String.valueOf(transactionMessage.getNote());
             this.signature = transactionMessage.getSignature();
             this.nonce = transactionMessage.getNonce();
             return new Transaction(this);

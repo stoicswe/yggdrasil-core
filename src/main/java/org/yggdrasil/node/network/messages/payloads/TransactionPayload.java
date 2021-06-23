@@ -27,8 +27,6 @@ public class TransactionPayload implements MessagePayload {
     @NotNull
     private final BigDecimal value;
     @NotNull
-    private final char[] note;
-    @NotNull
     private final byte[] transactionHash;
     @NotNull
     private final byte[] signature;
@@ -43,7 +41,6 @@ public class TransactionPayload implements MessagePayload {
         this.originAddress = builder.originAddress;
         this.destinationAddress = builder.destinationAddress;
         this.value = builder.value;
-        this.note = builder.note;
         this.transactionHash = builder.transactionHash;
         this.signature = builder.signature;
         this.blockHash = builder.blockHash;
@@ -68,10 +65,6 @@ public class TransactionPayload implements MessagePayload {
 
     public BigDecimal getValue() {
         return value;
-    }
-
-    public char[] getNote() {
-        return this.note;
     }
 
     public byte[] getTransactionHash() {
@@ -116,7 +109,6 @@ public class TransactionPayload implements MessagePayload {
         private byte[] originAddress;
         private byte[] destinationAddress;
         private BigDecimal value;
-        private char[] note;
         private byte[] transactionHash;
         private byte[] signature;
         private byte[] blockHash;
@@ -153,11 +145,6 @@ public class TransactionPayload implements MessagePayload {
             return this;
         }
 
-        public Builder setNote(String note) {
-            this.note = note.toCharArray();
-            return this;
-        }
-
         public Builder setTransactionHash(byte[] transactionHash) {
             this.transactionHash = transactionHash;
             return this;
@@ -184,7 +171,6 @@ public class TransactionPayload implements MessagePayload {
             this.originAddress = txn.getOrigin();
             this.destinationAddress = txn.getDestination();
             this.value = txn.getValue();
-            this.note = txn.getNote().toCharArray();
             this.transactionHash = txn.getTxnHash();
             this.signature = txn.getSignature();
             this.nonce = txn.getNonce();

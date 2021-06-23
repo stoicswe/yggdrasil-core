@@ -32,7 +32,6 @@ import java.math.RoundingMode;
 import java.security.KeyPair;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 
@@ -48,7 +47,9 @@ import java.util.List;
 public class BlockchainService {
 
     private final Integer _PREFIX = 4;
-    private final Integer _MAX_BLOCK_SIZE = 52;
+    private final Integer _MAX_BLOCK_LENGTH = 52;
+    // Set block size limit to 4mb.
+    private final Integer _MAX_BLOCK_SIZE = 4194304;
 
     private final Logger logger = LoggerFactory.getLogger(BlockchainService.class);
     private final Object lock = new Object();
@@ -156,7 +157,7 @@ public class BlockchainService {
 
         List<Transaction> blockData = new ArrayList<>();
         while(mempool.hasNext()) {
-            if(blockData.size() < _MAX_BLOCK_SIZE) {
+            if(blockData.size() < _MAX_BLOCK_LENGTH) {
                 blockData.add(mempool.getTransaction());
             } else {
                 break;
@@ -178,7 +179,6 @@ public class BlockchainService {
                 .setOrigin("7c5ec4b1ad5bdfc593587f3a9d50327ede02076b")
                 .setDestination(currentWallet.getHumanReadableAddress())
                 .setValue(new BigDecimal(newBlock.toString().length() / 9.23).setScale(12, RoundingMode.FLOOR))
-                .setNote("Happy mining!")
                 .build();
 
         this.addNewTransaction(blockMineAward);

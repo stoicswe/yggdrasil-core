@@ -41,7 +41,7 @@ public class CryptoHasher {
         blockData = appendBytes(blockData, SerializationUtils.serialize(block.getNonce()));
         blockData = appendBytes(blockData, block.getValidator());
         blockData = appendBytes(blockData, block.getSignature());
-        return MessageDigest.getInstance(_HASH_ALGORITHM).digest(SerializationUtils.serialize(blockData));
+        return CryptoHasher.dhash(blockData);
     }
 
     /**
@@ -60,7 +60,7 @@ public class CryptoHasher {
         txnData = appendBytes(txnData, SerializationUtils.serialize(transaction.getValue()));
         txnData = appendBytes(txnData, SerializationUtils.serialize(transaction.getNote()));
         txnData = appendBytes(txnData, SerializationUtils.serialize(transaction.getSignature()));
-        return MessageDigest.getInstance(_HASH_ALGORITHM).digest(SerializationUtils.serialize(txnData));
+        return CryptoHasher.dhash(txnData);
     }
 
     /**
@@ -75,7 +75,7 @@ public class CryptoHasher {
         walletData = appendBytes(walletData, SerializationUtils.serialize(wallet.getIndex()));
         walletData = appendBytes(walletData, SerializationUtils.serialize(wallet.getAddress()));
         walletData = appendBytes(walletData, SerializationUtils.serialize(wallet.getCreationDate()));
-        return MessageDigest.getInstance(_HASH_ALGORITHM).digest(SerializationUtils.serialize(walletData));
+        return CryptoHasher.dhash(walletData);
     }
 
     /**
@@ -85,10 +85,19 @@ public class CryptoHasher {
      * @return
      * @throws NoSuchAlgorithmException
      */
-    public static byte[] hash(MessagePayload payload) throws  NoSuchAlgorithmException {
+    public static byte[] hash(MessagePayload payload) throws NoSuchAlgorithmException {
+        return CryptoHasher.dhash(payload.getDataBytes());
+    }
+
+    /**
+     * Hashes an arbitrary object twice.
+     *
+     *
+     */
+    public static byte[] dhash(byte[] object) throws NoSuchAlgorithmException {
         return MessageDigest.getInstance(_HASH_ALGORITHM)
                 .digest(MessageDigest.getInstance(_HASH_ALGORITHM)
-                        .digest(SerializationUtils.serialize(payload.getDataBytes())));
+                        .digest(object));
     }
 
     /**
