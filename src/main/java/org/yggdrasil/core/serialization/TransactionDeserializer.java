@@ -42,14 +42,12 @@ public class TransactionDeserializer extends JsonDeserializer<Transaction> {
         String origin = node.get("origin").asText();
         String destination = node.get("destination").asText();
         BigDecimal value = new BigDecimal(node.get("value").asText());
-        String note = node.get("note").asText();
 
         try {
             return Transaction.Builder.Builder()
                     .setOrigin(origin)
                     .setDestination(destination)
                     .setValue(value)
-                    .setNote(note)
                     .build();
         } catch (NoSuchAlgorithmException e) {
             logger.error("Deserialization of txn failed with: {}", e.toString());

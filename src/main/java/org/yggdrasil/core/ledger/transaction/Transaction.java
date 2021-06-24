@@ -32,32 +32,26 @@ import java.util.UUID;
 @JsonDeserialize(using = TransactionDeserializer.class)
 public class Transaction implements Serializable {
 
-    private final UUID index;
     private final ZonedDateTime timestamp;
     @JsonSerialize(using = HashSerializer.class)
     private final byte[] origin;
     @JsonSerialize(using = HashSerializer.class)
     private final byte[] destination;
     private final BigDecimal value;
+
+    private final BigDecimal fee;
     @JsonSerialize(using = HashSerializer.class)
-    private final byte[] signature;
+    private byte[] signature;
     @JsonSerialize(using = HashSerializer.class)
     private byte[] txnHash;
-    private int nonce;
 
     protected Transaction(Builder builder) throws NoSuchAlgorithmException {
-        this.index = builder.index;
         this.timestamp = builder.timestamp;
         this.origin = builder.origin;
         this.destination = builder.destination;
         this.value = builder.value;
-        this.signature = builder.signature;
-        this.nonce = builder.nonce;
+        this.fee = builder.fee;
         this.txnHash = CryptoHasher.hash(this);
-    }
-
-    public UUID getIndex() {
-        return index;
     }
 
     public ZonedDateTime getTimestamp() {
@@ -80,6 +74,14 @@ public class Transaction implements Serializable {
         return txnHash;
     }
 
+    public BigDecimal getFee() {
+        return fee;
+    }
+
+    public void setSignature(byte[] signature) {
+        this.signature = signature;
+    }
+
     public byte[] getSignature() {
         return signature;
     }
@@ -87,14 +89,6 @@ public class Transaction implements Serializable {
     public byte[] rehash() throws NoSuchAlgorithmException {
         this.txnHash = CryptoHasher.hash(this);
         return this.txnHash;
-    }
-
-    public void incrementNonce() {
-        this.nonce++;
-    }
-
-    public int getNonce() {
-        return nonce;
     }
 
     public boolean compareTxnHash(byte[] txnHash) {
@@ -121,13 +115,11 @@ public class Transaction implements Serializable {
      */
     public static class Builder {
 
-        protected UUID index;
         protected ZonedDateTime timestamp;
         protected byte[] origin;
         protected byte[] destination;
         protected BigDecimal value;
-        protected int nonce;
-        protected byte[] signature;
+        protected BigDecimal fee;
 
         private Builder(){}
 
@@ -156,13 +148,8 @@ public class Transaction implements Serializable {
             return this;
         }
 
-        public Builder setSignature(@JsonProperty("signature") String signature) {
-            this.signature = CryptoHasher.hashByteArray(signature);
-            return this;
-        }
-
-        public Builder setSignature(byte[] signature) {
-            this.signature = signature;
+        public Builder setFee(@JsonProperty("fee") BigDecimal fee) {
+            this.fee = fee;
             return this;
         }
 
@@ -171,20 +158,18 @@ public class Transaction implements Serializable {
         }
 
         public Transaction build() throws NoSuchAlgorithmException {
-            this.index = UUID.randomUUID();
             this.timestamp = DateTimeUtil.getCurrentTimestamp();
             return new Transaction(this);
         }
 
         public Transaction buildFromMessage(TransactionPayload transactionMessage) throws NoSuchAlgorithmException {
-            this.index = UUID.fromString(String.valueOf(transactionMessage.getIndex()));
             this.timestamp = DateTimeUtil.fromMessageTimestamp(transactionMessage.getTimestamp());
             this.origin = transactionMessage.getOriginAddress();
             this.destination = transactionMessage.getDestinationAddress();
             this.value = transactionMessage.getValue();
-            this.signature = transactionMessage.getSignature();
-            this.nonce = transactionMessage.getNonce();
-            return new Transaction(this);
+            Transaction txn = new Transaction(this);
+            txn.signature = transactionMessage.getSignature();
+            return txn;
         }
     }
 

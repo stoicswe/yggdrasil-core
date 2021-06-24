@@ -30,7 +30,7 @@ public class PeerRecordConnectionRunner extends TimerTask {
     public void run() {
         try {
             if(node.getConnectedNodes().size() < nodeConfig.getActiveConnections()) {
-                logger.info("Current connected peers < peer limit, checking peer records.");
+                logger.trace("Current connected peers < peer limit, checking peer records.");
                 for(PeerRecord pr : peerRecordIndexer.getPeerRecords()) {
                     if(node.getConnectedNodes().values().stream().noneMatch(nodeConnection -> nodeConnection.getNodeSocket().getInetAddress().getHostAddress().contentEquals(pr.getIpAddress()))){
                         logger.debug("Peer is not connected to yet. Attempting to handshake.");

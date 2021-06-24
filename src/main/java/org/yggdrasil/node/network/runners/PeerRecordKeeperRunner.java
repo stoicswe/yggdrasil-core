@@ -19,7 +19,7 @@ public class PeerRecordKeeperRunner extends TimerTask {
     @Override
     public void run() {
         try{
-            logger.info("Dumping peer records to storage.");
+            logger.trace("Dumping peer records to storage.");
             this.peerRecordIndexer.dumpPeerRecords();
         } catch (Exception e) {
             logger.error("There was an issue dumping peer records: {}", e.getMessage());

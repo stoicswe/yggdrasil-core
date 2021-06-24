@@ -5,6 +5,7 @@ import org.apache.commons.lang3.SerializationUtils;
 import org.yggdrasil.node.network.messages.MessagePayload;
 
 import javax.validation.constraints.NotNull;
+import java.math.BigInteger;
 import java.util.UUID;
 
 /**
@@ -16,7 +17,7 @@ import java.util.UUID;
 public class BlockMessage implements MessagePayload {
 
     @NotNull
-    private final char[] index;
+    private final int blockHeight;
     @NotNull
     private final int timestamp;
     @NotNull
@@ -33,7 +34,7 @@ public class BlockMessage implements MessagePayload {
     private final int nonce;
 
     private BlockMessage(Builder builder) {
-        this.index = builder.index;
+        this.blockHeight = builder.blockHeight;
         this.timestamp = builder.timestamp;
         this.txnPayloads = builder.txnPayloads;
         this.previousBlockHash = builder.previousBlockHash;
@@ -43,8 +44,8 @@ public class BlockMessage implements MessagePayload {
         this.nonce = builder.nonce;
     }
 
-    public char[] getIndex() {
-        return index;
+    public int getBlockHeight() {
+        return blockHeight;
     }
 
     public int getTimestamp() {
@@ -78,7 +79,7 @@ public class BlockMessage implements MessagePayload {
     @Override
     public byte[] getDataBytes() {
         byte[] messageBytes = new byte[0];
-        messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(index));
+        messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(blockHeight));
         messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(timestamp));
         for(TransactionPayload txnPayload : txnPayloads) {
             messageBytes = appendBytes(messageBytes, txnPayload.getDataBytes());
@@ -96,7 +97,7 @@ public class BlockMessage implements MessagePayload {
     }
 
     public static class Builder {
-        protected char[] index;
+        protected int blockHeight;
         protected int timestamp;
         protected TransactionPayload[] txnPayloads;
         protected byte[] previousBlockHash;
@@ -111,8 +112,8 @@ public class BlockMessage implements MessagePayload {
             return new Builder();
         }
 
-        public Builder setIndex(UUID index) {
-            this.index = index.toString().toCharArray();
+        public Builder setBlockHeight(BigInteger blockHeight) {
+            this.blockHeight = blockHeight.intValue();
             return this;
         }
 

@@ -29,8 +29,7 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.RoundingMode;
-import java.security.KeyPair;
-import java.security.NoSuchAlgorithmException;
+import java.security.*;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -47,9 +46,7 @@ import java.util.List;
 public class BlockchainService {
 
     private final Integer _PREFIX = 4;
-    private final Integer _MAX_BLOCK_LENGTH = 52;
-    // Set block size limit to 4mb.
-    private final Integer _MAX_BLOCK_SIZE = 4194304;
+    private final Integer _MAX_BLOCK_SIZE = 52;
 
     private final Logger logger = LoggerFactory.getLogger(BlockchainService.class);
     private final Object lock = new Object();
@@ -122,10 +119,10 @@ public class BlockchainService {
      * @return
      * @throws NoSuchAlgorithmException
      */
-    public Wallet getWallet() throws NoSuchAlgorithmException, DestroyFailedException {
+    public Wallet getWallet() throws NoSuchAlgorithmException, DestroyFailedException, NoSuchProviderException, InvalidAlgorithmParameterException {
         logger.info("Generating new wallet...");
         KeyPair newKeyPair = keyGenerator.generatePublicPrivateKeys();
-        Wallet newWallet = Wallet.WBuilder.newSSWalletBuilder().setPublicKey(newKeyPair.getPublic()).build();
+        Wallet newWallet = Wallet.Builder.newBuilder().setKeyPair(newKeyPair).build();
         logger.info("New wallet generated with the private key: {}", CryptoHasher.humanReadableHash(newKeyPair.getPrivate().getEncoded()));
         this.currentWallet = newWallet;
         return newWallet;
@@ -140,6 +137,23 @@ public class BlockchainService {
                 .setMessagePayload(pingPongMessage)
                 .setChecksum(CryptoHasher.hash(pingPongMessage)).build();
         messenger.sendBroadcastMessage(message);
+    }
+
+    public void testSigning() throws NoSuchAlgorithmException, SignatureException, InvalidKeyException {
+        Transaction txn = Transaction.Builder.Builder()
+                .setOrigin(currentWallet.getAddress())
+                .setDestination("6ad28d3fda4e10bdc0aaf7112f7818e181defa7e")
+                .setFee(BigDecimal.valueOf(0.001))
+                .setValue(BigDecimal.valueOf(15.03456433424))
+                .build();
+        this.currentWallet.signTransaction(txn);
+        logger.info("signing...");
+        logger.info(String.valueOf(txn));
+        Signature ecdsaVerify = Signature.getInstance(CryptoKeyGenerator.getSignatureAlgorithm());
+        ecdsaVerify.initVerify(currentWallet.getPublicKey());
+        ecdsaVerify.update(txn.getTxnHash());
+        logger.info(String.valueOf(ecdsaVerify.verify(txn.getSignature())));
+        logger.info("done");
     }
 
     /**
@@ -157,7 +171,7 @@ public class BlockchainService {
 
         List<Transaction> blockData = new ArrayList<>();
         while(mempool.hasNext()) {
-            if(blockData.size() < _MAX_BLOCK_LENGTH) {
+            if(blockData.size() < _MAX_BLOCK_SIZE) {
                 blockData.add(mempool.getTransaction());
             } else {
                 break;
@@ -186,7 +200,7 @@ public class BlockchainService {
         logger.info("Block mine awarded, transaction: {} @ {}", blockMineAward.toString(), blockMineAward.getValue());
 
         return BlockResponse.Builder.builder()
-                .setIndex(newBlock.getIndex())
+                .setBlockHeight(newBlock.getBlockHeight())
                 .setTimestamp(newBlock.getTimestamp())
                 .setSize(GraphLayout.parseInstance(newBlock).totalSize())
                 .setBlockhash(newBlock.getBlockHash())

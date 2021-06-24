@@ -34,7 +34,6 @@ public class CryptoHasher {
      */
     public static byte[] hash(Block block) throws NoSuchAlgorithmException {
         byte[] blockData = new byte[0];
-        blockData = appendBytes(blockData, SerializationUtils.serialize(block.getIndex()));
         blockData = appendBytes(blockData, SerializationUtils.serialize(block.getTimestamp()));
         blockData = appendBytes(blockData, SerializationUtils.serialize(block.getData().hashCode()));
         blockData = appendBytes(blockData, SerializationUtils.serialize(block.getPreviousBlockHash()));
@@ -53,13 +52,11 @@ public class CryptoHasher {
      */
     public static byte[] hash(Transaction transaction) throws NoSuchAlgorithmException {
         byte[] txnData = new byte[0];
-        txnData = appendBytes(txnData, SerializationUtils.serialize(transaction.getIndex()));
         txnData = appendBytes(txnData, SerializationUtils.serialize(transaction.getTimestamp()));
         txnData = appendBytes(txnData, SerializationUtils.serialize(transaction.getOrigin()));
         txnData = appendBytes(txnData, SerializationUtils.serialize(transaction.getDestination()));
         txnData = appendBytes(txnData, SerializationUtils.serialize(transaction.getValue()));
-        txnData = appendBytes(txnData, SerializationUtils.serialize(transaction.getNote()));
-        txnData = appendBytes(txnData, SerializationUtils.serialize(transaction.getSignature()));
+        txnData = appendBytes(txnData, SerializationUtils.serialize(transaction.getFee()));
         return CryptoHasher.dhash(txnData);
     }
 
@@ -72,7 +69,6 @@ public class CryptoHasher {
      */
     public static byte[] hash(Wallet wallet) throws NoSuchAlgorithmException {
         byte[] walletData = new byte[0];
-        walletData = appendBytes(walletData, SerializationUtils.serialize(wallet.getIndex()));
         walletData = appendBytes(walletData, SerializationUtils.serialize(wallet.getAddress()));
         walletData = appendBytes(walletData, SerializationUtils.serialize(wallet.getCreationDate()));
         return CryptoHasher.dhash(walletData);

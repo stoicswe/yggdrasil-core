@@ -17,7 +17,9 @@ import org.springframework.http.ResponseEntity;
 
 import javax.annotation.PostConstruct;
 import java.io.IOException;
+import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.security.SignatureException;
 import java.util.List;
 
 /**
@@ -74,8 +76,8 @@ public class BlockchainController {
 
     // Used to test in-development features
     @RequestMapping(value = "/testFeature", method = RequestMethod.HEAD)
-    public void testFeature() throws NoSuchAlgorithmException, IOException {
-        this.service.sendMessage();
+    public void testFeature() throws NoSuchAlgorithmException, IOException, SignatureException, InvalidKeyException {
+        this.service.testSigning();
     }
 
 }

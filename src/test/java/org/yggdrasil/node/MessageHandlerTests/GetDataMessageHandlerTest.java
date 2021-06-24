@@ -60,8 +60,6 @@ public class GetDataMessageHandlerTest {
         this.txn = Transaction.Builder.Builder()
                 .setDestination("0890ba439df33d9facc63ce73b8177a239cd8be2")
                 .setOrigin("6ad28d3fda4e10bdc0aaf7112f7818e181defa7e")
-                .setSignature(new byte[0])
-                .setNote("This is a test txn")
                 .setValue(BigDecimal.valueOf(0.1234567))
                 .build();
         txns = new ArrayList<>();
@@ -122,7 +120,6 @@ public class GetDataMessageHandlerTest {
         BlockchainMessage blockchainMessage = (BlockchainMessage) returnMessagePayload;
         assertThat(blockchainMessage.getHeaderCount() == 1);
         BlockHeaderPayload blockHeaderPayload = (BlockHeaderPayload) blockchainMessage.getHeaders()[0];
-        assertThat(this.block.getIndex().toString().contentEquals(String.valueOf(blockHeaderPayload.getIndex())));
         assertThat(this.block.compareBlockHash(blockHeaderPayload.getHash()));
         assertThat(blockHeaderPayload.getTransactionCount() == 1);
         assertThat(this.block.getTimestamp().toEpochSecond() == blockHeaderPayload.getTimestamp());
@@ -148,14 +145,12 @@ public class GetDataMessageHandlerTest {
         assertThat(txnMessage.getTxns().length == 1);
         assertThat(txnMessage.getTxnCount() == 1);
         TransactionPayload txnPayload = txnMessage.getTxns()[0];
-        assertThat(this.txn.getIndex().toString().contentEquals(String.valueOf(txnPayload.getIndex())));
         assertThat(this.txn.getTimestamp().toEpochSecond() == txnPayload.getTimestamp());
         assertThat(this.txn.compareTxnHash(txnPayload.getTransactionHash()));
         assertThat(this.block.compareBlockHash(txnPayload.getBlockHash()));
         assertThat(this.txn.getValue().compareTo(txnPayload.getValue()) == 0);
         assertThat(CryptoHasher.compareHashes(this.txn.getDestination(), txnPayload.getDestinationAddress()));
         assertThat(CryptoHasher.compareHashes(this.txn.getOrigin(), txnPayload.getOriginAddress()));
-        assertThat(this.txn.getNonce() == txnPayload.getNonce());
         assertThat(txnPayload.getSignature().length == 0);
 
     }
@@ -178,14 +173,12 @@ public class GetDataMessageHandlerTest {
         assertThat(txnMessage.getTxns().length == 1);
         assertThat(txnMessage.getTxnCount() == 1);
         TransactionPayload txnPayload = txnMessage.getTxns()[0];
-        assertThat(this.txn.getIndex().toString().contentEquals(String.valueOf(txnPayload.getIndex())));
         assertThat(this.txn.getTimestamp().toEpochSecond() == txnPayload.getTimestamp());
         assertThat(this.txn.compareTxnHash(txnPayload.getTransactionHash()));
         assertThat(this.block.compareBlockHash(txnPayload.getBlockHash()));
         assertThat(this.txn.getValue().compareTo(txnPayload.getValue()) == 0);
         assertThat(CryptoHasher.compareHashes(this.txn.getDestination(), txnPayload.getDestinationAddress()));
         assertThat(CryptoHasher.compareHashes(this.txn.getOrigin(), txnPayload.getOriginAddress()));
-        assertThat(this.txn.getNonce() == txnPayload.getNonce());
         assertThat(txnPayload.getSignature().length == 0);
     }
 

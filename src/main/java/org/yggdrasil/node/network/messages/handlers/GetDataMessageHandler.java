@@ -49,19 +49,15 @@ public class GetDataMessageHandler implements MessageHandler<GetDataMessage> {
                         for(Object txnObj : txns) {
                             Transaction txn = (Transaction) txnObj;
                             txnps.add(TransactionPayload.Builder.newBuilder()
-                                    .setIndex(txn.getIndex().toString().toCharArray())
                                     .setTimestamp((int) txn.getTimestamp().toEpochSecond())
                                     .setDestinationAddress(txn.getDestination())
                                     .setOriginAddress(txn.getOrigin())
                                     .setValue(txn.getValue())
-                                    .setNote(txn.getNote())
-                                    .setNonce(txn.getNonce())
                                     .setBlockHash(b.getBlockHash())
                                     .setSignature(txn.getSignature())
                                     .build());
                         }
                         messagePayload = BlockMessage.Builder.newBuilder()
-                                .setIndex(b.getIndex())
                                 .setTimestamp((int) b.getTimestamp().toEpochSecond())
                                 .setTxnPayloads(txnps.toArray(TransactionPayload[]::new))
                                 .setBlockHash(b.getBlockHash())
@@ -82,7 +78,6 @@ public class GetDataMessageHandler implements MessageHandler<GetDataMessage> {
                     if(bs.isPresent()) {
                         Block b = bs.get();
                         BlockHeaderPayload hp = BlockHeaderPayload.Builder.newBuilder()
-                                .setIndex(b.getIndex().toString().toCharArray())
                                 .setTimestamp((int) b.getTimestamp().toEpochSecond())
                                 .setHash(b.getBlockHash())
                                 .setTransactionCount(b.getData().size())
