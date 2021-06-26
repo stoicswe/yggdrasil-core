@@ -47,7 +47,6 @@ public class TransactionDeserializer extends JsonDeserializer<Transaction> {
             return Transaction.Builder.Builder()
                     .setOrigin(origin)
                     .setDestination(destination)
-                    .setValue(value)
                     .build();
         } catch (NoSuchAlgorithmException e) {
             logger.error("Deserialization of txn failed with: {}", e.toString());

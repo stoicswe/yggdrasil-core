@@ -3,6 +3,7 @@ package org.yggdrasil.core.ledger;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.yggdrasil.core.ledger.transaction.Transaction;
+import org.yggdrasil.core.ledger.transaction.WalletTransaction;
 import org.yggdrasil.core.serialization.HashSerializer;
 import org.yggdrasil.core.utils.CryptoHasher;
 import org.yggdrasil.core.utils.CryptoKeyGenerator;
@@ -12,6 +13,7 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.security.*;
 import java.time.ZonedDateTime;
+import java.util.HashMap;
 
 /**
  * The Wallet will contain the ability to send, receive, and store crypto
@@ -24,14 +26,22 @@ import java.time.ZonedDateTime;
 @JsonInclude
 public class Wallet implements Serializable {
 
+    /**
+     * Make a method of where the public and private keys can
+     * be saved for reference later. Somehow make a way so that
+     * the public portions of a wallet can be saved separate from
+     * the private key, so that the private key is never stored in
+     * memory (to help guard against memory-read attacks).
+     */
+
     private final PublicKey publicKey;
     private final PrivateKey privateKey;
     private final ZonedDateTime creationDate;
     @JsonSerialize(using = HashSerializer.class)
     private final byte[] address;
-    private final BigDecimal balance;
     @JsonSerialize(using = HashSerializer.class)
     private final byte[] walletHash;
+    private final HashMap<byte[], WalletTransaction> wTxns;
     private Signature signature;
 
     private Wallet(Builder builder) throws NoSuchAlgorithmException {
@@ -39,7 +49,7 @@ public class Wallet implements Serializable {
         this.privateKey = builder.privateKey;
         this.creationDate = builder.creationDate;
         this.address = builder.address;
-        this.balance = BigDecimal.ZERO;
+        this.wTxns = new HashMap<>();
         this.signature = Signature.getInstance(CryptoKeyGenerator.getSignatureAlgorithm());
         this.walletHash = CryptoHasher.hash(this);
     }
@@ -50,7 +60,7 @@ public class Wallet implements Serializable {
         this.signature = Signature.getInstance(CryptoKeyGenerator.getSignatureAlgorithm());
         this.creationDate = creationDate;
         this.address = address;
-        this.balance = balance;
+        this.wTxns = new HashMap<>();
         this.walletHash = walletHash;
     }
 
@@ -63,17 +73,11 @@ public class Wallet implements Serializable {
     }
 
     public BigDecimal getBalance() {
-        return balance;
-    }
-
-    protected Wallet updateBalance(BigDecimal delta, boolean isNegative) throws NoSuchAlgorithmException, NoSuchProviderException {
-        BigDecimal newBalance;
-        if(isNegative){
-            newBalance = this.balance.subtract(delta);
-        } else {
-            newBalance = this.balance.add(delta);
+        BigDecimal bal = BigDecimal.ZERO;
+        for(WalletTransaction wTxn : this.wTxns.values()) {
+            bal = bal.add(wTxn.getCredits());
         }
-        return new Wallet(this.publicKey, this.privateKey, this.creationDate, this.address, newBalance, walletHash);
+        return bal;
     }
 
     public void signTransaction(Transaction txn) throws InvalidKeyException, SignatureException {

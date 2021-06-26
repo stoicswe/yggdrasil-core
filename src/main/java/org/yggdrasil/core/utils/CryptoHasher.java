@@ -55,8 +55,6 @@ public class CryptoHasher {
         txnData = appendBytes(txnData, SerializationUtils.serialize(transaction.getTimestamp()));
         txnData = appendBytes(txnData, SerializationUtils.serialize(transaction.getOrigin()));
         txnData = appendBytes(txnData, SerializationUtils.serialize(transaction.getDestination()));
-        txnData = appendBytes(txnData, SerializationUtils.serialize(transaction.getValue()));
-        txnData = appendBytes(txnData, SerializationUtils.serialize(transaction.getFee()));
         return CryptoHasher.dhash(txnData);
     }
 
@@ -116,7 +114,7 @@ public class CryptoHasher {
         return HexUtils.fromHexString(stringHash);
     }
 
-    public static boolean compareHashes(byte[] val0, byte[] val1) {
+    public static boolean isEqualHashes(byte[] val0, byte[] val1) {
         try {
             for (int i = 0; i < val1.length; i++) {
                 if (val0[i] != val1[i]) {
@@ -127,6 +125,30 @@ public class CryptoHasher {
             return false;
         }
         return true;
+    }
+
+    public static int compareHashes(byte[] val0, byte[] val1) {
+
+        if (val0 == val1) {
+            return 0;
+        } else if (val0 == null) {
+            return -1; // "a < b"
+        } else if (val1 == null) {
+            return 1; // "a > b"
+        }
+
+        int last = Math.min(val0.length, val1.length);
+        for (int i = 0; i < last; i++) {
+            byte val0b = val0[i];
+            byte val1b = val1[i];
+            if (val0b != val1b) {
+                if (val0b < val1b) {
+                    return -1;
+                }
+                return 1;
+            }
+        }
+        return 0;
     }
 
     private static byte[] appendBytes(byte[] base, byte[] extension) {

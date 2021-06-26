@@ -4,7 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.yggdrasil.core.ledger.chain.Block;
 import org.yggdrasil.core.ledger.chain.Blockchain;
-import org.yggdrasil.core.ledger.transaction.Mempool;
+import org.yggdrasil.core.ledger.Mempool;
 import org.yggdrasil.core.ledger.transaction.Transaction;
 import org.yggdrasil.node.network.exceptions.InvalidMessageException;
 import org.yggdrasil.node.network.messages.MessagePayload;
@@ -52,7 +52,6 @@ public class GetDataMessageHandler implements MessageHandler<GetDataMessage> {
                                     .setTimestamp((int) txn.getTimestamp().toEpochSecond())
                                     .setDestinationAddress(txn.getDestination())
                                     .setOriginAddress(txn.getOrigin())
-                                    .setValue(txn.getValue())
                                     .setBlockHash(b.getBlockHash())
                                     .setSignature(txn.getSignature())
                                     .build());

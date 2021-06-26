@@ -2,7 +2,7 @@ package org.yggdrasil.node.service;
 
 import org.yggdrasil.core.ledger.chain.Block;
 import org.yggdrasil.core.ledger.chain.Blockchain;
-import org.yggdrasil.core.ledger.transaction.Mempool;
+import org.yggdrasil.core.ledger.Mempool;
 import org.yggdrasil.core.ledger.transaction.Transaction;
 import org.yggdrasil.core.ledger.Wallet;
 import org.yggdrasil.core.utils.CryptoHasher;
@@ -93,7 +93,7 @@ public class BlockchainService {
      * @param transaction
      */
     public void addNewTransaction(Transaction transaction) throws IOException, NoSuchAlgorithmException {
-        logger.info("New transaction: {} [{} -> {} = {}]", transaction.toString(), CryptoHasher.humanReadableHash(transaction.getOrigin()), CryptoHasher.humanReadableHash(transaction.getDestination()), transaction.getValue());
+        logger.info("New transaction: {} [{} -> {}]", transaction.toString(), CryptoHasher.humanReadableHash(transaction.getOrigin()), CryptoHasher.humanReadableHash(transaction.getDestination()));
         this.mempool.putTransaction(transaction);
         TransactionPayload txnPayload = TransactionPayload.Builder.newBuilder()
                 .buildFromTransaction(transaction)
@@ -143,8 +143,6 @@ public class BlockchainService {
         Transaction txn = Transaction.Builder.Builder()
                 .setOrigin(currentWallet.getAddress())
                 .setDestination("6ad28d3fda4e10bdc0aaf7112f7818e181defa7e")
-                .setFee(BigDecimal.valueOf(0.001))
-                .setValue(BigDecimal.valueOf(15.03456433424))
                 .build();
         this.currentWallet.signTransaction(txn);
         logger.info("signing...");
@@ -192,12 +190,12 @@ public class BlockchainService {
         Transaction blockMineAward = Transaction.Builder.Builder()
                 .setOrigin("7c5ec4b1ad5bdfc593587f3a9d50327ede02076b")
                 .setDestination(currentWallet.getHumanReadableAddress())
-                .setValue(new BigDecimal(newBlock.toString().length() / 9.23).setScale(12, RoundingMode.FLOOR))
+                //.setValue(new BigDecimal(newBlock.toString().length() / 9.23).setScale(12, RoundingMode.FLOOR))
                 .build();
 
         this.addNewTransaction(blockMineAward);
 
-        logger.info("Block mine awarded, transaction: {} @ {}", blockMineAward.toString(), blockMineAward.getValue());
+        logger.info("Block mine awarded, transaction: {}", blockMineAward.toString());
 
         return BlockResponse.Builder.builder()
                 .setBlockHeight(newBlock.getBlockHeight())

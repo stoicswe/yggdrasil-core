@@ -132,7 +132,6 @@ public final class Block implements Serializable {
                 .setData(Collections.singletonList(Transaction.Builder.Builder()
                         .setOrigin(new byte[0])
                         .setDestination(new byte[0])
-                        .setValue(BigDecimal.valueOf(10, 7))
                         .build()))
                 .build();
     }
@@ -202,7 +201,7 @@ public final class Block implements Serializable {
             }
             this.data = data;
             Block blck = new Block(this);
-            if(CryptoHasher.compareHashes(this.blockHash, blck.blockHash)){
+            if(CryptoHasher.isEqualHashes(this.blockHash, blck.blockHash)){
                 logger.debug("Locally generated blockhash matched incoming blockhash from payload");
             } else {
                 logger.debug("Locally generated blockhash did not match, manually setting blockhaash from payload");

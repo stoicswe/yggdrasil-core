@@ -37,9 +37,8 @@ public class Transaction implements Serializable {
     private final byte[] origin;
     @JsonSerialize(using = HashSerializer.class)
     private final byte[] destination;
-    private final BigDecimal value;
-
-    private final BigDecimal fee;
+    private final TransactionInput[] txnInputs;
+    private final TransactionOutput[] txnOutPuts;
     @JsonSerialize(using = HashSerializer.class)
     private byte[] signature;
     @JsonSerialize(using = HashSerializer.class)
@@ -49,8 +48,8 @@ public class Transaction implements Serializable {
         this.timestamp = builder.timestamp;
         this.origin = builder.origin;
         this.destination = builder.destination;
-        this.value = builder.value;
-        this.fee = builder.fee;
+        this.txnInputs = builder.txnInputs;
+        this.txnOutPuts = builder.txnOutPuts;
         this.txnHash = CryptoHasher.hash(this);
     }
 
@@ -66,16 +65,8 @@ public class Transaction implements Serializable {
         return destination;
     }
 
-    public BigDecimal getValue() {
-        return value;
-    }
-
     public byte[] getTxnHash() {
         return txnHash;
-    }
-
-    public BigDecimal getFee() {
-        return fee;
     }
 
     public void setSignature(byte[] signature) {
@@ -104,6 +95,10 @@ public class Transaction implements Serializable {
         return true;
     }
 
+    public boolean isCoinbase() {
+        return (this.txnInputs.length == 1 && this.txnInputs[0].txnOutPt == null);
+    }
+
     @Override
     public String toString(){
         return CryptoHasher.humanReadableHash(txnHash);
@@ -118,8 +113,8 @@ public class Transaction implements Serializable {
         protected ZonedDateTime timestamp;
         protected byte[] origin;
         protected byte[] destination;
-        protected BigDecimal value;
-        protected BigDecimal fee;
+        protected TransactionInput[] txnInputs;
+        protected TransactionOutput[] txnOutPuts;
 
         private Builder(){}
 
@@ -143,13 +138,13 @@ public class Transaction implements Serializable {
             return this;
         }
 
-        public Builder setValue(@JsonProperty("value") BigDecimal value) {
-            this.value = value;
+        public Builder setTxnInputs(TransactionInput[] txnInputs){
+            this.txnInputs = txnInputs;
             return this;
         }
 
-        public Builder setFee(@JsonProperty("fee") BigDecimal fee) {
-            this.fee = fee;
+        public Builder setTxnOutputs(TransactionOutput[] txnOutPuts) {
+            this.txnOutPuts = txnOutPuts;
             return this;
         }
 
@@ -166,7 +161,6 @@ public class Transaction implements Serializable {
             this.timestamp = DateTimeUtil.fromMessageTimestamp(transactionMessage.getTimestamp());
             this.origin = transactionMessage.getOriginAddress();
             this.destination = transactionMessage.getDestinationAddress();
-            this.value = transactionMessage.getValue();
             Transaction txn = new Transaction(this);
             txn.signature = transactionMessage.getSignature();
             return txn;
