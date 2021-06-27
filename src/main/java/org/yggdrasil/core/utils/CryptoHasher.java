@@ -55,6 +55,9 @@ public class CryptoHasher {
         txnData = appendBytes(txnData, SerializationUtils.serialize(transaction.getTimestamp()));
         txnData = appendBytes(txnData, SerializationUtils.serialize(transaction.getOrigin()));
         txnData = appendBytes(txnData, SerializationUtils.serialize(transaction.getDestination()));
+        txnData = appendBytes(txnData, transaction.getSignature());
+        txnData = appendBytes(txnData, SerializationUtils.serialize(transaction.getTxnInputs()));
+        txnData = appendBytes(txnData, SerializationUtils.serialize(transaction.getTxnOutPuts()));
         return CryptoHasher.dhash(txnData);
     }
 

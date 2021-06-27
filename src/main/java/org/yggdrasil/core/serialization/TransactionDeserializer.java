@@ -12,6 +12,8 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.spec.InvalidKeySpecException;
 
 /**
  * Provides the necessary functionality to correctly deserialize incoming
@@ -48,7 +50,7 @@ public class TransactionDeserializer extends JsonDeserializer<Transaction> {
                     .setOrigin(origin)
                     .setDestination(destination)
                     .build();
-        } catch (NoSuchAlgorithmException e) {
+        } catch (InvalidKeySpecException | NoSuchProviderException | NoSuchAlgorithmException e) {
             logger.error("Deserialization of txn failed with: {}", e.toString());
         }
 

@@ -17,6 +17,8 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.spec.InvalidKeySpecException;
 import java.time.ZonedDateTime;
 import java.util.*;
 
@@ -189,7 +191,7 @@ public final class Block implements Serializable {
             return blck;
         }
 
-        public Block buildFromBlockMessage(BlockMessage blockMessage) throws NoSuchAlgorithmException {
+        public Block buildFromBlockMessage(BlockMessage blockMessage) throws NoSuchAlgorithmException, InvalidKeySpecException, NoSuchProviderException {
             // make a thing for the block height
             this.timestamp = DateTimeUtil.fromMessageTimestamp(blockMessage.getTimestamp());
             this.nonce = blockMessage.getNonce();

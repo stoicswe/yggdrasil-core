@@ -10,6 +10,8 @@ public class TransactionInput {
     // If this value is < txnOutPt, then there needs to
     // be changed delivered. If it is greater than, need
     // to check the other txnInputs to before failed validation
+
+    // this value below could be for the transaction fee...
     protected final BigDecimal value;
 
 

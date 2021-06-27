@@ -30,6 +30,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.RoundingMode;
 import java.security.*;
+import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -93,7 +94,7 @@ public class BlockchainService {
      * @param transaction
      */
     public void addNewTransaction(Transaction transaction) throws IOException, NoSuchAlgorithmException {
-        logger.info("New transaction: {} [{} -> {}]", transaction.toString(), CryptoHasher.humanReadableHash(transaction.getOrigin()), CryptoHasher.humanReadableHash(transaction.getDestination()));
+        logger.info("New transaction: {} [{} -> {}]", transaction.toString(), CryptoHasher.humanReadableHash(transaction.getOrigin().getEncoded()), CryptoHasher.humanReadableHash(transaction.getDestination().getEncoded()));
         this.mempool.putTransaction(transaction);
         TransactionPayload txnPayload = TransactionPayload.Builder.newBuilder()
                 .buildFromTransaction(transaction)
@@ -139,7 +140,7 @@ public class BlockchainService {
         messenger.sendBroadcastMessage(message);
     }
 
-    public void testSigning() throws NoSuchAlgorithmException, SignatureException, InvalidKeyException {
+    public void testSigning() throws NoSuchAlgorithmException, SignatureException, InvalidKeyException, InvalidKeySpecException, NoSuchProviderException {
         Transaction txn = Transaction.Builder.Builder()
                 .setOrigin(currentWallet.getAddress())
                 .setDestination("6ad28d3fda4e10bdc0aaf7112f7818e181defa7e")

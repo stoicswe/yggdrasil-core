@@ -2,7 +2,9 @@ package org.yggdrasil.core.ledger;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import org.apache.commons.lang3.SerializationUtils;
 import org.yggdrasil.core.ledger.transaction.Transaction;
+import org.yggdrasil.core.ledger.transaction.TransactionOutput;
 import org.yggdrasil.core.ledger.transaction.WalletTransaction;
 import org.yggdrasil.core.serialization.HashSerializer;
 import org.yggdrasil.core.utils.CryptoHasher;
@@ -14,6 +16,7 @@ import java.math.BigDecimal;
 import java.security.*;
 import java.time.ZonedDateTime;
 import java.util.HashMap;
+import java.util.UUID;
 
 /**
  * The Wallet will contain the ability to send, receive, and store crypto
@@ -87,6 +90,13 @@ public class Wallet implements Serializable {
         txn.setSignature(signature.sign());
     }
 
+    public byte[] getSignature(TransactionOutput txnOutpt) throws SignatureException, InvalidKeyException {
+        signature.initSign(privateKey);
+        byte[] sigRandBits = SerializationUtils.serialize(UUID.randomUUID());
+        signature.update(sigRandBits, 0, sigRandBits.length);
+        return signature.sign();
+    }
+
     public PublicKey getPublicKey() {
         return publicKey;
     }
@@ -147,9 +157,5 @@ public class Wallet implements Serializable {
             }
             return address;
         }
-
-        /*private byte[] signature() {
-            privateKey.getEncoded();
-        }*/
     }
 }

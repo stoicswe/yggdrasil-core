@@ -76,7 +76,7 @@ public class BlockchainController {
 
     // Used to test in-development features
     @RequestMapping(value = "/testFeature", method = RequestMethod.HEAD)
-    public void testFeature() throws NoSuchAlgorithmException, IOException, SignatureException, InvalidKeyException {
+    public void testFeature() throws Exception {
         this.service.testSigning();
     }
 

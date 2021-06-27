@@ -50,8 +50,8 @@ public class GetDataMessageHandler implements MessageHandler<GetDataMessage> {
                             Transaction txn = (Transaction) txnObj;
                             txnps.add(TransactionPayload.Builder.newBuilder()
                                     .setTimestamp((int) txn.getTimestamp().toEpochSecond())
-                                    .setDestinationAddress(txn.getDestination())
-                                    .setOriginAddress(txn.getOrigin())
+                                    .setDestinationAddress(txn.getDestination().getEncoded())
+                                    .setOriginAddress(txn.getOrigin().getEncoded())
                                     .setBlockHash(b.getBlockHash())
                                     .setSignature(txn.getSignature())
                                     .build());

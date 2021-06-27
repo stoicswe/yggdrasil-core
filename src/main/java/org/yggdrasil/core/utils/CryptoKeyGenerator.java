@@ -5,6 +5,8 @@ import org.springframework.stereotype.Component;
 import javax.annotation.PostConstruct;
 import java.security.*;
 import java.security.spec.ECGenParameterSpec;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.X509EncodedKeySpec;
 
 /**
  * This component serves as the public and private key pair generator
@@ -24,6 +26,9 @@ public class CryptoKeyGenerator {
     private ECGenParameterSpec keyGenSpecification;
     private KeyPairGenerator keyGenerator;
     private SecureRandom secureRandom;
+
+    public CryptoKeyGenerator() throws NoSuchAlgorithmException, NoSuchProviderException {
+    }
 
     @PostConstruct
     public void init() throws NoSuchProviderException, NoSuchAlgorithmException {
@@ -52,6 +57,12 @@ public class CryptoKeyGenerator {
     public KeyPair generatePublicPrivateKeys() throws InvalidAlgorithmParameterException {
         keyGenerator.initialize(keyGenSpecification, secureRandom);
         return keyGenerator.generateKeyPair();
+    }
+
+    public static PublicKey readPublicKeyFromBytes(byte[] encPublicKey) throws NoSuchAlgorithmException, NoSuchProviderException, InvalidKeySpecException {
+        X509EncodedKeySpec pubKeySpec = new X509EncodedKeySpec(encPublicKey);
+        KeyFactory keyFactory = KeyFactory.getInstance(_KEY_PAIR_ALGORITHM);
+        return keyFactory.generatePublic(pubKeySpec);
     }
 
 }

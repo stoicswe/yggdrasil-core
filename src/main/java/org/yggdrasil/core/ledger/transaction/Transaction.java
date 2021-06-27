@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.yggdrasil.core.serialization.HashSerializer;
 import org.yggdrasil.core.serialization.TransactionDeserializer;
 import org.yggdrasil.core.utils.CryptoHasher;
+import org.yggdrasil.core.utils.CryptoKeyGenerator;
 import org.yggdrasil.core.utils.DateTimeUtil;
 import org.yggdrasil.node.network.messages.payloads.TransactionMessage;
 import org.yggdrasil.node.network.messages.payloads.TransactionPayload;
@@ -14,6 +15,9 @@ import org.yggdrasil.node.network.messages.payloads.TransactionPayload;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.PublicKey;
+import java.security.spec.InvalidKeySpecException;
 import java.time.ZonedDateTime;
 import java.util.UUID;
 
@@ -32,11 +36,14 @@ import java.util.UUID;
 @JsonDeserialize(using = TransactionDeserializer.class)
 public class Transaction implements Serializable {
 
+    // Receiver of transaction has to sign the incoming transaction
+    // that way it can be varified that it should be received.
+
     private final ZonedDateTime timestamp;
     @JsonSerialize(using = HashSerializer.class)
-    private final byte[] origin;
+    private final PublicKey origin;
     @JsonSerialize(using = HashSerializer.class)
-    private final byte[] destination;
+    private final PublicKey destination;
     private final TransactionInput[] txnInputs;
     private final TransactionOutput[] txnOutPuts;
     @JsonSerialize(using = HashSerializer.class)
@@ -57,11 +64,11 @@ public class Transaction implements Serializable {
         return timestamp;
     }
 
-    public byte[] getOrigin() {
+    public PublicKey getOrigin() {
         return origin;
     }
 
-    public byte[] getDestination() {
+    public PublicKey getDestination() {
         return destination;
     }
 
@@ -75,6 +82,14 @@ public class Transaction implements Serializable {
 
     public byte[] getSignature() {
         return signature;
+    }
+
+    public TransactionInput[] getTxnInputs() {
+        return txnInputs;
+    }
+
+    public TransactionOutput[] getTxnOutPuts() {
+        return txnOutPuts;
     }
 
     public byte[] rehash() throws NoSuchAlgorithmException {
@@ -111,30 +126,32 @@ public class Transaction implements Serializable {
     public static class Builder {
 
         protected ZonedDateTime timestamp;
-        protected byte[] origin;
-        protected byte[] destination;
+        protected PublicKey origin;
+        protected PublicKey destination;
         protected TransactionInput[] txnInputs;
         protected TransactionOutput[] txnOutPuts;
 
         private Builder(){}
 
-        public Builder setOrigin(@JsonProperty("origin") String origin) {
-            this.origin = CryptoHasher.hashByteArray(origin);
+        public Builder setOrigin(@JsonProperty("origin") String origin) throws NoSuchAlgorithmException, InvalidKeySpecException, NoSuchProviderException {
+            byte[] publicKey = CryptoHasher.hashByteArray(origin);
+            this.origin = CryptoKeyGenerator.readPublicKeyFromBytes(publicKey);
             return this;
         }
 
-        public Builder setOrigin(byte[] origin) {
-            this.origin = origin;
+        public Builder setOrigin(byte[] origin) throws NoSuchAlgorithmException, InvalidKeySpecException, NoSuchProviderException {
+            this.origin = CryptoKeyGenerator.readPublicKeyFromBytes(origin);
             return this;
         }
 
-        public Builder setDestination(@JsonProperty("destination") String destination) {
-            this.destination = CryptoHasher.hashByteArray(destination);
+        public Builder setDestination(@JsonProperty("destination") String destination) throws NoSuchAlgorithmException, InvalidKeySpecException, NoSuchProviderException {
+            byte[] publicKey = CryptoHasher.hashByteArray(destination);
+            this.destination = CryptoKeyGenerator.readPublicKeyFromBytes(publicKey);
             return this;
         }
 
-        public Builder setDestination(byte[] destination) {
-            this.destination = destination;
+        public Builder setDestination(byte[] destination) throws NoSuchAlgorithmException, InvalidKeySpecException, NoSuchProviderException {
+            this.destination = CryptoKeyGenerator.readPublicKeyFromBytes(destination);
             return this;
         }
 
@@ -157,10 +174,10 @@ public class Transaction implements Serializable {
             return new Transaction(this);
         }
 
-        public Transaction buildFromMessage(TransactionPayload transactionMessage) throws NoSuchAlgorithmException {
+        public Transaction buildFromMessage(TransactionPayload transactionMessage) throws NoSuchAlgorithmException, InvalidKeySpecException, NoSuchProviderException {
             this.timestamp = DateTimeUtil.fromMessageTimestamp(transactionMessage.getTimestamp());
-            this.origin = transactionMessage.getOriginAddress();
-            this.destination = transactionMessage.getDestinationAddress();
+            this.origin = CryptoKeyGenerator.readPublicKeyFromBytes(transactionMessage.getOriginAddress());
+            this.destination = CryptoKeyGenerator.readPublicKeyFromBytes(transactionMessage.getDestinationAddress());
             Transaction txn = new Transaction(this);
             txn.signature = transactionMessage.getSignature();
             return txn;

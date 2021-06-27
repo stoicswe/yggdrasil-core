@@ -139,8 +139,8 @@ public class TransactionPayload implements MessagePayload {
 
         public Builder buildFromTransaction(Transaction txn) {
             this.timestamp = (int) txn.getTimestamp().toEpochSecond();
-            this.originAddress = txn.getOrigin();
-            this.destinationAddress = txn.getDestination();
+            this.originAddress = txn.getOrigin().getEncoded();
+            this.destinationAddress = txn.getDestination().getEncoded();
             this.transactionHash = txn.getTxnHash();
             this.signature = txn.getSignature();
             return this;
