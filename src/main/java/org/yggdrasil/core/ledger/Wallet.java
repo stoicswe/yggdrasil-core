@@ -1,5 +1,7 @@
 package org.yggdrasil.core.ledger;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.apache.commons.lang3.SerializationUtils;
@@ -26,7 +28,6 @@ import java.util.UUID;
  * @since 0.0.5
  * @author nathanielbunch
  */
-@JsonInclude
 public class Wallet implements Serializable {
 
     /**
@@ -36,15 +37,21 @@ public class Wallet implements Serializable {
      * the private key, so that the private key is never stored in
      * memory (to help guard against memory-read attacks).
      */
-
+    @JsonIgnore
     private final PublicKey publicKey;
+    @JsonIgnore
     private final PrivateKey privateKey;
+    @JsonInclude
     private final ZonedDateTime creationDate;
+    @JsonInclude
     @JsonSerialize(using = HashSerializer.class)
     private final byte[] address;
+    @JsonInclude
     @JsonSerialize(using = HashSerializer.class)
     private final byte[] walletHash;
+    @JsonIgnore
     private final HashMap<byte[], WalletTransaction> wTxns;
+    @JsonIgnore
     private Signature signature;
 
     private Wallet(Builder builder) throws NoSuchAlgorithmException {
@@ -75,6 +82,7 @@ public class Wallet implements Serializable {
         return address;
     }
 
+    @JsonIgnore
     public BigDecimal getBalance() {
         BigDecimal bal = BigDecimal.ZERO;
         for(WalletTransaction wTxn : this.wTxns.values()) {
@@ -105,6 +113,7 @@ public class Wallet implements Serializable {
         return walletHash;
     }
 
+    @JsonIgnore
     public String getHumanReadableAddress() {
         return CryptoHasher.humanReadableHash(address);
     }
@@ -144,7 +153,7 @@ public class Wallet implements Serializable {
 
         public Wallet build() throws NoSuchAlgorithmException, NoSuchProviderException {
             this.creationDate = DateTimeUtil.getCurrentTimestamp();
-            this.address = publicKey.getEncoded();
+            this.address = CryptoHasher.walletHash(this.publicKey);
             return new Wallet(this);
         }
 

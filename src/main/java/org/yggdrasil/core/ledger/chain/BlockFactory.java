@@ -18,6 +18,13 @@ public class BlockFactory {
         return new Block();
     }
 
+    // Build a block and generate a merkle tree.
+    // Build out a validation process for verifying the signatures of the hashes involved
+    // to initiate the transactions. Also, add logic for checking
+    // txns in the mempool to see if those contain a fee that is
+    // greater than a moving average in the mempool. If those fees are
+    // greater than average, then process those first.
+
     public Block mineBlock(){
         Transaction txn = Transaction.Builder.Builder()
                 .setOrigin()

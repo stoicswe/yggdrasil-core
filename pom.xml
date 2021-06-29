@@ -55,6 +55,11 @@
             <artifactId>commons-lang3</artifactId>
             <version>3.11</version>
         </dependency>
+        <dependency>
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bcprov-ext-jdk15on</artifactId>
+            <version>1.64</version>
+        </dependency>
 
         <!-- Useful Utils -->
         <dependency>

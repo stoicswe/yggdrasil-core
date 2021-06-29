@@ -129,12 +129,15 @@ public final class Block implements Serializable {
     }
 
     public static Block genesis() throws Exception {
+        /*
+        Collections.singletonList(Transaction.Builder.Builder()
+                        .setOrigin(CryptoHasher.hashByteArray("6ad28d3fda4e10bdc0aaf7112f7818e181defa7e"))
+                        .setDestination(CryptoHasher.hashByteArray("6ad28d3fda4e10bdc0aaf7112f7818e181defa7e"))
+                        .build())
+         */
         return new Builder()
                 .setPreviousBlock(null)
-                .setData(Collections.singletonList(Transaction.Builder.Builder()
-                        .setOrigin(new byte[0])
-                        .setDestination(new byte[0])
-                        .build()))
+                .setData(new ArrayList<>())
                 .build();
     }
 
