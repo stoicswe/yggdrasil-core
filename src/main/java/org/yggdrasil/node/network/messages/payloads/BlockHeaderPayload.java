@@ -5,6 +5,7 @@ import org.apache.commons.lang3.SerializationUtils;
 import org.yggdrasil.node.network.messages.MessagePayload;
 
 import javax.validation.constraints.NotNull;
+import java.math.BigInteger;
 
 /**
  * The Header Payload message contains the headers of either blocks or transactions.
@@ -18,7 +19,7 @@ import javax.validation.constraints.NotNull;
 public class BlockHeaderPayload implements MessagePayload {
 
     @NotNull
-    private final char[] index;
+    private final int blockHeight;
     @NotNull
     private final byte[] hash;
     @NotNull
@@ -31,7 +32,7 @@ public class BlockHeaderPayload implements MessagePayload {
     private final int nonce;
 
     private BlockHeaderPayload(Builder builder) {
-        this.index = builder.index;
+        this.blockHeight = builder.blockHeight;
         this.hash = builder.hash;
         this.prevHash = builder.previousHash;
         this.transactionCount = builder.transactionCount;
@@ -39,8 +40,8 @@ public class BlockHeaderPayload implements MessagePayload {
         this.nonce = builder.nonce;
     }
 
-    public char[] getIndex() {
-        return index;
+    public int getBlockHeight() {
+        return blockHeight;
     }
 
     public byte[] getHash() {
@@ -66,7 +67,7 @@ public class BlockHeaderPayload implements MessagePayload {
     @Override
     public byte[] getDataBytes() {
         byte[] messageBytes = new byte[0];
-        messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(index));
+        messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(blockHeight));
         messageBytes = appendBytes(messageBytes, hash);
         messageBytes = appendBytes(messageBytes, prevHash);
         messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(transactionCount));
@@ -81,7 +82,7 @@ public class BlockHeaderPayload implements MessagePayload {
 
     public static class Builder {
 
-        private char[] index;
+        private int blockHeight;
         private byte[] hash;
         private byte[] previousHash;
         private int transactionCount;
@@ -94,8 +95,8 @@ public class BlockHeaderPayload implements MessagePayload {
             return new Builder();
         }
 
-        public Builder setIndex(char[] index) {
-            this.index = index;
+        public Builder setBlockHeight(BigInteger blockHeight) {
+            this.blockHeight = blockHeight.intValue();
             return this;
         }
 

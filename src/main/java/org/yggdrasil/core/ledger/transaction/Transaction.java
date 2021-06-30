@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.yggdrasil.core.serialization.HashSerializer;
 import org.yggdrasil.core.serialization.TransactionDeserializer;
 import org.yggdrasil.core.utils.CryptoHasher;
+import org.yggdrasil.core.utils.CryptoKeyGenerator;
 import org.yggdrasil.core.utils.DateTimeUtil;
 import org.yggdrasil.node.network.messages.payloads.TransactionMessage;
 import org.yggdrasil.node.network.messages.payloads.TransactionPayload;
@@ -14,6 +15,9 @@ import org.yggdrasil.node.network.messages.payloads.TransactionPayload;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.PublicKey;
+import java.security.spec.InvalidKeySpecException;
 import java.time.ZonedDateTime;
 import java.util.UUID;
 
@@ -32,75 +36,65 @@ import java.util.UUID;
 @JsonDeserialize(using = TransactionDeserializer.class)
 public class Transaction implements Serializable {
 
-    private final UUID index;
+    // Receiver of transaction has to sign the incoming transaction
+    // that way it can be varified that it should be received.
+
     private final ZonedDateTime timestamp;
     @JsonSerialize(using = HashSerializer.class)
-    private final byte[] origin;
+    private final PublicKey origin;
     @JsonSerialize(using = HashSerializer.class)
-    private final byte[] destination;
-    private final BigDecimal value;
-    private final String note;
+    private final PublicKey destination;
+    private final TransactionInput[] txnInputs;
+    private final TransactionOutput[] txnOutPuts;
     @JsonSerialize(using = HashSerializer.class)
-    private final byte[] signature;
+    private byte[] signature;
     @JsonSerialize(using = HashSerializer.class)
     private byte[] txnHash;
-    private int nonce;
 
     protected Transaction(Builder builder) throws NoSuchAlgorithmException {
-        this.index = builder.index;
         this.timestamp = builder.timestamp;
         this.origin = builder.origin;
         this.destination = builder.destination;
-        this.value = builder.value;
-        this.note = builder.note;
-        this.signature = builder.signature;
-        this.nonce = builder.nonce;
+        this.txnInputs = builder.txnInputs;
+        this.txnOutPuts = builder.txnOutPuts;
         this.txnHash = CryptoHasher.hash(this);
-    }
-
-    public UUID getIndex() {
-        return index;
     }
 
     public ZonedDateTime getTimestamp() {
         return timestamp;
     }
 
-    public byte[] getOrigin() {
+    public PublicKey getOrigin() {
         return origin;
     }
 
-    public byte[] getDestination() {
+    public PublicKey getDestination() {
         return destination;
-    }
-
-    public BigDecimal getValue() {
-        return value;
-    }
-
-    public String getNote() {
-        return note;
     }
 
     public byte[] getTxnHash() {
         return txnHash;
     }
 
+    public void setSignature(byte[] signature) {
+        this.signature = signature;
+    }
+
     public byte[] getSignature() {
         return signature;
+    }
+
+    public TransactionInput[] getTxnInputs() {
+        return txnInputs;
+    }
+
+    public TransactionOutput[] getTxnOutPuts() {
+        return txnOutPuts;
     }
 
     public byte[] rehash() throws NoSuchAlgorithmException {
         this.txnHash = CryptoHasher.hash(this);
         return this.txnHash;
-    }
-
-    public void incrementNonce() {
-        this.nonce++;
-    }
-
-    public int getNonce() {
-        return nonce;
     }
 
     public boolean compareTxnHash(byte[] txnHash) {
@@ -116,6 +110,10 @@ public class Transaction implements Serializable {
         return true;
     }
 
+    public boolean isCoinbase() {
+        return (this.txnInputs.length == 1 && this.txnInputs[0].txnOutPt == null);
+    }
+
     @Override
     public String toString(){
         return CryptoHasher.humanReadableHash(txnHash);
@@ -127,54 +125,43 @@ public class Transaction implements Serializable {
      */
     public static class Builder {
 
-        protected UUID index;
         protected ZonedDateTime timestamp;
-        protected byte[] origin;
-        protected byte[] destination;
-        protected BigDecimal value;
-        protected String note;
-        protected int nonce;
-        protected byte[] signature;
+        protected PublicKey origin;
+        protected PublicKey destination;
+        protected TransactionInput[] txnInputs;
+        protected TransactionOutput[] txnOutPuts;
 
         private Builder(){}
 
-        public Builder setOrigin(@JsonProperty("origin") String origin) {
-            this.origin = CryptoHasher.hashByteArray(origin);
+        public Builder setOrigin(@JsonProperty("origin") String origin) throws NoSuchAlgorithmException, InvalidKeySpecException, NoSuchProviderException {
+            byte[] publicKey = CryptoHasher.hashByteArray(origin);
+            this.origin = CryptoKeyGenerator.readPublicKeyFromBytes(publicKey);
             return this;
         }
 
-        public Builder setOrigin(byte[] origin) {
-            this.origin = origin;
+        public Builder setOrigin(byte[] origin) throws NoSuchAlgorithmException, InvalidKeySpecException, NoSuchProviderException {
+            this.origin = CryptoKeyGenerator.readPublicKeyFromBytes(origin);
             return this;
         }
 
-        public Builder setDestination(@JsonProperty("destination") String destination) {
-            this.destination = CryptoHasher.hashByteArray(destination);
+        public Builder setDestination(@JsonProperty("destination") String destination) throws NoSuchAlgorithmException, InvalidKeySpecException, NoSuchProviderException {
+            byte[] publicKey = CryptoHasher.hashByteArray(destination);
+            this.destination = CryptoKeyGenerator.readPublicKeyFromBytes(publicKey);
             return this;
         }
 
-        public Builder setDestination(byte[] destination) {
-            this.destination = destination;
+        public Builder setDestination(byte[] destination) throws NoSuchAlgorithmException, InvalidKeySpecException, NoSuchProviderException {
+            this.destination = CryptoKeyGenerator.readPublicKeyFromBytes(destination);
             return this;
         }
 
-        public Builder setValue(@JsonProperty("value") BigDecimal value) {
-            this.value = value;
+        public Builder setTxnInputs(TransactionInput[] txnInputs){
+            this.txnInputs = txnInputs;
             return this;
         }
 
-        public Builder setNote(@JsonProperty("note") String note) {
-            this.note = note;
-            return this;
-        }
-
-        public Builder setSignature(@JsonProperty("signature") String signature) {
-            this.signature = CryptoHasher.hashByteArray(signature);
-            return this;
-        }
-
-        public Builder setSignature(byte[] signature) {
-            this.signature = signature;
+        public Builder setTxnOutputs(TransactionOutput[] txnOutPuts) {
+            this.txnOutPuts = txnOutPuts;
             return this;
         }
 
@@ -183,21 +170,17 @@ public class Transaction implements Serializable {
         }
 
         public Transaction build() throws NoSuchAlgorithmException {
-            this.index = UUID.randomUUID();
             this.timestamp = DateTimeUtil.getCurrentTimestamp();
             return new Transaction(this);
         }
 
-        public Transaction buildFromMessage(TransactionPayload transactionMessage) throws NoSuchAlgorithmException {
-            this.index = UUID.fromString(String.valueOf(transactionMessage.getIndex()));
+        public Transaction buildFromMessage(TransactionPayload transactionMessage) throws NoSuchAlgorithmException, InvalidKeySpecException, NoSuchProviderException {
             this.timestamp = DateTimeUtil.fromMessageTimestamp(transactionMessage.getTimestamp());
-            this.origin = transactionMessage.getOriginAddress();
-            this.destination = transactionMessage.getDestinationAddress();
-            this.value = transactionMessage.getValue();
-            this.note = String.valueOf(transactionMessage.getNote());
-            this.signature = transactionMessage.getSignature();
-            this.nonce = transactionMessage.getNonce();
-            return new Transaction(this);
+            this.origin = CryptoKeyGenerator.readPublicKeyFromBytes(transactionMessage.getOriginAddress());
+            this.destination = CryptoKeyGenerator.readPublicKeyFromBytes(transactionMessage.getDestinationAddress());
+            Transaction txn = new Transaction(this);
+            txn.signature = transactionMessage.getSignature();
+            return txn;
         }
     }
 

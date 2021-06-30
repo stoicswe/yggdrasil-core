@@ -6,7 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.yggdrasil.core.ledger.chain.Block;
 import org.yggdrasil.core.ledger.chain.Blockchain;
-import org.yggdrasil.core.ledger.transaction.Mempool;
+import org.yggdrasil.core.ledger.Mempool;
 import org.yggdrasil.core.ledger.transaction.Transaction;
 import org.yggdrasil.core.utils.CryptoHasher;
 import org.yggdrasil.node.network.exceptions.InvalidMessageException;
@@ -17,6 +17,8 @@ import org.yggdrasil.node.network.messages.payloads.TransactionPayload;
 import org.yggdrasil.node.network.runners.NodeConnection;
 
 import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -32,7 +34,7 @@ public class TransactionMessageHandler implements MessageHandler<TransactionMess
     private Mempool mempool;
 
     @Override
-    public MessagePayload handleMessagePayload(TransactionMessage transactionMessage, NodeConnection nodeConnection) throws NoSuchAlgorithmException {
+    public MessagePayload handleMessagePayload(TransactionMessage transactionMessage, NodeConnection nodeConnection) throws NoSuchAlgorithmException, InvalidKeySpecException, NoSuchProviderException {
 
         if(transactionMessage.getTxns().length == transactionMessage.getTxnCount()) {
             for(TransactionPayload txnp : transactionMessage.getTxns()) {

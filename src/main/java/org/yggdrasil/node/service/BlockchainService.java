@@ -2,7 +2,7 @@ package org.yggdrasil.node.service;
 
 import org.yggdrasil.core.ledger.chain.Block;
 import org.yggdrasil.core.ledger.chain.Blockchain;
-import org.yggdrasil.core.ledger.transaction.Mempool;
+import org.yggdrasil.core.ledger.Mempool;
 import org.yggdrasil.core.ledger.transaction.Transaction;
 import org.yggdrasil.core.ledger.Wallet;
 import org.yggdrasil.core.utils.CryptoHasher;
@@ -29,10 +29,9 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.RoundingMode;
-import java.security.KeyPair;
-import java.security.NoSuchAlgorithmException;
+import java.security.*;
+import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 
@@ -95,7 +94,7 @@ public class BlockchainService {
      * @param transaction
      */
     public void addNewTransaction(Transaction transaction) throws IOException, NoSuchAlgorithmException {
-        logger.info("New transaction: {} [{} -> {} = {}]", transaction.toString(), CryptoHasher.humanReadableHash(transaction.getOrigin()), CryptoHasher.humanReadableHash(transaction.getDestination()), transaction.getValue());
+        logger.info("New transaction: {} [{} -> {}]", transaction.toString(), CryptoHasher.humanReadableHash(transaction.getOrigin().getEncoded()), CryptoHasher.humanReadableHash(transaction.getDestination().getEncoded()));
         this.mempool.putTransaction(transaction);
         TransactionPayload txnPayload = TransactionPayload.Builder.newBuilder()
                 .buildFromTransaction(transaction)
@@ -121,10 +120,10 @@ public class BlockchainService {
      * @return
      * @throws NoSuchAlgorithmException
      */
-    public Wallet getWallet() throws NoSuchAlgorithmException, DestroyFailedException {
+    public Wallet getWallet() throws NoSuchAlgorithmException, DestroyFailedException, NoSuchProviderException, InvalidAlgorithmParameterException {
         logger.info("Generating new wallet...");
         KeyPair newKeyPair = keyGenerator.generatePublicPrivateKeys();
-        Wallet newWallet = Wallet.WBuilder.newSSWalletBuilder().setPublicKey(newKeyPair.getPublic()).build();
+        Wallet newWallet = Wallet.Builder.newBuilder().setKeyPair(newKeyPair).build();
         logger.info("New wallet generated with the private key: {}", CryptoHasher.humanReadableHash(newKeyPair.getPrivate().getEncoded()));
         this.currentWallet = newWallet;
         return newWallet;
@@ -139,6 +138,21 @@ public class BlockchainService {
                 .setMessagePayload(pingPongMessage)
                 .setChecksum(CryptoHasher.hash(pingPongMessage)).build();
         messenger.sendBroadcastMessage(message);
+    }
+
+    public void testSigning() throws NoSuchAlgorithmException, SignatureException, InvalidKeyException, InvalidKeySpecException, NoSuchProviderException {
+        Transaction txn = Transaction.Builder.Builder()
+                .setOrigin(currentWallet.getAddress())
+                .setDestination("6ad28d3fda4e10bdc0aaf7112f7818e181defa7e")
+                .build();
+        this.currentWallet.signTransaction(txn);
+        logger.info("signing...");
+        logger.info(String.valueOf(txn));
+        Signature ecdsaVerify = Signature.getInstance(CryptoKeyGenerator.getSignatureAlgorithm());
+        ecdsaVerify.initVerify(currentWallet.getPublicKey());
+        ecdsaVerify.update(txn.getTxnHash());
+        logger.info(String.valueOf(ecdsaVerify.verify(txn.getSignature())));
+        logger.info("done");
     }
 
     /**
@@ -177,16 +191,15 @@ public class BlockchainService {
         Transaction blockMineAward = Transaction.Builder.Builder()
                 .setOrigin("7c5ec4b1ad5bdfc593587f3a9d50327ede02076b")
                 .setDestination(currentWallet.getHumanReadableAddress())
-                .setValue(new BigDecimal(newBlock.toString().length() / 9.23).setScale(12, RoundingMode.FLOOR))
-                .setNote("Happy mining!")
+                //.setValue(new BigDecimal(newBlock.toString().length() / 9.23).setScale(12, RoundingMode.FLOOR))
                 .build();
 
         this.addNewTransaction(blockMineAward);
 
-        logger.info("Block mine awarded, transaction: {} @ {}", blockMineAward.toString(), blockMineAward.getValue());
+        logger.info("Block mine awarded, transaction: {}", blockMineAward.toString());
 
         return BlockResponse.Builder.builder()
-                .setIndex(newBlock.getIndex())
+                .setBlockHeight(newBlock.getBlockHeight())
                 .setTimestamp(newBlock.getTimestamp())
                 .setSize(GraphLayout.parseInstance(newBlock).totalSize())
                 .setBlockhash(newBlock.getBlockHash())

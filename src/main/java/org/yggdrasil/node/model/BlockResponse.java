@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.yggdrasil.core.serialization.HashSerializer;
 
+import java.math.BigInteger;
 import java.time.ZonedDateTime;
 import java.util.UUID;
 
@@ -18,21 +19,21 @@ import java.util.UUID;
 @JsonInclude
 public class BlockResponse {
 
-    private final UUID index;
+    private final BigInteger blockHeight;
     private final ZonedDateTime timestamp;
     private final Long size;
     @JsonSerialize(using = HashSerializer.class)
     private final byte[] blockHash;
 
     private BlockResponse(Builder builder) {
-        this.index = builder.index;
+        this.blockHeight = builder.blockHeight;
         this.timestamp = builder.timestamp;
         this.size = builder.size;
         this.blockHash = builder.blockhash;
     }
 
-    public UUID getIndex() {
-        return index;
+    public BigInteger getBlockHeight() {
+        return this.blockHeight;
     }
 
     public ZonedDateTime getTimestamp() {
@@ -49,7 +50,7 @@ public class BlockResponse {
 
     public static class Builder {
 
-        private UUID index;
+        private BigInteger blockHeight;
         private ZonedDateTime timestamp;
         private Long size;
         private byte[] blockhash;
@@ -60,8 +61,8 @@ public class BlockResponse {
             return new Builder();
         }
 
-        public Builder setIndex(UUID index) {
-            this.index = index;
+        public Builder setBlockHeight(BigInteger blockHeight) {
+            this.blockHeight = blockHeight;
             return this;
         }
 

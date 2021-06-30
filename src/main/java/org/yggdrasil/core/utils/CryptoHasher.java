@@ -2,6 +2,7 @@ package org.yggdrasil.core.utils;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.SerializationUtils;
+import org.bouncycastle.crypto.digests.RIPEMD160Digest;
 import org.apache.tomcat.util.buf.HexUtils;
 import org.yggdrasil.core.ledger.chain.Block;
 import org.yggdrasil.core.ledger.transaction.Transaction;
@@ -10,11 +11,12 @@ import org.yggdrasil.node.network.messages.MessagePayload;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.security.PublicKey;
 
 /**
- * The SSHasher provides useful tooling for hashing transactions and blocks using
+ * The CryptoHasher provides useful tooling for hashing transactions and blocks using
  * a specified hashing algorithm. It also provides the ability to print hashes in
- * a human-readable hex format. SSBlocks and SSTransactions are handled separately
+ * a human-readable hex format. Blocks and Transactions are handled separately
  * in case in the future there is the desire to hash either one with different
  * algorithms.
  *
@@ -24,6 +26,7 @@ import java.security.NoSuchAlgorithmException;
 public class CryptoHasher {
 
     private static final String _HASH_ALGORITHM = "SHA-256";
+    private static final String _WALLET_ADDRESS_ALGORITHM = "";
 
     /**
      * Hashes a Block.
@@ -34,14 +37,13 @@ public class CryptoHasher {
      */
     public static byte[] hash(Block block) throws NoSuchAlgorithmException {
         byte[] blockData = new byte[0];
-        blockData = appendBytes(blockData, SerializationUtils.serialize(block.getIndex()));
         blockData = appendBytes(blockData, SerializationUtils.serialize(block.getTimestamp()));
         blockData = appendBytes(blockData, SerializationUtils.serialize(block.getData().hashCode()));
         blockData = appendBytes(blockData, SerializationUtils.serialize(block.getPreviousBlockHash()));
         blockData = appendBytes(blockData, SerializationUtils.serialize(block.getNonce()));
         blockData = appendBytes(blockData, block.getValidator());
         blockData = appendBytes(blockData, block.getSignature());
-        return MessageDigest.getInstance(_HASH_ALGORITHM).digest(SerializationUtils.serialize(blockData));
+        return CryptoHasher.dhash(blockData);
     }
 
     /**
@@ -53,14 +55,13 @@ public class CryptoHasher {
      */
     public static byte[] hash(Transaction transaction) throws NoSuchAlgorithmException {
         byte[] txnData = new byte[0];
-        txnData = appendBytes(txnData, SerializationUtils.serialize(transaction.getIndex()));
         txnData = appendBytes(txnData, SerializationUtils.serialize(transaction.getTimestamp()));
         txnData = appendBytes(txnData, SerializationUtils.serialize(transaction.getOrigin()));
         txnData = appendBytes(txnData, SerializationUtils.serialize(transaction.getDestination()));
-        txnData = appendBytes(txnData, SerializationUtils.serialize(transaction.getValue()));
-        txnData = appendBytes(txnData, SerializationUtils.serialize(transaction.getNote()));
-        txnData = appendBytes(txnData, SerializationUtils.serialize(transaction.getSignature()));
-        return MessageDigest.getInstance(_HASH_ALGORITHM).digest(SerializationUtils.serialize(txnData));
+        txnData = appendBytes(txnData, transaction.getSignature());
+        txnData = appendBytes(txnData, SerializationUtils.serialize(transaction.getTxnInputs()));
+        txnData = appendBytes(txnData, SerializationUtils.serialize(transaction.getTxnOutPuts()));
+        return CryptoHasher.dhash(txnData);
     }
 
     /**
@@ -72,10 +73,10 @@ public class CryptoHasher {
      */
     public static byte[] hash(Wallet wallet) throws NoSuchAlgorithmException {
         byte[] walletData = new byte[0];
-        walletData = appendBytes(walletData, SerializationUtils.serialize(wallet.getIndex()));
         walletData = appendBytes(walletData, SerializationUtils.serialize(wallet.getAddress()));
         walletData = appendBytes(walletData, SerializationUtils.serialize(wallet.getCreationDate()));
-        return MessageDigest.getInstance(_HASH_ALGORITHM).digest(SerializationUtils.serialize(walletData));
+        walletData = appendBytes(walletData, SerializationUtils.serialize(wallet.getPublicKey()));
+        return CryptoHasher.dhash(walletData);
     }
 
     /**
@@ -85,11 +86,40 @@ public class CryptoHasher {
      * @return
      * @throws NoSuchAlgorithmException
      */
-    public static byte[] hash(MessagePayload payload) throws  NoSuchAlgorithmException {
+    public static byte[] hash(MessagePayload payload) throws NoSuchAlgorithmException {
+        return CryptoHasher.dhash(payload.getDataBytes());
+    }
+
+    /**
+     * Hashes an arbitrary object twice.
+     *
+     *
+     */
+    public static byte[] dhash(byte[] object) throws NoSuchAlgorithmException {
         return MessageDigest.getInstance(_HASH_ALGORITHM)
                 .digest(MessageDigest.getInstance(_HASH_ALGORITHM)
-                        .digest(SerializationUtils.serialize(payload.getDataBytes())));
+                        .digest(object));
     }
+
+    public static byte[] shash(byte[] object) throws NoSuchAlgorithmException {
+        return MessageDigest.getInstance(_HASH_ALGORITHM)
+                .digest(object);
+    }
+
+    /**
+     * Hashes a wallet address.
+     */
+    public static byte[] walletHash(PublicKey publicKey) throws NoSuchAlgorithmException {
+        byte[] encodedPk = CryptoHasher.shash(publicKey.getEncoded());
+        // seems to always be 20 bits from some experimenting
+        byte[] address = new byte[20];
+        RIPEMD160Digest rpmd160 = new RIPEMD160Digest();
+        rpmd160.update(encodedPk, 0, encodedPk.length);
+        rpmd160.doFinal(address, 0);
+        return address;
+    }
+
+
 
     /**
      * Returns a human-readable hex string of a given hash.
@@ -111,7 +141,7 @@ public class CryptoHasher {
         return HexUtils.fromHexString(stringHash);
     }
 
-    public static boolean compareHashes(byte[] val0, byte[] val1) {
+    public static boolean isEqualHashes(byte[] val0, byte[] val1) {
         try {
             for (int i = 0; i < val1.length; i++) {
                 if (val0[i] != val1[i]) {
@@ -122,6 +152,30 @@ public class CryptoHasher {
             return false;
         }
         return true;
+    }
+
+    public static int compareHashes(byte[] val0, byte[] val1) {
+
+        if (val0 == val1) {
+            return 0;
+        } else if (val0 == null) {
+            return -1; // "a < b"
+        } else if (val1 == null) {
+            return 1; // "a > b"
+        }
+
+        int last = Math.min(val0.length, val1.length);
+        for (int i = 0; i < last; i++) {
+            byte val0b = val0[i];
+            byte val1b = val1[i];
+            if (val0b != val1b) {
+                if (val0b < val1b) {
+                    return -1;
+                }
+                return 1;
+            }
+        }
+        return 0;
     }
 
     private static byte[] appendBytes(byte[] base, byte[] extension) {

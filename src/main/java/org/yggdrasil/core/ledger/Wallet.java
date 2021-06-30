@@ -1,16 +1,23 @@
 package org.yggdrasil.core.ledger;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import org.apache.commons.lang3.SerializationUtils;
+import org.yggdrasil.core.ledger.transaction.Transaction;
+import org.yggdrasil.core.ledger.transaction.TransactionOutput;
+import org.yggdrasil.core.ledger.transaction.WalletTransaction;
 import org.yggdrasil.core.serialization.HashSerializer;
 import org.yggdrasil.core.utils.CryptoHasher;
+import org.yggdrasil.core.utils.CryptoKeyGenerator;
 import org.yggdrasil.core.utils.DateTimeUtil;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
-import java.security.NoSuchAlgorithmException;
-import java.security.PublicKey;
+import java.security.*;
 import java.time.ZonedDateTime;
+import java.util.HashMap;
 import java.util.UUID;
 
 /**
@@ -21,40 +28,50 @@ import java.util.UUID;
  * @since 0.0.5
  * @author nathanielbunch
  */
-@JsonInclude
 public class Wallet implements Serializable {
 
-    // Add details here.
-    // Should include balance, address, etc...
+    /**
+     * Make a method of where the public and private keys can
+     * be saved for reference later. Somehow make a way so that
+     * the public portions of a wallet can be saved separate from
+     * the private key, so that the private key is never stored in
+     * memory (to help guard against memory-read attacks).
+     */
+    @JsonIgnore
     private final PublicKey publicKey;
-    private final UUID index;
+    @JsonIgnore
+    private final PrivateKey privateKey;
+    @JsonInclude
     private final ZonedDateTime creationDate;
+    @JsonInclude
     @JsonSerialize(using = HashSerializer.class)
     private final byte[] address;
-    private final BigDecimal balance;
+    @JsonInclude
     @JsonSerialize(using = HashSerializer.class)
     private final byte[] walletHash;
+    @JsonIgnore
+    private final HashMap<byte[], WalletTransaction> wTxns;
+    @JsonIgnore
+    private Signature signature;
 
-    private Wallet(WBuilder builder) throws NoSuchAlgorithmException {
+    private Wallet(Builder builder) throws NoSuchAlgorithmException {
         this.publicKey = builder.publicKey;
-        this.index = builder.index;
+        this.privateKey = builder.privateKey;
         this.creationDate = builder.creationDate;
         this.address = builder.address;
-        this.balance = BigDecimal.ZERO;
+        this.wTxns = new HashMap<>();
+        this.signature = Signature.getInstance(CryptoKeyGenerator.getSignatureAlgorithm());
         this.walletHash = CryptoHasher.hash(this);
     }
 
-    private Wallet(PublicKey publicKey, UUID index, ZonedDateTime creationDate, byte[] address, BigDecimal balance, byte[] walletHash) {
+    private Wallet(PublicKey publicKey, PrivateKey privateKey, ZonedDateTime creationDate, byte[] address, BigDecimal balance, byte[] walletHash) throws NoSuchAlgorithmException {
         this.publicKey = publicKey;
-        this.index = index;
+        this.privateKey = privateKey;
+        this.signature = Signature.getInstance(CryptoKeyGenerator.getSignatureAlgorithm());
         this.creationDate = creationDate;
         this.address = address;
-        this.balance = balance;
+        this.wTxns = new HashMap<>();
         this.walletHash = walletHash;
-    }
-
-    public UUID getIndex() {
-        return index;
     }
 
     public ZonedDateTime getCreationDate() {
@@ -65,24 +82,38 @@ public class Wallet implements Serializable {
         return address;
     }
 
+    @JsonIgnore
     public BigDecimal getBalance() {
-        return balance;
+        BigDecimal bal = BigDecimal.ZERO;
+        for(WalletTransaction wTxn : this.wTxns.values()) {
+            bal = bal.add(wTxn.getCredits());
+        }
+        return bal;
     }
 
-    protected Wallet updateBalance(BigDecimal delta, boolean isNegative) {
-        BigDecimal newBalance;
-        if(isNegative){
-            newBalance = this.balance.subtract(delta);
-        } else {
-            newBalance = this.balance.add(delta);
-        }
-        return new Wallet(this.publicKey, this.index, this.creationDate, this.address, newBalance, walletHash);
+    public void signTransaction(Transaction txn) throws InvalidKeyException, SignatureException {
+        signature.initSign(privateKey);
+        byte[] txnData = txn.getTxnHash();
+        signature.update(txnData, 0, txnData.length);
+        txn.setSignature(signature.sign());
+    }
+
+    public byte[] getSignature(TransactionOutput txnOutpt) throws SignatureException, InvalidKeyException {
+        signature.initSign(privateKey);
+        byte[] sigRandBits = SerializationUtils.serialize(UUID.randomUUID());
+        signature.update(sigRandBits, 0, sigRandBits.length);
+        return signature.sign();
+    }
+
+    public PublicKey getPublicKey() {
+        return publicKey;
     }
 
     public byte[] getWalletHash() {
         return walletHash;
     }
 
+    @JsonIgnore
     public String getHumanReadableAddress() {
         return CryptoHasher.humanReadableHash(address);
     }
@@ -93,31 +124,36 @@ public class Wallet implements Serializable {
     }
 
     /**
-     * WBuilder class is the SSWallet builder. This is to ensure some level
+     * Builder class is the Wallet builder. This is to ensure some level
      * of data protection by enforcing non-direct data access and immutable data.
      */
-    public static class WBuilder {
+    public static class Builder {
 
         private PublicKey publicKey;
-        private UUID index;
+        private PrivateKey privateKey;
         private ZonedDateTime creationDate;
         private byte[] address;
 
-        private WBuilder(){}
+        private Builder(){}
 
-        public static WBuilder newSSWalletBuilder() {
-            return new WBuilder();
+        public static Builder newBuilder() {
+            return new Builder();
         }
 
-        public WBuilder setPublicKey(PublicKey publicKey) {
+        public Builder setPublicKey(PublicKey publicKey) {
             this.publicKey = publicKey;
             return this;
         }
 
-        public Wallet build() throws NoSuchAlgorithmException {
-            this.index = UUID.randomUUID();
+        public Builder setKeyPair(KeyPair keyPair) {
+            this.privateKey = keyPair.getPrivate();
+            this.publicKey = keyPair.getPublic();
+            return this;
+        }
+
+        public Wallet build() throws NoSuchAlgorithmException, NoSuchProviderException {
             this.creationDate = DateTimeUtil.getCurrentTimestamp();
-            this.address = this.buildWalletAddress(publicKey.getEncoded());
+            this.address = CryptoHasher.walletHash(this.publicKey);
             return new Wallet(this);
         }
 

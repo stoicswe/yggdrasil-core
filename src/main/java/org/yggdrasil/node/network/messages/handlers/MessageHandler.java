@@ -16,6 +16,6 @@ import java.security.NoSuchAlgorithmException;
  */
 public interface MessageHandler<MessagePayload> {
 
-    public org.yggdrasil.node.network.messages.MessagePayload handleMessagePayload(MessagePayload payload, NodeConnection nodeConnection) throws NoSuchAlgorithmException;
+    public org.yggdrasil.node.network.messages.MessagePayload handleMessagePayload(MessagePayload payload, NodeConnection nodeConnection) throws Exception;
 
 }

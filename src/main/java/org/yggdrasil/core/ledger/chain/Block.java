@@ -15,7 +15,10 @@ import org.yggdrasil.node.network.messages.payloads.TransactionPayload;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.spec.InvalidKeySpecException;
 import java.time.ZonedDateTime;
 import java.util.*;
 
@@ -33,7 +36,7 @@ import java.util.*;
 public final class Block implements Serializable {
 
     // Make the different fields of the block immutable
-    private final UUID index;
+    private final BigInteger blockHeight;
     private final ZonedDateTime timestamp;
     private final List<Transaction> data;
     @JsonSerialize(using = HashSerializer.class)
@@ -47,7 +50,7 @@ public final class Block implements Serializable {
     private int nonce;
 
     private Block(Builder blockBuilder) throws NoSuchAlgorithmException {
-        this.index = blockBuilder.index;
+        this.blockHeight = blockBuilder.blockHeight;
         this.timestamp = blockBuilder.timestamp;
         this.data = blockBuilder.data;
         this.previousBlockHash = blockBuilder.previousBlock;
@@ -55,8 +58,8 @@ public final class Block implements Serializable {
         this.blockHash = CryptoHasher.hash(this);
     }
 
-    public UUID getIndex() {
-        return index;
+    public BigInteger getBlockHeight() {
+        return blockHeight;
     }
 
     public ZonedDateTime getTimestamp() {
@@ -126,15 +129,15 @@ public final class Block implements Serializable {
     }
 
     public static Block genesis() throws Exception {
+        /*
+        Collections.singletonList(Transaction.Builder.Builder()
+                        .setOrigin(CryptoHasher.hashByteArray("6ad28d3fda4e10bdc0aaf7112f7818e181defa7e"))
+                        .setDestination(CryptoHasher.hashByteArray("6ad28d3fda4e10bdc0aaf7112f7818e181defa7e"))
+                        .build())
+         */
         return new Builder()
                 .setPreviousBlock(null)
-                .setData(Collections.singletonList(Transaction.Builder.Builder()
-                        .setOrigin(new byte[0])
-                        .setDestination(new byte[0])
-                        .setNote("'Stay thinking different' - Steve Jobs")
-                        .setSignature(new byte[0])
-                        .setValue(BigDecimal.valueOf(10, 7))
-                        .build()))
+                .setData(new ArrayList<>())
                 .build();
     }
 
@@ -146,7 +149,7 @@ public final class Block implements Serializable {
 
         private final static Logger logger = LoggerFactory.getLogger(Block.class);
 
-        private UUID index;
+        private BigInteger blockHeight;
         private ZonedDateTime timestamp;
         private List<Transaction> data;
         private byte[] previousBlock;
@@ -157,6 +160,11 @@ public final class Block implements Serializable {
 
         public static Builder newBuilder(){
             return new Builder();
+        }
+
+        public Builder setBlockHeight(BigInteger blockHeight) {
+            this.blockHeight = blockHeight;
+            return this;
         }
 
         public Builder setData(List<Transaction> data){
@@ -170,14 +178,13 @@ public final class Block implements Serializable {
         }
 
         public Block build() throws Exception {
-            this.index = UUID.randomUUID();
             timestamp = DateTimeUtil.getCurrentTimestamp();
             return new Block(this);
         }
 
         public Block buildFromBlockHeaderMessage(BlockHeaderPayload blockHeaderPayload) throws NoSuchAlgorithmException {
             this.previousBlock = blockHeaderPayload.getPrevHash();
-            this.index = UUID.fromString(String.valueOf(blockHeaderPayload.getIndex()));
+            // make a thing for the block height
             this.timestamp = DateTimeUtil.fromMessageTimestamp(blockHeaderPayload.getTimestamp());
             this.nonce = blockHeaderPayload.getNonce();
             this.blockHash = blockHeaderPayload.getHash();
@@ -187,8 +194,8 @@ public final class Block implements Serializable {
             return blck;
         }
 
-        public Block buildFromBlockMessage(BlockMessage blockMessage) throws NoSuchAlgorithmException {
-            this.index = UUID.fromString(String.valueOf(blockMessage.getIndex()));
+        public Block buildFromBlockMessage(BlockMessage blockMessage) throws NoSuchAlgorithmException, InvalidKeySpecException, NoSuchProviderException {
+            // make a thing for the block height
             this.timestamp = DateTimeUtil.fromMessageTimestamp(blockMessage.getTimestamp());
             this.nonce = blockMessage.getNonce();
             this.blockHash = blockMessage.getBlockHash();
@@ -199,7 +206,7 @@ public final class Block implements Serializable {
             }
             this.data = data;
             Block blck = new Block(this);
-            if(CryptoHasher.compareHashes(this.blockHash, blck.blockHash)){
+            if(CryptoHasher.isEqualHashes(this.blockHash, blck.blockHash)){
                 logger.debug("Locally generated blockhash matched incoming blockhash from payload");
             } else {
                 logger.debug("Locally generated blockhash did not match, manually setting blockhaash from payload");

@@ -13,6 +13,8 @@ import org.yggdrasil.node.network.messages.payloads.BlockMessage;
 import org.yggdrasil.node.network.runners.NodeConnection;
 
 import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.spec.InvalidKeySpecException;
 import java.util.Optional;
 
 @Component
@@ -24,7 +26,7 @@ public class BlockMessageHandler implements MessageHandler<BlockMessage>{
     Blockchain blockchain;
 
     @Override
-    public MessagePayload handleMessagePayload(BlockMessage blockMessage, NodeConnection nodeConnection) throws NoSuchAlgorithmException {
+    public MessagePayload handleMessagePayload(BlockMessage blockMessage, NodeConnection nodeConnection) throws NoSuchAlgorithmException, InvalidKeySpecException, NoSuchProviderException {
 
         logger.trace("Handling block message");
         Block blck = Block.Builder.newBuilder().buildFromBlockMessage(blockMessage);
