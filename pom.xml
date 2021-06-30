@@ -61,6 +61,13 @@
             <version>1.64</version>
         </dependency>
 
+        <!-- Database and Storage -->
+        <dependency>
+            <groupId>org.mapdb</groupId>
+            <artifactId>mapdb</artifactId>
+            <version>3.0.8</version>
+        </dependency>
+
         <!-- Useful Utils -->
         <dependency>
             <groupId>org.openjdk.jol</groupId>
