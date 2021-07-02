@@ -4,7 +4,8 @@ import org.yggdrasil.core.ledger.chain.Block;
 import org.yggdrasil.core.ledger.chain.Blockchain;
 import org.yggdrasil.core.ledger.Mempool;
 import org.yggdrasil.core.ledger.transaction.Transaction;
-import org.yggdrasil.core.ledger.Wallet;
+import org.yggdrasil.core.ledger.wallet.Wallet;
+import org.yggdrasil.core.ledger.wallet.WalletIndexer;
 import org.yggdrasil.core.utils.CryptoHasher;
 import org.yggdrasil.core.utils.CryptoKeyGenerator;
 import org.yggdrasil.node.controller.BlockchainController;
@@ -26,9 +27,7 @@ import org.yggdrasil.node.network.messages.payloads.TransactionPayload;
 
 import javax.security.auth.DestroyFailedException;
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.math.RoundingMode;
 import java.security.*;
 import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
@@ -64,6 +63,8 @@ public class BlockchainService {
     private Mempool mempool;
     @Autowired
     private CryptoKeyGenerator keyGenerator;
+    @Autowired
+    private WalletIndexer walletIndexer;
 
     private Wallet currentWallet;
 
@@ -122,11 +123,10 @@ public class BlockchainService {
      */
     public Wallet getWallet() throws NoSuchAlgorithmException, DestroyFailedException, NoSuchProviderException, InvalidAlgorithmParameterException {
         logger.info("Generating new wallet...");
-        KeyPair newKeyPair = keyGenerator.generatePublicPrivateKeys();
-        Wallet newWallet = Wallet.Builder.newBuilder().setKeyPair(newKeyPair).build();
-        logger.info("New wallet generated with the private key: {}", CryptoHasher.humanReadableHash(newKeyPair.getPrivate().getEncoded()));
-        this.currentWallet = newWallet;
-        return newWallet;
+        Wallet wallet = this.walletIndexer.createNewWallet();
+        logger.info("New wallet generated with address: {}", CryptoHasher.humanReadableHash(wallet.getAddress()));
+        currentWallet = wallet;
+        return wallet;
     }
 
     public void sendMessage() throws NoSuchAlgorithmException, IOException {

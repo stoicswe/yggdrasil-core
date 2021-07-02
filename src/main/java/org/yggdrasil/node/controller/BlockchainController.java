@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.web.bind.annotation.*;
 import org.yggdrasil.core.ledger.chain.Blockchain;
 import org.yggdrasil.core.ledger.transaction.Transaction;
-import org.yggdrasil.core.ledger.Wallet;
+import org.yggdrasil.core.ledger.wallet.Wallet;
 import org.yggdrasil.node.model.BlockResponse;
 import org.yggdrasil.node.service.BlockchainService;
 import org.slf4j.Logger;
@@ -17,9 +17,7 @@ import org.springframework.http.ResponseEntity;
 
 import javax.annotation.PostConstruct;
 import java.io.IOException;
-import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
-import java.security.SignatureException;
 import java.util.List;
 
 /**

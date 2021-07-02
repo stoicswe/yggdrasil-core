@@ -9,7 +9,10 @@ import org.springframework.retry.annotation.EnableRetry;
 import org.yggdrasil.node.network.messages.enums.NetworkType;
 
 import javax.annotation.PostConstruct;
+import java.io.File;
 import java.net.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Locale;
 import java.util.UUID;
 
@@ -26,6 +29,11 @@ import java.util.UUID;
 public class NodeConfig {
 
     private static final Logger logger = LoggerFactory.getLogger(NodeConfig.class);
+
+    public final String _CURRENT_DIRECTORY = System.getProperty("user.dir") + "/.yggdrasil";
+    public final String _CHAIN_DATA_DIRECTORY =  _CURRENT_DIRECTORY + "/blockchain";
+    public final String _PEER_DATA_DIRECTORY =  _CURRENT_DIRECTORY +"/peers";
+    public final String _FILE_EXTENSION = ".0x";
 
     private UUID nodeIndex;
     private InetAddress nodeIp;
@@ -49,6 +57,20 @@ public class NodeConfig {
     @PostConstruct
     public void init() throws UnknownHostException, SocketException {
         this.nodeIndex = UUID.randomUUID();
+        // Setup save locations
+        if(!Files.exists(Path.of(_CURRENT_DIRECTORY))) {
+            logger.info("Creating Yggdrasil data directories");
+            new File(_CURRENT_DIRECTORY).mkdir();
+            logger.info("Created {}", _CURRENT_DIRECTORY);
+            if(!Files.exists(Path.of(_CHAIN_DATA_DIRECTORY))) {
+                new File(_CHAIN_DATA_DIRECTORY);
+                logger.info("Created {}", _CHAIN_DATA_DIRECTORY);
+            }
+            if(!Files.exists(Path.of(_PEER_DATA_DIRECTORY))) {
+                new File(_PEER_DATA_DIRECTORY).mkdir();
+                logger.info("Created {}", _PEER_DATA_DIRECTORY);
+            }
+        }
         try(final DatagramSocket socket = new DatagramSocket()){
             socket.connect(InetAddress.getByName("8.8.8.8"), 10002);
             // Set the nodes IP as seen on the local network

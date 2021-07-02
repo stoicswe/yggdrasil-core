@@ -2,8 +2,11 @@ spring:
   application: "Yggdrasil Core"
   profiles:
     active: "live"
+  lifecycle:
+    timeout-per-shutdown-phase: 30s
 server:
   port: 9000
+  shutdown: "graceful"
 blockchain:
   network: "main"
   p2p:

@@ -1,7 +1,6 @@
-package org.yggdrasil.core.ledger;
+package org.yggdrasil.core.ledger.wallet;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.apache.commons.lang3.SerializationUtils;
@@ -138,11 +137,6 @@ public class Wallet implements Serializable {
 
         public static Builder newBuilder() {
             return new Builder();
-        }
-
-        public Builder setPublicKey(PublicKey publicKey) {
-            this.publicKey = publicKey;
-            return this;
         }
 
         public Builder setKeyPair(KeyPair keyPair) {
