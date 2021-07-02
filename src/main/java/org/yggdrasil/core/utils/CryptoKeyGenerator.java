@@ -65,4 +65,10 @@ public class CryptoKeyGenerator {
         return keyFactory.generatePublic(pubKeySpec);
     }
 
+    public static PrivateKey readPrivateKeyFromBytes(byte[] encPublicKey) throws NoSuchAlgorithmException, NoSuchProviderException, InvalidKeySpecException {
+        X509EncodedKeySpec privateKeySpec = new X509EncodedKeySpec(encPublicKey);
+        KeyFactory keyFactory = KeyFactory.getInstance(_KEY_PAIR_ALGORITHM);
+        return keyFactory.generatePrivate(privateKeySpec);
+    }
+
 }

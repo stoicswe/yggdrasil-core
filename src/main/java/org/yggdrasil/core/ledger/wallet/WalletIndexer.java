@@ -16,6 +16,7 @@ import javax.annotation.PreDestroy;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
+import java.security.spec.InvalidKeySpecException;
 import java.util.concurrent.TimeUnit;
 
 @Component
@@ -69,13 +70,13 @@ public class WalletIndexer {
         Wallet w = Wallet.Builder.newBuilder()
                 .setKeyPair(cryptoKeyGenerator.generatePublicPrivateKeys())
                 .build();
-        this.walletCache.put(w.getAddress(), w);
+        this.walletCache.put(w.getAddress(), w.toWalletRecord());
         this.hotWallets.commit();
         return w;
     }
 
-    public Wallet getWallet(byte[] address) {
-        return (Wallet) this.walletCache.get(address);
+    public Wallet getWallet(byte[] address) throws NoSuchAlgorithmException, InvalidKeySpecException, NoSuchProviderException {
+        return Wallet.Builder.newBuilder().buildFromWalletRecord((WalletRecord) this.walletCache.get(address));
     }
 
     public void deleteWallet(byte[] address) {
