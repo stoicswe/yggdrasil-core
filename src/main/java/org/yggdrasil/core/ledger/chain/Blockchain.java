@@ -69,10 +69,10 @@ public class Blockchain implements Cloneable {
                 .hashMap("hotChain")
                 .keySerializer(Serializer.BYTE_ARRAY)
                 .expireAfterCreate(30, TimeUnit.MINUTES)
+                .expireAfterGet(15, TimeUnit.MINUTES)
                 .expireOverflow(this.coldBlocks)
                 .expireExecutor(Executors.newScheduledThreadPool(2))
-                .counterEnable()
-                .create();
+                .createOrOpen();
         if(this.coldBlocks.size() == 0) {
             Block genesis = Block.genesis();
             //this.hotBlocks.put(genesis.getBlockHash(), genesis);

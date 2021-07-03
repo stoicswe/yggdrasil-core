@@ -17,6 +17,7 @@ import java.security.InvalidAlgorithmParameterException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.spec.InvalidKeySpecException;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 @Component
@@ -37,7 +38,6 @@ public class WalletIndexer {
     private void init() {
         this.coldWallets = DBMaker
                 .fileDB(nodeConfig._CURRENT_DIRECTORY + "/wallet" + nodeConfig._FILE_EXTENSION)
-                .transactionEnable()
                 .make();
         this.walletData = coldWallets.hashMap("walletData")
                 .keySerializer(Serializer.BYTE_ARRAY)
@@ -52,7 +52,9 @@ public class WalletIndexer {
                 .keySerializer(Serializer.BYTE_ARRAY)
                 .expireOverflow(walletData)
                 .expireAfterGet(5, TimeUnit.SECONDS)
-                .create();
+                .expireAfterCreate(5, TimeUnit.SECONDS)
+                .expireExecutor(Executors.newScheduledThreadPool(2))
+                .createOrOpen();
     }
 
     @PreDestroy
@@ -70,7 +72,13 @@ public class WalletIndexer {
         Wallet w = Wallet.Builder.newBuilder()
                 .setKeyPair(cryptoKeyGenerator.generatePublicPrivateKeys())
                 .build();
-        this.walletCache.put(w.getAddress(), w.toWalletRecord());
+        try {
+            this.walletCache.put(w.getAddress(), w.toWalletRecord());
+        } catch (Exception e) {
+            logger.error("Error while creating new wallet: {}", e.getMessage());
+            this.hotWallets.rollback();
+            throw e;
+        }
         this.hotWallets.commit();
         return w;
     }
@@ -82,6 +90,10 @@ public class WalletIndexer {
     public void deleteWallet(byte[] address) {
         this.walletCache.remove(address);
         this.walletData.remove(address);
+    }
+
+    public int getNumberOfWallets() {
+        return this.walletData.size();
     }
 
 }
