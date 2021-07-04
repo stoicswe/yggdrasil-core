@@ -50,21 +50,20 @@ public class BlockchainService {
     private final Integer _MAX_BLOCK_SIZE = 2048;
     private final Logger logger = LoggerFactory.getLogger(BlockchainService.class);
 
+    // Node dependencies
     @Autowired
     private Node node;
     @Autowired
     private NodeConfig nodeConfig;
     @Autowired
     private Messenger messenger;
+    // Blockchain dependencies
     @Autowired
     private Blockchain blockchain;
     @Autowired
     private Mempool mempool;
     @Autowired
-    private CryptoKeyGenerator keyGenerator;
-    @Autowired
     private WalletIndexer walletIndexer;
-
     private Wallet currentWallet;
 
     /**
@@ -204,7 +203,6 @@ public class BlockchainService {
      * @return
      */
     public BlockResponse mineBlock() throws Exception {
-
         logger.info("Mining new block...");
 
         BlockResponse lastMinedBlock;

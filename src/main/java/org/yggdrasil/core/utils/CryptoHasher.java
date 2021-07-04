@@ -1,6 +1,5 @@
 package org.yggdrasil.core.utils;
 
-import org.apache.commons.lang3.ArrayUtils;
 import org.bouncycastle.crypto.digests.RIPEMD160Digest;
 import org.apache.tomcat.util.buf.HexUtils;
 import org.yggdrasil.core.ledger.LedgerHashableItem;
@@ -24,6 +23,13 @@ public class CryptoHasher {
 
     private static final String _HASH_ALGORITHM = "SHA-256";
 
+    /**
+     * Function for hashing items that support hashing (txns, blocks, etc).
+     *
+     * @param item
+     * @return
+     * @throws NoSuchAlgorithmException
+     */
     public static byte[] hash(LedgerHashableItem item) throws NoSuchAlgorithmException {
         return CryptoHasher.dhash(item.getDataBytes());
     }
@@ -68,8 +74,6 @@ public class CryptoHasher {
         return address;
     }
 
-
-
     /**
      * Returns a human-readable hex string of a given hash.
      *
@@ -90,6 +94,13 @@ public class CryptoHasher {
         return HexUtils.fromHexString(stringHash);
     }
 
+    /**
+     * Compare two hashes for equality.
+     *
+     * @param val0
+     * @param val1
+     * @return
+     */
     public static boolean isEqualHashes(byte[] val0, byte[] val1) {
         try {
             for (int i = 0; i < val1.length; i++) {
@@ -103,6 +114,13 @@ public class CryptoHasher {
         return true;
     }
 
+    /**
+     * Compare two hashes.
+     *
+     * @param val0
+     * @param val1
+     * @return
+     */
     public static int compareHashes(byte[] val0, byte[] val1) {
 
         if (val0 == val1) {
@@ -125,10 +143,6 @@ public class CryptoHasher {
             }
         }
         return 0;
-    }
-
-    private static byte[] appendBytes(byte[] base, byte[] extension) {
-        return ArrayUtils.addAll(base, extension);
     }
 
 }

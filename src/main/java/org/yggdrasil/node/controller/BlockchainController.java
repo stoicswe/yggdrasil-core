@@ -50,7 +50,7 @@ public class BlockchainController {
     }
 
     @RequestMapping(value = "/mine", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<BlockResponse> mineBlock() throws Exception {
+    public ResponseEntity mineBlock() throws Exception {
         return new ResponseEntity<>(this.service.mineBlock(), HttpStatus.CREATED);
     }
 
