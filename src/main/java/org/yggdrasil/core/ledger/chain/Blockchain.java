@@ -1,8 +1,12 @@
 package org.yggdrasil.core.ledger.chain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import org.mapdb.DB;
+import org.mapdb.DBMaker;
+import org.mapdb.HTreeMap;
+import org.mapdb.Serializer;
 import org.yggdrasil.core.utils.CryptoHasher;
-import org.yggdrasil.core.utils.BlockchainIO;
 import org.yggdrasil.core.utils.DateTimeUtil;
 import org.yggdrasil.node.network.NodeConfig;
 import org.slf4j.Logger;
@@ -11,10 +15,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
-import java.io.IOException;
+import javax.annotation.PreDestroy;
+import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.ZonedDateTime;
 import java.util.*;
-import java.util.stream.Collectors;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 /**
  * This is the class definition for the blockchain object. Its purpose
@@ -28,27 +36,54 @@ import java.util.stream.Collectors;
 public class Blockchain implements Cloneable {
 
     private Logger logger = LoggerFactory.getLogger(Blockchain.class);
-
+    // Data storage
+    private transient DB cache;
+    private HTreeMap hotBlocks;
+    private transient DB database;
+    private transient HTreeMap coldBlocks;
     @Autowired
     private transient NodeConfig nodeConfig;
-    @Autowired
-    private transient BlockchainIO blockchainIO;
-    // This hotBlock functionality is disabled for now
-    // Future impl will include a moving window technique
-    private transient final Integer hotblocks = -1;
-    private transient final Object lock = new Object();
-
+    // Node name reference
     private UUID nodeIndex;
+    // Time since last node launch
     private ZonedDateTime timestamp;
-    private HashMap<byte[], Block> blocks;
 
     @PostConstruct
     public void init() throws Exception {
         this.nodeIndex = nodeConfig.getNodeIndex();
         this.timestamp = DateTimeUtil.getCurrentTimestamp();
-        this.blocks = new HashMap<>();
-        Block genBlock = Block.genesis();
-        this.blocks.put(genBlock.getBlockHash(), genBlock);
+        // If the save directory is not made, make it
+        this.cache = DBMaker
+                .memoryDirectDB()
+                .make();
+        this.database = DBMaker
+                .fileDB(nodeConfig._CURRENT_DIRECTORY + "/chain" + nodeConfig._FILE_EXTENSION)
+                .fileMmapEnableIfSupported()
+                .make();
+        this.coldBlocks = this.database
+                .hashMap("coldChain")
+                .keySerializer(Serializer.BYTE_ARRAY)
+                .counterEnable()
+                .createOrOpen();
+        this.hotBlocks = this.cache
+                .hashMap("hotChain")
+                .keySerializer(Serializer.BYTE_ARRAY)
+                .expireAfterCreate(30, TimeUnit.MINUTES)
+                .expireAfterGet(15, TimeUnit.MINUTES)
+                .expireOverflow(this.coldBlocks)
+                .expireExecutor(Executors.newScheduledThreadPool(2))
+                .createOrOpen();
+        if(this.coldBlocks.size() == 0) {
+            Block genesis = Block.genesis();
+            //this.hotBlocks.put(genesis.getBlockHash(), genesis);
+        }
+    }
+
+    @PreDestroy
+    public void onDestroy() throws Exception {
+        logger.info("Shutting down blockchain database.");
+        this.hotBlocks.clearWithExpire();
+        this.coldBlocks.close();
     }
 
     public UUID getNodeIndex() {
@@ -60,69 +95,33 @@ public class Blockchain implements Cloneable {
     }
 
     public Block[] getBlocks() {
-        return blocks.values().toArray(Block[]::new);
+        return (Block[]) this.hotBlocks.values().toArray(Block[]::new);
     }
 
     public void addBlock(Block block) {
         logger.trace("Received a block to evaluate for adding to the chain");
-        synchronized (lock) {
-            Block storedBlck = this.blocks.get(block.getBlockHash());
-            if (storedBlck != null) {
-                if (storedBlck.getTimestamp().compareTo(block.getTimestamp()) > 0) {
-                    this.blocks.replace(block.getBlockHash(), block);
-                } else if (storedBlck.getTimestamp().compareTo(block.getTimestamp()) == 0) {
-                    if (storedBlck.getData().size() < block.getData().size()) {
-                        this.blocks.replace(block.getBlockHash(), block);
-                    }
+        Block storedBlck = (Block) this.hotBlocks.get(block.getBlockHash());
+        if (storedBlck != null) {
+            if (storedBlck.getTimestamp().compareTo(block.getTimestamp()) > 0) {
+                this.hotBlocks.replace(block.getBlockHash(), block);
+            } else if (storedBlck.getTimestamp().compareTo(block.getTimestamp()) == 0) {
+                if (storedBlck.getData().size() < block.getData().size()) {
+                    this.hotBlocks.replace(block.getBlockHash(), block);
                 }
-            } else {
-                this.blocks.put(block.getBlockHash(), block);
             }
+        } else {
+            this.hotBlocks.put(block.getBlockHash(), block);
         }
     }
 
     public void addBlocks(List<Block> blocks) throws CloneNotSupportedException {
-        synchronized (lock) {
-            for(Block b : blocks) {
-                this.blocks.put(b.getBlockHash(), b);
-            }
+        for(Block b : blocks) {
+            this.hotBlocks.put(b.getBlockHash(), b);
         }
-        this.checkBlocks();
     }
 
     public Optional<Block> getBlock(byte[] blockHash) {
-        return Optional.ofNullable(this.blocks.get(blockHash));
-    }
-
-    public void checkBlocks() throws CloneNotSupportedException {
-        // If the blockchain dump is disabled, then skip sync lock
-        if(hotblocks != -1) {
-            synchronized (lock) {
-                if (this.blocks.size() > hotblocks) {
-                    try {
-                        blockchainIO.dumpChain((Blockchain) this.clone());
-                        this.blocks = new HashMap<>();
-                    } catch (IOException ie) {
-                        logger.error("Cannot dump blocks to storage.");
-                    }
-                }
-            }
-        }
-    }
-
-    public void replaceChain(HashMap<byte[], Block> newChain) throws Exception {
-
-        if(newChain.size() <= this.blocks.size()) {
-            logger.debug("Received chain of length [{}] is not longer than local chain size [{}].", newChain.size(), this.blocks.size());
-            return;
-        } else if(!isValidChain(newChain)) {
-            logger.warn("Received chain is invalid.");
-            return;
-        }
-
-        logger.info("Replacing local chain with incoming chain.");
-        this.blocks = newChain;
-
+        return Optional.ofNullable((Block) this.hotBlocks.get(blockHash));
     }
 
     public static boolean isValidChain(HashMap<byte[], Block> chain) throws Exception {

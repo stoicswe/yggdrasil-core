@@ -4,7 +4,8 @@ import org.yggdrasil.core.ledger.chain.Block;
 import org.yggdrasil.core.ledger.chain.Blockchain;
 import org.yggdrasil.core.ledger.Mempool;
 import org.yggdrasil.core.ledger.transaction.Transaction;
-import org.yggdrasil.core.ledger.Wallet;
+import org.yggdrasil.core.ledger.wallet.Wallet;
+import org.yggdrasil.core.ledger.wallet.WalletIndexer;
 import org.yggdrasil.core.utils.CryptoHasher;
 import org.yggdrasil.core.utils.CryptoKeyGenerator;
 import org.yggdrasil.node.controller.BlockchainController;
@@ -26,9 +27,7 @@ import org.yggdrasil.node.network.messages.payloads.TransactionPayload;
 
 import javax.security.auth.DestroyFailedException;
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.math.RoundingMode;
 import java.security.*;
 import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
@@ -48,9 +47,7 @@ public class BlockchainService {
 
     private final Integer _PREFIX = 4;
     private final Integer _MAX_BLOCK_SIZE = 52;
-
     private final Logger logger = LoggerFactory.getLogger(BlockchainService.class);
-    private final Object lock = new Object();
 
     @Autowired
     private Node node;
@@ -64,6 +61,8 @@ public class BlockchainService {
     private Mempool mempool;
     @Autowired
     private CryptoKeyGenerator keyGenerator;
+    @Autowired
+    private WalletIndexer walletIndexer;
 
     private Wallet currentWallet;
 
@@ -72,7 +71,9 @@ public class BlockchainService {
      *
      * @return
      */
-    public Blockchain getBlockchain() {
+    public Blockchain getBlockchain(int blocks) {
+        // add some code so that the last # of blocks are retrieved
+        // and return to the caller.
         return this.blockchain;
     }
 
@@ -120,13 +121,39 @@ public class BlockchainService {
      * @return
      * @throws NoSuchAlgorithmException
      */
-    public Wallet getWallet() throws NoSuchAlgorithmException, DestroyFailedException, NoSuchProviderException, InvalidAlgorithmParameterException {
+    public Wallet getWallet() {
+        return currentWallet;
+    }
+
+    /**
+     * Create a new wallet. Returns the newly created wallet.
+     *
+     * @return
+     * @throws NoSuchAlgorithmException
+     * @throws NoSuchProviderException
+     * @throws InvalidAlgorithmParameterException
+     */
+    public Wallet createWallet() throws NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParameterException {
         logger.info("Generating new wallet...");
-        KeyPair newKeyPair = keyGenerator.generatePublicPrivateKeys();
-        Wallet newWallet = Wallet.Builder.newBuilder().setKeyPair(newKeyPair).build();
-        logger.info("New wallet generated with the private key: {}", CryptoHasher.humanReadableHash(newKeyPair.getPrivate().getEncoded()));
-        this.currentWallet = newWallet;
-        return newWallet;
+        Wallet wallet = this.walletIndexer.createNewWallet();
+        logger.info("New wallet generated with address: {}", CryptoHasher.humanReadableHash(wallet.getAddress()));
+        currentWallet = wallet;
+        return wallet;
+    }
+
+    /**
+     * Select a wallet to initiate transactions from.
+     *
+     * @return
+     * @throws NoSuchAlgorithmException
+     * @throws NoSuchProviderException
+     * @throws InvalidAlgorithmParameterException
+     */
+    public Wallet selectWallet(String walletAddress) throws NoSuchAlgorithmException, NoSuchProviderException, InvalidKeySpecException {
+        logger.debug("Selecting a wallet...");
+        currentWallet = this.walletIndexer.getWallet(CryptoHasher.hashByteArray(walletAddress));
+        logger.info("Wallet selected with address: {}", CryptoHasher.humanReadableHash(currentWallet.getAddress()));
+        return currentWallet;
     }
 
     public void sendMessage() throws NoSuchAlgorithmException, IOException {

@@ -6,7 +6,7 @@ import org.bouncycastle.crypto.digests.RIPEMD160Digest;
 import org.apache.tomcat.util.buf.HexUtils;
 import org.yggdrasil.core.ledger.chain.Block;
 import org.yggdrasil.core.ledger.transaction.Transaction;
-import org.yggdrasil.core.ledger.Wallet;
+import org.yggdrasil.core.ledger.wallet.Wallet;
 import org.yggdrasil.node.network.messages.MessagePayload;
 
 import java.security.MessageDigest;

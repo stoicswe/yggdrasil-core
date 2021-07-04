@@ -1,7 +1,6 @@
-package org.yggdrasil.core.ledger;
+package org.yggdrasil.core.ledger.wallet;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.apache.commons.lang3.SerializationUtils;
@@ -16,6 +15,7 @@ import org.yggdrasil.core.utils.DateTimeUtil;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.security.*;
+import java.security.spec.InvalidKeySpecException;
 import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.UUID;
@@ -38,11 +38,11 @@ public class Wallet implements Serializable {
      * memory (to help guard against memory-read attacks).
      */
     @JsonIgnore
-    private final PublicKey publicKey;
+    protected transient final PublicKey publicKey;
     @JsonIgnore
-    private final PrivateKey privateKey;
+    protected transient final PrivateKey privateKey;
     @JsonInclude
-    private final ZonedDateTime creationDate;
+    protected final ZonedDateTime creationDate;
     @JsonInclude
     @JsonSerialize(using = HashSerializer.class)
     private final byte[] address;
@@ -50,9 +50,9 @@ public class Wallet implements Serializable {
     @JsonSerialize(using = HashSerializer.class)
     private final byte[] walletHash;
     @JsonIgnore
-    private final HashMap<byte[], WalletTransaction> wTxns;
+    private transient final HashMap<byte[], WalletTransaction> wTxns;
     @JsonIgnore
-    private Signature signature;
+    private transient Signature signature;
 
     private Wallet(Builder builder) throws NoSuchAlgorithmException {
         this.publicKey = builder.publicKey;
@@ -123,6 +123,10 @@ public class Wallet implements Serializable {
         return CryptoHasher.humanReadableHash(walletHash);
     }
 
+    public WalletRecord toWalletRecord() {
+        return new WalletRecord(this);
+    }
+
     /**
      * Builder class is the Wallet builder. This is to ensure some level
      * of data protection by enforcing non-direct data access and immutable data.
@@ -140,11 +144,6 @@ public class Wallet implements Serializable {
             return new Builder();
         }
 
-        public Builder setPublicKey(PublicKey publicKey) {
-            this.publicKey = publicKey;
-            return this;
-        }
-
         public Builder setKeyPair(KeyPair keyPair) {
             this.privateKey = keyPair.getPrivate();
             this.publicKey = keyPair.getPublic();
@@ -157,14 +156,12 @@ public class Wallet implements Serializable {
             return new Wallet(this);
         }
 
-        private byte[] buildWalletAddress(byte[] publicKeyEncoded) {
-            byte[] address = new byte[20];
-            int j = 0;
-            for(int i = publicKeyEncoded.length-20; i < publicKeyEncoded.length; i++){
-                address[j] = publicKeyEncoded[i];
-                j++;
-            }
-            return address;
+        public Wallet buildFromWalletRecord(WalletRecord wr) throws NoSuchAlgorithmException, InvalidKeySpecException, NoSuchProviderException {
+            this.publicKey = CryptoKeyGenerator.readPublicKeyFromBytes(wr.getPublicKey());
+            this.privateKey = CryptoKeyGenerator.readPrivateKeyFromBytes(wr.getPrivateKey());
+            this.creationDate = wr.getCreationDate();
+            this.address = CryptoHasher.walletHash(this.publicKey);
+            return new Wallet(this);
         }
     }
 }
