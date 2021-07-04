@@ -55,8 +55,8 @@ public class BlockchainController {
     }
 
     @RequestMapping(value = "/wallet", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Wallet> getCurrentWallet() throws Exception {
-        return new ResponseEntity<>(this.service.getWallet(), HttpStatus.OK);
+    public ResponseEntity<List<Wallet>> getWallet(@RequestParam(name = "allWallets", required = false) boolean allWallets) throws Exception {
+        return new ResponseEntity<>(this.service.getWallet(allWallets), HttpStatus.OK);
     }
 
     @RequestMapping(value = "/createWallet", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)

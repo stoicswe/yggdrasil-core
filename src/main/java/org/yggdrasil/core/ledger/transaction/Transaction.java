@@ -1,5 +1,7 @@
 package org.yggdrasil.core.ledger.transaction;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.SerializationUtils;
@@ -28,10 +30,12 @@ import java.time.ZonedDateTime;
  * @since 0.0.2
  * @author nathanielbunch
  */
+@JsonInclude
 public class Transaction implements LedgerHashableItem {
 
     private final ZonedDateTime timestamp;
     private final String originAddress;
+    @JsonIgnore
     private final PublicKey origin;
     private final String destinationAddress;
     private final TransactionInput[] txnInputs;
@@ -87,6 +91,7 @@ public class Transaction implements LedgerHashableItem {
         return txnOutPuts;
     }
 
+    @JsonIgnore
     public byte[] rehash() throws NoSuchAlgorithmException {
         this.txnHash = CryptoHasher.hash(this);
         return this.txnHash;
@@ -114,6 +119,7 @@ public class Transaction implements LedgerHashableItem {
         return CryptoHasher.humanReadableHash(txnHash);
     }
 
+    @JsonIgnore
     @Override
     public byte[] getDataBytes() {
         byte[] txnData = new byte[0];

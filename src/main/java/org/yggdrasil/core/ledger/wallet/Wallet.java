@@ -130,6 +130,7 @@ public class Wallet implements LedgerHashableItem {
         return new WalletRecord(this);
     }
 
+    @JsonIgnore
     @Override
     public byte[] getDataBytes() {
         byte[] walletData = new byte[0];

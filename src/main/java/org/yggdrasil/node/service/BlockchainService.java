@@ -102,6 +102,7 @@ public class BlockchainService {
                     .setTimestamp(transaction.getTimestamp())
                     .setOriginAddress(transaction.getOriginAddress())
                     .setOriginPublicKey(this.currentWallet.getPublicKey())
+                    // add the inputs and outputs to here
                     .setDestinationAddress(transaction.getDestinationAddress())
                     .build();
             this.currentWallet.signTransaction(mempoolTxn);
@@ -133,8 +134,11 @@ public class BlockchainService {
      * @return
      * @throws NoSuchAlgorithmException
      */
-    public Wallet getWallet() {
-        return currentWallet;
+    public List<Wallet> getWallet(boolean allWallets) throws NoSuchAlgorithmException, InvalidKeySpecException, NoSuchProviderException {
+        if(allWallets) {
+            return this.walletIndexer.getAllWallets();
+        }
+        return List.of(currentWallet);
     }
 
     /**
