@@ -1,0 +1,189 @@
+{
+	"info": {
+		"_postman_id": "3c3cd0e6-5cfc-42bc-87fd-ee79f85a27f7",
+		"name": "Yggdrasil",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Wallet",
+			"item": [
+				{
+					"name": "getWallet",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "localhost:9000/wallet",
+							"host": [
+								"localhost"
+							],
+							"port": "9000",
+							"path": [
+								"wallet"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "createNewWWallet",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "localhost:9000/createWallet",
+							"host": [
+								"localhost"
+							],
+							"port": "9000",
+							"path": [
+								"createWallet"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "switchWallet",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "localhost:9000/selectWallet?address=bb657fc7064e2d719a11a06ff89338b5e2684d50",
+							"host": [
+								"localhost"
+							],
+							"port": "9000",
+							"path": [
+								"selectWallet"
+							],
+							"query": [
+								{
+									"key": "address",
+									"value": "bb657fc7064e2d719a11a06ff89338b5e2684d50"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "putTransaction",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"origin\": \"0890ba439df33d9facc63ce73b8177a239cd8be2\",\n    \"destination\": \"6ad28d3fda4e10bdc0aaf7112f7818e181defa7e\",\n    \"value\": 0.056897857345,\n    \"note\": \"Test\"  \n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "localhost:9000/transaction",
+							"host": [
+								"localhost"
+							],
+							"port": "9000",
+							"path": [
+								"transaction"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Blockchain",
+			"item": [
+				{
+					"name": "getTransactionFromMempool",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "localhost:9000/transaction?transactions=4",
+							"host": [
+								"localhost"
+							],
+							"port": "9000",
+							"path": [
+								"transaction"
+							],
+							"query": [
+								{
+									"key": "transactions",
+									"value": "4"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "getBlockchain",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "localhost:9000/blocks",
+							"host": [
+								"localhost"
+							],
+							"port": "9000",
+							"path": [
+								"blocks"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Mining",
+			"item": [
+				{
+					"name": "mineBlock",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "localhost:9000/mine",
+							"host": [
+								"localhost"
+							],
+							"port": "9000",
+							"path": [
+								"mine"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "localhost:9000/testFeature",
+			"request": {
+				"method": "HEAD",
+				"header": [],
+				"url": {
+					"raw": "localhost:9000/testFeature",
+					"host": [
+						"localhost"
+					],
+					"port": "9000",
+					"path": [
+						"testFeature"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
