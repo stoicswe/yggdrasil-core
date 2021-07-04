@@ -3,6 +3,7 @@ package org.yggdrasil.node.service;
 import org.yggdrasil.core.ledger.chain.Block;
 import org.yggdrasil.core.ledger.chain.Blockchain;
 import org.yggdrasil.core.ledger.Mempool;
+import org.yggdrasil.core.ledger.transaction.BasicTransaction;
 import org.yggdrasil.core.ledger.transaction.Transaction;
 import org.yggdrasil.core.ledger.wallet.Wallet;
 import org.yggdrasil.core.ledger.wallet.WalletIndexer;
@@ -46,7 +47,7 @@ import java.util.List;
 public class BlockchainService {
 
     private final Integer _PREFIX = 4;
-    private final Integer _MAX_BLOCK_SIZE = 52;
+    private final Integer _MAX_BLOCK_SIZE = 2048;
     private final Logger logger = LoggerFactory.getLogger(BlockchainService.class);
 
     @Autowired
@@ -83,9 +84,7 @@ public class BlockchainService {
      * @return
      * @throws NoSuchAlgorithmException
      */
-    public List<Transaction> getTransaction(int numberOfTransactions) throws NoSuchAlgorithmException {
-        // This returns a dummy transaction for now, but at some point may have a lookup service.
-        // Primarily for testing serialization.
+    public List<BasicTransaction> getTransaction(int numberOfTransactions) throws NoSuchAlgorithmException {
         return this.mempool.peekTransaction(numberOfTransactions);
     }
 
@@ -94,9 +93,11 @@ public class BlockchainService {
      *
      * @param transaction
      */
-    public void addNewTransaction(Transaction transaction) throws IOException, NoSuchAlgorithmException {
-        logger.info("New transaction: {} [{} -> {}]", transaction.toString(), CryptoHasher.humanReadableHash(transaction.getOrigin().getEncoded()), CryptoHasher.humanReadableHash(transaction.getDestination().getEncoded()));
+    public void addNewTransaction(BasicTransaction transaction) throws IOException, NoSuchAlgorithmException {
+        logger.info("New transaction: {} [{} -> {}]", transaction.toString(), transaction.getOriginAddress(), transaction.getDestinationAddress());
         this.mempool.putTransaction(transaction);
+        // need to broadcast the basic transaction.
+        /*
         TransactionPayload txnPayload = TransactionPayload.Builder.newBuilder()
                 .buildFromTransaction(transaction)
                 .setBlockHash(new byte[0])
@@ -113,6 +114,7 @@ public class BlockchainService {
                 .setChecksum(CryptoHasher.hash(txnMessage))
                 .build();
         this.messenger.sendBroadcastMessage(txnMsg);
+        */
     }
 
     /**
@@ -198,7 +200,7 @@ public class BlockchainService {
         List<Transaction> blockData = new ArrayList<>();
         while(mempool.hasNext()) {
             if(blockData.size() < _MAX_BLOCK_SIZE) {
-                blockData.add(mempool.getTransaction());
+                //blockData.add(mempool.getTransaction());
             } else {
                 break;
             }
@@ -221,7 +223,7 @@ public class BlockchainService {
                 //.setValue(new BigDecimal(newBlock.toString().length() / 9.23).setScale(12, RoundingMode.FLOOR))
                 .build();
 
-        this.addNewTransaction(blockMineAward);
+        //this.addNewTransaction(blockMineAward);
 
         logger.info("Block mine awarded, transaction: {}", blockMineAward.toString());
 

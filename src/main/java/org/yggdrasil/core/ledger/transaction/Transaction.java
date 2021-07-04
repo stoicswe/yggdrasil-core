@@ -5,21 +5,18 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.yggdrasil.core.serialization.HashSerializer;
-import org.yggdrasil.core.serialization.TransactionDeserializer;
+import org.yggdrasil.core.serialization.BasicTransactionDeserializer;
 import org.yggdrasil.core.utils.CryptoHasher;
 import org.yggdrasil.core.utils.CryptoKeyGenerator;
 import org.yggdrasil.core.utils.DateTimeUtil;
-import org.yggdrasil.node.network.messages.payloads.TransactionMessage;
 import org.yggdrasil.node.network.messages.payloads.TransactionPayload;
 
 import java.io.Serializable;
-import java.math.BigDecimal;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.time.ZonedDateTime;
-import java.util.UUID;
 
 /**
  * Every Block is made of n number of Transactions. Transactions contain
@@ -32,12 +29,7 @@ import java.util.UUID;
  * @since 0.0.2
  * @author nathanielbunch
  */
-@JsonInclude
-@JsonDeserialize(using = TransactionDeserializer.class)
 public class Transaction implements Serializable {
-
-    // Receiver of transaction has to sign the incoming transaction
-    // that way it can be varified that it should be received.
 
     private final ZonedDateTime timestamp;
     @JsonSerialize(using = HashSerializer.class)
@@ -119,10 +111,6 @@ public class Transaction implements Serializable {
         return CryptoHasher.humanReadableHash(txnHash);
     }
 
-    /**
-     * TBuilder class is the SSTransaction builder. This is to ensure some level
-     * of data protection by enforcing non-direct data access and immutable data.
-     */
     public static class Builder {
 
         protected ZonedDateTime timestamp;
@@ -133,7 +121,7 @@ public class Transaction implements Serializable {
 
         private Builder(){}
 
-        public Builder setOrigin(@JsonProperty("origin") String origin) throws NoSuchAlgorithmException, InvalidKeySpecException, NoSuchProviderException {
+        public Builder setOrigin(String origin) throws NoSuchAlgorithmException, InvalidKeySpecException, NoSuchProviderException {
             byte[] publicKey = CryptoHasher.hashByteArray(origin);
             this.origin = CryptoKeyGenerator.readPublicKeyFromBytes(publicKey);
             return this;
@@ -144,7 +132,7 @@ public class Transaction implements Serializable {
             return this;
         }
 
-        public Builder setDestination(@JsonProperty("destination") String destination) throws NoSuchAlgorithmException, InvalidKeySpecException, NoSuchProviderException {
+        public Builder setDestination(String destination) throws NoSuchAlgorithmException, InvalidKeySpecException, NoSuchProviderException {
             byte[] publicKey = CryptoHasher.hashByteArray(destination);
             this.destination = CryptoKeyGenerator.readPublicKeyFromBytes(publicKey);
             return this;
@@ -165,12 +153,16 @@ public class Transaction implements Serializable {
             return this;
         }
 
+        public Builder setTimestamp(ZonedDateTime timestamp) {
+            this.timestamp = timestamp;
+            return this;
+        }
+
         public static Builder Builder() {
             return new Builder();
         }
 
         public Transaction build() throws NoSuchAlgorithmException {
-            this.timestamp = DateTimeUtil.getCurrentTimestamp();
             return new Transaction(this);
         }
 

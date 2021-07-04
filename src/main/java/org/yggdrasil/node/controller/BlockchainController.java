@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.web.bind.annotation.*;
 import org.yggdrasil.core.ledger.chain.Blockchain;
+import org.yggdrasil.core.ledger.transaction.BasicTransaction;
 import org.yggdrasil.core.ledger.transaction.Transaction;
 import org.yggdrasil.core.ledger.wallet.Wallet;
 import org.yggdrasil.node.model.BlockResponse;
@@ -67,15 +68,15 @@ public class BlockchainController {
     }
 
     @RequestMapping(value = "/transaction", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Transaction> putTransaction(@RequestBody JsonNode data) throws IOException, NoSuchAlgorithmException {
+    public ResponseEntity<BasicTransaction> putTransaction(@RequestBody JsonNode data) throws IOException, NoSuchAlgorithmException {
         logger.trace("Received new data: {}", data);
-        Transaction transaction = objectMapper.treeToValue(data, Transaction.class);
+        BasicTransaction transaction = objectMapper.treeToValue(data, BasicTransaction.class);
         this.service.addNewTransaction(transaction);
         return new ResponseEntity<>(transaction, HttpStatus.CREATED);
     }
 
     @RequestMapping(value = "/transaction", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<List<Transaction>> getTransaction(@RequestParam(name = "transactions", required = false) Integer transactions) throws Exception {
+    public ResponseEntity<List<BasicTransaction>> getTransaction(@RequestParam(name = "transactions", required = false) Integer transactions) throws Exception {
         if(transactions == null || transactions <= 0) {
             transactions = 1;
         }

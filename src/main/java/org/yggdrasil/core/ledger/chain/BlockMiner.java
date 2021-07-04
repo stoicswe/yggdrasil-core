@@ -1,18 +1,16 @@
 package org.yggdrasil.core.ledger.chain;
 
-import org.yggdrasil.core.ledger.transaction.Transaction;
-import org.yggdrasil.core.utils.CryptoHasher;
-import org.yggdrasil.core.utils.DateTimeUtil;
-import org.yggdrasil.node.network.messages.payloads.BlockHeaderPayload;
-import org.yggdrasil.node.network.messages.payloads.BlockMessage;
-import org.yggdrasil.node.network.messages.payloads.TransactionPayload;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.yggdrasil.core.ledger.Mempool;
 
-import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+public class BlockMiner {
 
-public class BlockFactory {
+    private final Logger logger = LoggerFactory.getLogger(BlockMiner.class);
+
+    @Autowired
+    private Mempool mempool;
 
     /*public Block buildGenesisBlock() throws NoSuchAlgorithmException {
         return new Block();

@@ -21,6 +21,8 @@ public class TransactionPayload implements MessagePayload {
     @NotNull
     private final byte[] originAddress;
     @NotNull
+    private final byte[] originPublicKey;
+    @NotNull
     private final byte[] destinationAddress;
     @NotNull
     private final BigDecimal value;
@@ -28,12 +30,15 @@ public class TransactionPayload implements MessagePayload {
     private final byte[] transactionHash;
     @NotNull
     private final byte[] signature;
+    //@NotNull
+    //private final byte[] merkleRoot;
     @NotNull
     private final byte[] blockHash;
 
     private TransactionPayload(Builder builder){
         this.timestamp = builder.timestamp;
         this.originAddress = builder.originAddress;
+        this.originPublicKey = builder.originPublicKey;
         this.destinationAddress = builder.destinationAddress;
         this.value = builder.value;
         this.transactionHash = builder.transactionHash;
@@ -74,6 +79,7 @@ public class TransactionPayload implements MessagePayload {
         byte[] messageBytes = new byte[0];
         messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(timestamp));
         messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(originAddress));
+        messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(originPublicKey));
         messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(destinationAddress));
         messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(value));
         messageBytes = appendBytes(messageBytes, transactionHash);
@@ -90,6 +96,7 @@ public class TransactionPayload implements MessagePayload {
 
         private int timestamp;
         private byte[] originAddress;
+        private byte[] originPublicKey;
         private byte[] destinationAddress;
         private BigDecimal value;
         private byte[] transactionHash;
@@ -109,6 +116,11 @@ public class TransactionPayload implements MessagePayload {
 
         public Builder setOriginAddress(byte[] originAddress) {
             this.originAddress = originAddress;
+            return this;
+        }
+
+        public Builder setOriginPublicKey(byte[] originPublicKey) {
+            this.originPublicKey = originPublicKey;
             return this;
         }
 

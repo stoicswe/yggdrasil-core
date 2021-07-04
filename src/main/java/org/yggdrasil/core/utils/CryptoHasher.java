@@ -5,6 +5,7 @@ import org.apache.commons.lang3.SerializationUtils;
 import org.bouncycastle.crypto.digests.RIPEMD160Digest;
 import org.apache.tomcat.util.buf.HexUtils;
 import org.yggdrasil.core.ledger.chain.Block;
+import org.yggdrasil.core.ledger.transaction.BasicTransaction;
 import org.yggdrasil.core.ledger.transaction.Transaction;
 import org.yggdrasil.core.ledger.wallet.Wallet;
 import org.yggdrasil.node.network.messages.MessagePayload;
@@ -26,7 +27,6 @@ import java.security.PublicKey;
 public class CryptoHasher {
 
     private static final String _HASH_ALGORITHM = "SHA-256";
-    private static final String _WALLET_ADDRESS_ALGORITHM = "";
 
     /**
      * Hashes a Block.
@@ -61,6 +61,22 @@ public class CryptoHasher {
         txnData = appendBytes(txnData, transaction.getSignature());
         txnData = appendBytes(txnData, SerializationUtils.serialize(transaction.getTxnInputs()));
         txnData = appendBytes(txnData, SerializationUtils.serialize(transaction.getTxnOutPuts()));
+        return CryptoHasher.dhash(txnData);
+    }
+
+    /**
+     * Hashes a basic Transaction.
+     *
+     * @param transaction
+     * @return
+     * @throws NoSuchAlgorithmException
+     */
+    public static byte[] hash(BasicTransaction transaction) throws NoSuchAlgorithmException {
+        byte[] txnData = new byte[0];
+        txnData = appendBytes(txnData, SerializationUtils.serialize(transaction.getTimestamp()));
+        txnData = appendBytes(txnData, SerializationUtils.serialize(transaction.getOriginAddress()));
+        txnData = appendBytes(txnData, SerializationUtils.serialize(transaction.getDestinationAddress()));
+        txnData = appendBytes(txnData, SerializationUtils.serialize(transaction.getValue()));
         return CryptoHasher.dhash(txnData);
     }
 

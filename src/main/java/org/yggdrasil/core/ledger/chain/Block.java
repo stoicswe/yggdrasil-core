@@ -39,6 +39,7 @@ public final class Block implements Serializable {
     private final BigInteger blockHeight;
     private final ZonedDateTime timestamp;
     private final List<Transaction> data;
+    private final byte[] merkleRoot;
     @JsonSerialize(using = HashSerializer.class)
     private final byte[] previousBlockHash;
     @JsonSerialize(using = HashSerializer.class)
@@ -52,6 +53,7 @@ public final class Block implements Serializable {
     private Block(Builder blockBuilder) throws NoSuchAlgorithmException {
         this.blockHeight = blockBuilder.blockHeight;
         this.timestamp = blockBuilder.timestamp;
+        this.merkleRoot = blockBuilder.merkleRoot;
         this.data = blockBuilder.data;
         this.previousBlockHash = blockBuilder.previousBlock;
         this.nonce = blockBuilder.nonce;
@@ -64,6 +66,10 @@ public final class Block implements Serializable {
 
     public ZonedDateTime getTimestamp() {
         return timestamp;
+    }
+
+    public byte[] getMerkleRoot() {
+        return merkleRoot;
     }
 
     public List<Transaction> getData() {
@@ -151,6 +157,7 @@ public final class Block implements Serializable {
 
         private BigInteger blockHeight;
         private ZonedDateTime timestamp;
+        private byte[] merkleRoot;
         private List<Transaction> data;
         private byte[] previousBlock;
         private byte[] blockHash;
@@ -164,6 +171,11 @@ public final class Block implements Serializable {
 
         public Builder setBlockHeight(BigInteger blockHeight) {
             this.blockHeight = blockHeight;
+            return this;
+        }
+
+        public Builder setMerkleRoot(byte[] merkleRoot) {
+            this.merkleRoot = merkleRoot;
             return this;
         }
 
