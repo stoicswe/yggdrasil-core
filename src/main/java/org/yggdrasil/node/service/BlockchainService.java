@@ -3,6 +3,7 @@ package org.yggdrasil.node.service;
 import org.yggdrasil.core.ledger.chain.Block;
 import org.yggdrasil.core.ledger.chain.Blockchain;
 import org.yggdrasil.core.ledger.Mempool;
+import org.yggdrasil.core.ledger.exceptions.TransactionException;
 import org.yggdrasil.core.ledger.transaction.BasicTransaction;
 import org.yggdrasil.core.ledger.transaction.Transaction;
 import org.yggdrasil.core.ledger.wallet.Wallet;
@@ -22,11 +23,10 @@ import org.yggdrasil.node.network.messages.Message;
 import org.yggdrasil.node.network.messages.Messenger;
 import org.yggdrasil.node.network.messages.enums.NetworkType;
 import org.yggdrasil.node.network.messages.enums.RequestType;
+import org.yggdrasil.node.network.messages.payloads.MempoolTransactionMessage;
+import org.yggdrasil.node.network.messages.payloads.MempoolTransactionPayload;
 import org.yggdrasil.node.network.messages.payloads.PingPongMessage;
-import org.yggdrasil.node.network.messages.payloads.TransactionMessage;
-import org.yggdrasil.node.network.messages.payloads.TransactionPayload;
 
-import javax.security.auth.DestroyFailedException;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.security.*;
@@ -84,7 +84,7 @@ public class BlockchainService {
      * @return
      * @throws NoSuchAlgorithmException
      */
-    public List<BasicTransaction> getTransaction(int numberOfTransactions) throws NoSuchAlgorithmException {
+    public List<Transaction> getTransaction(int numberOfTransactions) throws NoSuchAlgorithmException {
         return this.mempool.peekTransaction(numberOfTransactions);
     }
 
@@ -93,18 +93,29 @@ public class BlockchainService {
      *
      * @param transaction
      */
-    public void addNewTransaction(BasicTransaction transaction) throws IOException, NoSuchAlgorithmException {
-        logger.info("New transaction: {} [{} -> {}]", transaction.toString(), transaction.getOriginAddress(), transaction.getDestinationAddress());
-        this.mempool.putTransaction(transaction);
-        // need to broadcast the basic transaction.
-        /*
-        TransactionPayload txnPayload = TransactionPayload.Builder.newBuilder()
-                .buildFromTransaction(transaction)
-                .setBlockHash(new byte[0])
-                .build();
-        TransactionMessage txnMessage = TransactionMessage.Builder.newBuilder()
+    public void addNewTransaction(BasicTransaction transaction) throws TransactionException, NoSuchAlgorithmException, SignatureException, InvalidKeyException, IOException {
+        logger.info("Received new transaction request: {} [{} -> {}]", transaction.toString(), transaction.getOriginAddress(), transaction.getDestinationAddress());
+        // build a Mempool txn
+        Transaction mempoolTxn = null;
+        if(CryptoHasher.isEqualHashes(this.currentWallet.getAddress(), CryptoHasher.hashByteArray(transaction.getOriginAddress()))) {
+            mempoolTxn = Transaction.Builder.builder()
+                    .setTimestamp(transaction.getTimestamp())
+                    .setOriginAddress(transaction.getOriginAddress())
+                    .setOriginPublicKey(this.currentWallet.getPublicKey())
+                    .setDestinationAddress(transaction.getDestinationAddress())
+                    .build();
+            this.currentWallet.signTransaction(mempoolTxn);
+        } else {
+            throw new TransactionException("The current wallet's address does not match the origin address of the submitted transaction.");
+        }
+        // add the newly created txn to the mempool
+        this.mempool.putTransaction(mempoolTxn);
+        // need to broadcast the mempool transaction.
+        MempoolTransactionPayload txnPayload = MempoolTransactionPayload.Builder.builder()
+                .buildFromMempool(mempoolTxn);
+        MempoolTransactionMessage txnMessage = MempoolTransactionMessage.Builder.builder()
                 .setTxnCount(1)
-                .setTxns(new TransactionPayload[]{txnPayload})
+                .setTxns(new MempoolTransactionPayload[]{txnPayload})
                 .build();
         Message txnMsg = Message.Builder.newBuilder()
                 .setNetwork(nodeConfig.getNetwork())
@@ -114,7 +125,6 @@ public class BlockchainService {
                 .setChecksum(CryptoHasher.hash(txnMessage))
                 .build();
         this.messenger.sendBroadcastMessage(txnMsg);
-        */
     }
 
     /**
@@ -170,9 +180,9 @@ public class BlockchainService {
     }
 
     public void testSigning() throws NoSuchAlgorithmException, SignatureException, InvalidKeyException, InvalidKeySpecException, NoSuchProviderException {
-        Transaction txn = Transaction.Builder.Builder()
-                .setOrigin(currentWallet.getAddress())
-                .setDestination("6ad28d3fda4e10bdc0aaf7112f7818e181defa7e")
+        Transaction txn = Transaction.Builder.builder()
+                .setOriginPublicKey(currentWallet.getPublicKey())
+                .setDestinationAddress("6ad28d3fda4e10bdc0aaf7112f7818e181defa7e")
                 .build();
         this.currentWallet.signTransaction(txn);
         logger.info("signing...");
@@ -217,9 +227,9 @@ public class BlockchainService {
 
         logger.info("New block: {}", newBlock.toString());
 
-        Transaction blockMineAward = Transaction.Builder.Builder()
-                .setOrigin("7c5ec4b1ad5bdfc593587f3a9d50327ede02076b")
-                .setDestination(currentWallet.getHumanReadableAddress())
+        Transaction blockMineAward = Transaction.Builder.builder()
+                .setOriginPublicKey(CryptoKeyGenerator.readPublicKeyFromBytes(CryptoHasher.hashByteArray("7c5ec4b1ad5bdfc593587f3a9d50327ede02076b")))
+                .setDestinationAddress(currentWallet.getHumanReadableAddress())
                 //.setValue(new BigDecimal(newBlock.toString().length() / 9.23).setScale(12, RoundingMode.FLOOR))
                 .build();
 

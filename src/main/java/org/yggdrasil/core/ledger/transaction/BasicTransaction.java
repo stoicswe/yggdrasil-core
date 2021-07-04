@@ -4,6 +4,9 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.SerializationUtils;
+import org.yggdrasil.core.ledger.LedgerHashableItem;
 import org.yggdrasil.core.serialization.BasicTransactionDeserializer;
 import org.yggdrasil.core.serialization.HashSerializer;
 import org.yggdrasil.core.utils.CryptoHasher;
@@ -15,7 +18,7 @@ import java.time.ZonedDateTime;
 
 @JsonInclude
 @JsonDeserialize(using = BasicTransactionDeserializer.class)
-public class BasicTransaction {
+public class BasicTransaction implements LedgerHashableItem {
 
     private final ZonedDateTime timestamp;
     @JsonSerialize(using = HashSerializer.class)
@@ -54,22 +57,23 @@ public class BasicTransaction {
         return txnHash;
     }
 
-    public boolean compareTxnHash(byte[] txnHash) {
-        try {
-            for (int i = 0; i < txnHash.length; i++) {
-                if (this.txnHash[i] != txnHash[i]) {
-                    return false;
-                }
-            }
-        } catch (IndexOutOfBoundsException e) {
-            return false;
-        }
-        return true;
+    @Override
+    public byte[] getDataBytes() {
+        byte[] txnData = new byte[0];
+        txnData = appendBytes(txnData, SerializationUtils.serialize(this.timestamp));
+        txnData = appendBytes(txnData, SerializationUtils.serialize(this.originAddress));
+        txnData = appendBytes(txnData, SerializationUtils.serialize(this.destinationAddress));
+        txnData = appendBytes(txnData, SerializationUtils.serialize(this.value));
+        return txnData;
+    }
+
+    private static byte[] appendBytes(byte[] base, byte[] extension) {
+        return ArrayUtils.addAll(base, extension);
     }
 
     public static class Builder {
 
-        protected ZonedDateTime timestamp;
+        protected ZonedDateTime timestamp = null;
         protected String originAddress;
         protected String destinationAddress;
         protected BigDecimal value;
@@ -78,6 +82,11 @@ public class BasicTransaction {
 
         public static Builder builder() {
             return new Builder();
+        }
+
+        public Builder setTimestamp(ZonedDateTime timestamp) {
+            this.timestamp = timestamp;
+            return this;
         }
 
         public Builder setOrigin(@JsonProperty("origin") String originAddress) {
@@ -96,7 +105,7 @@ public class BasicTransaction {
         }
 
         public BasicTransaction build() throws NoSuchAlgorithmException {
-            this.timestamp = DateTimeUtil.getCurrentTimestamp();
+            this.timestamp = (timestamp != null) ? this.timestamp : DateTimeUtil.getCurrentTimestamp();
             return new BasicTransaction(this);
         }
 

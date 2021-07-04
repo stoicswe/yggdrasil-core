@@ -18,7 +18,9 @@ import org.springframework.http.ResponseEntity;
 
 import javax.annotation.PostConstruct;
 import java.io.IOException;
+import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.security.SignatureException;
 import java.util.List;
 
 /**
@@ -68,7 +70,7 @@ public class BlockchainController {
     }
 
     @RequestMapping(value = "/transaction", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<BasicTransaction> putTransaction(@RequestBody JsonNode data) throws IOException, NoSuchAlgorithmException {
+    public ResponseEntity<BasicTransaction> putTransaction(@RequestBody JsonNode data) throws IOException, NoSuchAlgorithmException, SignatureException, InvalidKeyException {
         logger.trace("Received new data: {}", data);
         BasicTransaction transaction = objectMapper.treeToValue(data, BasicTransaction.class);
         this.service.addNewTransaction(transaction);
@@ -76,7 +78,7 @@ public class BlockchainController {
     }
 
     @RequestMapping(value = "/transaction", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<List<BasicTransaction>> getTransaction(@RequestParam(name = "transactions", required = false) Integer transactions) throws Exception {
+    public ResponseEntity<List<Transaction>> getTransaction(@RequestParam(name = "transactions", required = false) Integer transactions) throws Exception {
         if(transactions == null || transactions <= 0) {
             transactions = 1;
         }

@@ -3,7 +3,9 @@ package org.yggdrasil.core.ledger.wallet;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.SerializationUtils;
+import org.yggdrasil.core.ledger.LedgerHashableItem;
 import org.yggdrasil.core.ledger.transaction.Transaction;
 import org.yggdrasil.core.ledger.transaction.TransactionOutput;
 import org.yggdrasil.core.ledger.transaction.WalletTransaction;
@@ -28,7 +30,7 @@ import java.util.UUID;
  * @since 0.0.5
  * @author nathanielbunch
  */
-public class Wallet implements Serializable {
+public class Wallet implements LedgerHashableItem {
 
     /**
      * Make a method of where the public and private keys can
@@ -91,11 +93,12 @@ public class Wallet implements Serializable {
         return bal;
     }
 
-    public void signTransaction(Transaction txn) throws InvalidKeyException, SignatureException {
+    public void signTransaction(Transaction txn) throws InvalidKeyException, SignatureException, NoSuchAlgorithmException {
         signature.initSign(privateKey);
         byte[] txnData = txn.getTxnHash();
         signature.update(txnData, 0, txnData.length);
         txn.setSignature(signature.sign());
+        txn.rehash();
     }
 
     public byte[] getSignature(TransactionOutput txnOutpt) throws SignatureException, InvalidKeyException {
@@ -127,6 +130,19 @@ public class Wallet implements Serializable {
         return new WalletRecord(this);
     }
 
+    @Override
+    public byte[] getDataBytes() {
+        byte[] walletData = new byte[0];
+        walletData = appendBytes(walletData, SerializationUtils.serialize(this.address));
+        walletData = appendBytes(walletData, SerializationUtils.serialize(this.creationDate));
+        walletData = appendBytes(walletData, SerializationUtils.serialize(this.publicKey));
+        return walletData;
+    }
+
+    private static byte[] appendBytes(byte[] base, byte[] extension) {
+        return ArrayUtils.addAll(base, extension);
+    }
+
     /**
      * Builder class is the Wallet builder. This is to ensure some level
      * of data protection by enforcing non-direct data access and immutable data.
@@ -152,7 +168,7 @@ public class Wallet implements Serializable {
 
         public Wallet build() throws NoSuchAlgorithmException, NoSuchProviderException {
             this.creationDate = DateTimeUtil.getCurrentTimestamp();
-            this.address = CryptoHasher.walletHash(this.publicKey);
+            this.address = CryptoHasher.generateWalletAddress(this.publicKey);
             return new Wallet(this);
         }
 
@@ -160,7 +176,7 @@ public class Wallet implements Serializable {
             this.publicKey = CryptoKeyGenerator.readPublicKeyFromBytes(wr.getPublicKey());
             this.privateKey = CryptoKeyGenerator.readPrivateKeyFromBytes(wr.getPrivateKey());
             this.creationDate = wr.getCreationDate();
-            this.address = CryptoHasher.walletHash(this.publicKey);
+            this.address = CryptoHasher.generateWalletAddress(this.publicKey);
             return new Wallet(this);
         }
     }

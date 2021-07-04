@@ -1,6 +1,5 @@
 package org.yggdrasil.node.network.messages;
 
-import org.apache.tomcat.jni.Address;
 import org.openjdk.jol.info.GraphLayout;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,6 +49,8 @@ public class Messenger {
     private BlockMessageHandler blockMessageHandler;
     @Autowired
     private BlockchainMessageHandler blockchainMessageHandler;
+    @Autowired
+    private MempoolTransactionMessageHandler basicTransactionMessageHandler;
     @Autowired
     private TransactionMessageHandler transactionMessageHandler;
     @Autowired
@@ -151,6 +152,20 @@ public class Messenger {
                     if (message.getPayload() instanceof BlockMessage) {
                         logger.info("{} message is a BlockMessage", RequestType.DATA_RESP);
                         this.blockMessageHandler.handleMessagePayload((BlockMessage) message.getPayload(), nodeConnection);
+                        messagePayload = AcknowledgeMessage.Builder.newBuilder()
+                                .setAcknowledgeChecksum(message.getChecksum())
+                                .build();
+                        returnMessage = Message.Builder.newBuilder()
+                                .setNetwork(NetworkType.getByValue(message.getNetwork()))
+                                .setRequestType(RequestType.ACKNOWLEDGE)
+                                .setMessagePayload(messagePayload)
+                                .setPayloadSize(BigInteger.valueOf(GraphLayout.parseInstance(messagePayload).totalSize()))
+                                .setChecksum(CryptoHasher.hash(messagePayload))
+                                .build();
+                    }
+                    if (message.getPayload() instanceof MempoolTransactionMessage) {
+                        logger.info("{} message is a BasicTransactionMessage.", RequestType.DATA_RESP);
+                        this.basicTransactionMessageHandler.handleMessagePayload((MempoolTransactionMessage) message.getPayload(), nodeConnection);
                         messagePayload = AcknowledgeMessage.Builder.newBuilder()
                                 .setAcknowledgeChecksum(message.getChecksum())
                                 .build();

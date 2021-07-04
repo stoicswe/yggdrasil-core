@@ -13,6 +13,7 @@ import org.yggdrasil.node.network.messages.enums.GetDataType;
 import org.yggdrasil.node.network.messages.payloads.*;
 import org.yggdrasil.node.network.runners.NodeConnection;
 
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -29,7 +30,7 @@ public class GetDataMessageHandler implements MessageHandler<GetDataMessage> {
     private Blockchain blockchain;
 
     @Override
-    public MessagePayload handleMessagePayload(GetDataMessage getDataMessage, NodeConnection nodeConnection) {
+    public MessagePayload handleMessagePayload(GetDataMessage getDataMessage, NodeConnection nodeConnection) throws NoSuchAlgorithmException {
 
         MessagePayload messagePayload = null;
 
@@ -50,7 +51,7 @@ public class GetDataMessageHandler implements MessageHandler<GetDataMessage> {
                             Transaction txn = (Transaction) txnObj;
                             txnps.add(TransactionPayload.Builder.newBuilder()
                                     .setTimestamp((int) txn.getTimestamp().toEpochSecond())
-                                    .setDestinationAddress(txn.getDestination().getEncoded())
+                                    .setDestinationAddress(txn.getDestinationAddress().toCharArray())
                                     .setOriginAddress(txn.getOrigin().getEncoded())
                                     .setBlockHash(b.getBlockHash())
                                     .setSignature(txn.getSignature())
@@ -117,17 +118,15 @@ public class GetDataMessageHandler implements MessageHandler<GetDataMessage> {
                 // transaction message
                 if(getDataMessage.getHashCount() > 0) {
                     List<Transaction> transactions = mempool.peekTransaction(getDataMessage.getHashCount());
-                    List<TransactionPayload> txnPayloads = new ArrayList<>();
+                    List<MempoolTransactionPayload> txnPayloads = new ArrayList<>();
                     for(Transaction txn : transactions) {
-                        TransactionPayload txnp = TransactionPayload.Builder.newBuilder()
-                                .buildFromTransaction(txn)
-                                .setBlockHash(new byte[0])
-                                .build();
+                        MempoolTransactionPayload txnp = MempoolTransactionPayload.Builder.builder()
+                                .buildFromMempool(txn);
                         txnPayloads.add(txnp);
                     }
-                    messagePayload = TransactionMessage.Builder.newBuilder()
+                    messagePayload = MempoolTransactionMessage.Builder.builder()
                             .setTxnCount(txnPayloads.size())
-                            .setTxns(txnPayloads.toArray(TransactionPayload[]::new))
+                            .setTxns(txnPayloads.toArray(MempoolTransactionPayload[]::new))
                             .build();
                 } else {
                     throw new InvalidMessageException("Message received reported requested no items for the type.");
