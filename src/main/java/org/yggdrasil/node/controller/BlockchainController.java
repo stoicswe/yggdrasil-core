@@ -42,8 +42,8 @@ public class BlockchainController {
     }
 
     @RequestMapping(value = "/blocks", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Blockchain> getBlockchain() throws Exception {
-        return new ResponseEntity<>(this.service.getBlockchain(), HttpStatus.OK);
+    public ResponseEntity<Blockchain> getBlockchain(@RequestParam(name = "blocks", required = false) Integer blocks) throws Exception {
+        return new ResponseEntity<>(this.service.getBlockchain((blocks != null) ? blocks : -1), HttpStatus.OK);
     }
 
     @RequestMapping(value = "/mine", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -52,8 +52,18 @@ public class BlockchainController {
     }
 
     @RequestMapping(value = "/wallet", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Wallet> getWallet() throws Exception {
+    public ResponseEntity<Wallet> getCurrentWallet() throws Exception {
         return new ResponseEntity<>(this.service.getWallet(), HttpStatus.OK);
+    }
+
+    @RequestMapping(value = "/createWallet", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Wallet> createNewWallet() throws Exception {
+        return new ResponseEntity<>(this.service.createWallet(), HttpStatus.OK);
+    }
+
+    @RequestMapping(value = "/selectWallet", method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Wallet> switchNewWallet(@RequestParam(name = "address") String address) throws Exception {
+        return new ResponseEntity<>(this.service.selectWallet(address), HttpStatus.OK);
     }
 
     @RequestMapping(value = "/transaction", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE)

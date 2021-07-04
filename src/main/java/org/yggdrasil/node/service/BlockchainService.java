@@ -73,7 +73,9 @@ public class BlockchainService {
      *
      * @return
      */
-    public Blockchain getBlockchain() {
+    public Blockchain getBlockchain(int blocks) {
+        // add some code so that the last # of blocks are retrieved
+        // and return to the caller.
         return this.blockchain;
     }
 
@@ -121,12 +123,39 @@ public class BlockchainService {
      * @return
      * @throws NoSuchAlgorithmException
      */
-    public Wallet getWallet() throws NoSuchAlgorithmException, DestroyFailedException, NoSuchProviderException, InvalidAlgorithmParameterException {
+    public Wallet getWallet() {
+        return currentWallet;
+    }
+
+    /**
+     * Create a new wallet. Returns the newly created wallet.
+     *
+     * @return
+     * @throws NoSuchAlgorithmException
+     * @throws NoSuchProviderException
+     * @throws InvalidAlgorithmParameterException
+     */
+    public Wallet createWallet() throws NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParameterException {
         logger.info("Generating new wallet...");
         Wallet wallet = this.walletIndexer.createNewWallet();
         logger.info("New wallet generated with address: {}", CryptoHasher.humanReadableHash(wallet.getAddress()));
         currentWallet = wallet;
         return wallet;
+    }
+
+    /**
+     * Select a wallet to initiate transactions from.
+     *
+     * @return
+     * @throws NoSuchAlgorithmException
+     * @throws NoSuchProviderException
+     * @throws InvalidAlgorithmParameterException
+     */
+    public Wallet selectWallet(String walletAddress) throws NoSuchAlgorithmException, NoSuchProviderException, InvalidKeySpecException {
+        logger.debug("Selecting a wallet...");
+        currentWallet = this.walletIndexer.getWallet(CryptoHasher.hashByteArray(walletAddress));
+        logger.info("Wallet selected with address: {}", CryptoHasher.humanReadableHash(currentWallet.getAddress()));
+        return currentWallet;
     }
 
     public void sendMessage() throws NoSuchAlgorithmException, IOException {

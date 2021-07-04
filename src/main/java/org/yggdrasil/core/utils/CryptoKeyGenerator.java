@@ -6,6 +6,7 @@ import javax.annotation.PostConstruct;
 import java.security.*;
 import java.security.spec.ECGenParameterSpec;
 import java.security.spec.InvalidKeySpecException;
+import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 
 /**
@@ -66,7 +67,7 @@ public class CryptoKeyGenerator {
     }
 
     public static PrivateKey readPrivateKeyFromBytes(byte[] encPublicKey) throws NoSuchAlgorithmException, NoSuchProviderException, InvalidKeySpecException {
-        X509EncodedKeySpec privateKeySpec = new X509EncodedKeySpec(encPublicKey);
+        PKCS8EncodedKeySpec privateKeySpec = new PKCS8EncodedKeySpec(encPublicKey);
         KeyFactory keyFactory = KeyFactory.getInstance(_KEY_PAIR_ALGORITHM);
         return keyFactory.generatePrivate(privateKeySpec);
     }
