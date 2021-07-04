@@ -47,9 +47,7 @@ public class BlockchainService {
 
     private final Integer _PREFIX = 4;
     private final Integer _MAX_BLOCK_SIZE = 52;
-
     private final Logger logger = LoggerFactory.getLogger(BlockchainService.class);
-    private final Object lock = new Object();
 
     @Autowired
     private Node node;
