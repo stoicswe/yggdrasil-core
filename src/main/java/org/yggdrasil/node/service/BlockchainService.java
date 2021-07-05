@@ -1,6 +1,7 @@
 package org.yggdrasil.node.service;
 
 import org.yggdrasil.core.ledger.chain.Block;
+import org.yggdrasil.core.ledger.chain.BlockMiner;
 import org.yggdrasil.core.ledger.chain.Blockchain;
 import org.yggdrasil.core.ledger.Mempool;
 import org.yggdrasil.core.ledger.exceptions.TransactionException;
@@ -34,6 +35,7 @@ import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Handles lower-level operation with the Blockchain. Used
@@ -61,6 +63,8 @@ public class BlockchainService {
     @Autowired
     private Blockchain blockchain;
     @Autowired
+    private BlockMiner blockMiner;
+    @Autowired
     private Mempool mempool;
     @Autowired
     private WalletIndexer walletIndexer;
@@ -71,10 +75,14 @@ public class BlockchainService {
      *
      * @return
      */
-    public Blockchain getBlockchain(int blocks) {
+    public Blockchain getBlockchain() {
         // add some code so that the last # of blocks are retrieved
         // and return to the caller.
         return this.blockchain;
+    }
+
+    public Optional<Block> getBlock(byte[] blockHash) {
+        return this.blockchain.getBlock(blockHash);
     }
 
     /**
@@ -171,6 +179,7 @@ public class BlockchainService {
         return currentWallet;
     }
 
+    // test code for testing messaging connections
     public void sendMessage() throws NoSuchAlgorithmException, IOException {
         PingPongMessage pingPongMessage = PingPongMessage.Builder.newBuilder().setNonce(25).build();
         Message message = Message.Builder.newBuilder()

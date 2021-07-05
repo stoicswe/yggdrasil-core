@@ -36,17 +36,19 @@ import java.util.concurrent.TimeUnit;
 public class Blockchain implements Cloneable {
 
     private Logger logger = LoggerFactory.getLogger(Blockchain.class);
-    // Data storage
-    private transient DB cache;
-    private HTreeMap hotBlocks;
-    private transient DB database;
-    private transient HTreeMap coldBlocks;
+
     @Autowired
     private transient NodeConfig nodeConfig;
     // Node name reference
     private UUID nodeIndex;
     // Time since last node launch
     private ZonedDateTime timestamp;
+    // Data storage
+    private transient DB cache;
+    private HTreeMap hotBlocks;
+    private transient DB database;
+    private transient HTreeMap coldBlocks;
+    private transient byte[] lastBlockHash;
 
     @PostConstruct
     public void init() throws Exception {
@@ -75,7 +77,7 @@ public class Blockchain implements Cloneable {
                 .createOrOpen();
         if(this.coldBlocks.size() == 0) {
             Block genesis = Block.genesis();
-            //this.hotBlocks.put(genesis.getBlockHash(), genesis);
+            this.addBlock(genesis);
         }
     }
 
@@ -111,6 +113,7 @@ public class Blockchain implements Cloneable {
             }
         } else {
             this.hotBlocks.put(block.getBlockHash(), block);
+            this.lastBlockHash = block.getBlockHash();
         }
     }
 
@@ -122,6 +125,11 @@ public class Blockchain implements Cloneable {
 
     public Optional<Block> getBlock(byte[] blockHash) {
         return Optional.ofNullable((Block) this.hotBlocks.get(blockHash));
+    }
+
+    @JsonIgnore
+    public Optional<Block> getLastBlock() {
+        return Optional.ofNullable((Block) this.hotBlocks.get(this.lastBlockHash));
     }
 
     public static boolean isValidChain(HashMap<byte[], Block> chain) throws Exception {

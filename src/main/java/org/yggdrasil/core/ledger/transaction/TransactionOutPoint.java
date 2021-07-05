@@ -2,9 +2,10 @@ package org.yggdrasil.core.ledger.transaction;
 
 import org.yggdrasil.core.utils.CryptoHasher;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 
-public class TransactionOutPoint {
+public class TransactionOutPoint implements Serializable {
 
     // Txn hash
     protected final byte[] hash;

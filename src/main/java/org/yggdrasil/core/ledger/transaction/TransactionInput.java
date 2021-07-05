@@ -1,8 +1,12 @@
 package org.yggdrasil.core.ledger.transaction;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+
+import java.io.Serializable;
 import java.math.BigDecimal;
 
-public class TransactionInput {
+@JsonInclude
+public class TransactionInput implements Serializable {
 
     // Reference to a transaction's output
     protected final TransactionOutPoint txnOutPt;

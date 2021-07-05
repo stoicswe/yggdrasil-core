@@ -3,10 +3,12 @@ package org.yggdrasil.node.controller;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.web.bind.annotation.*;
+import org.yggdrasil.core.ledger.chain.Block;
 import org.yggdrasil.core.ledger.chain.Blockchain;
 import org.yggdrasil.core.ledger.transaction.BasicTransaction;
 import org.yggdrasil.core.ledger.transaction.Transaction;
 import org.yggdrasil.core.ledger.wallet.Wallet;
+import org.yggdrasil.core.utils.CryptoHasher;
 import org.yggdrasil.node.model.BlockResponse;
 import org.yggdrasil.node.service.BlockchainService;
 import org.slf4j.Logger;
@@ -22,6 +24,7 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Provides the rest interface controller for interacting with the Blockchain.
@@ -46,7 +49,12 @@ public class BlockchainController {
 
     @RequestMapping(value = "/blocks", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Blockchain> getBlockchain(@RequestParam(name = "blocks", required = false) Integer blocks) throws Exception {
-        return new ResponseEntity<>(this.service.getBlockchain((blocks != null) ? blocks : -1), HttpStatus.OK);
+        return new ResponseEntity<>(this.service.getBlockchain(), HttpStatus.OK);
+    }
+
+    @RequestMapping(value = "/block", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Optional<Block>> getBlock(@RequestParam(name = "blockHash", required = true) String blockHash) throws Exception {
+        return new ResponseEntity<>(this.service.getBlock(CryptoHasher.hashByteArray(blockHash)), HttpStatus.OK);
     }
 
     @RequestMapping(value = "/mine", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)

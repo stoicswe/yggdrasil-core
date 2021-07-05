@@ -1,5 +1,6 @@
 package org.yggdrasil.core.ledger.chain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -9,13 +10,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yggdrasil.core.ledger.LedgerHashableItem;
 import org.yggdrasil.core.ledger.transaction.Transaction;
+import org.yggdrasil.core.ledger.transaction.TransactionInput;
+import org.yggdrasil.core.ledger.transaction.TransactionOutPoint;
+import org.yggdrasil.core.ledger.transaction.TransactionOutput;
 import org.yggdrasil.core.serialization.HashSerializer;
 import org.yggdrasil.core.utils.CryptoHasher;
+import org.yggdrasil.core.utils.CryptoKeyGenerator;
 import org.yggdrasil.core.utils.DateTimeUtil;
 import org.yggdrasil.node.network.messages.payloads.BlockHeaderPayload;
 import org.yggdrasil.node.network.messages.payloads.BlockMessage;
 import org.yggdrasil.node.network.messages.payloads.TransactionPayload;
 
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
@@ -136,18 +142,27 @@ public final class Block implements LedgerHashableItem {
     }
 
     public static Block genesis() throws Exception {
-        /*
-        Collections.singletonList(Transaction.Builder.Builder()
-                        .setOrigin(CryptoHasher.hashByteArray("6ad28d3fda4e10bdc0aaf7112f7818e181defa7e"))
-                        .setDestination(CryptoHasher.hashByteArray("6ad28d3fda4e10bdc0aaf7112f7818e181defa7e"))
-                        .build())
-         */
+        TransactionOutput txnOut = new TransactionOutput(null, BigDecimal.valueOf(50));
+        Transaction txn = Transaction.Builder.builder()
+                .setTimestamp(DateTimeUtil.getCurrentTimestamp())
+                .setOriginAddress(null)
+                .setDestinationAddress("6ad28d3fda4e10bdc0aaf7112f7818e181defa7e")
+                .setTxnInputs(new TransactionInput[]{new TransactionInput((TransactionOutPoint) null, BigDecimal.valueOf(50))})
+                .setTxnOutputs(new TransactionOutput[]{txnOut})
+                .build();
+        byte[] genesisData = new byte[0];
+        genesisData = appendBytes(genesisData, txn.getTxnHash());
+        genesisData = appendBytes(genesisData, txn.getTxnHash());
+        byte[] genesisMerkleRoot = CryptoHasher.dhash(genesisData);
         return new Builder()
+                .setBlockHeight(BigInteger.ZERO)
+                .setMerkleRoot(genesisMerkleRoot)
                 .setPreviousBlock(null)
-                .setData(new ArrayList<>())
+                .setData(Collections.singletonList(txn))
                 .build();
     }
 
+    @JsonIgnore
     @Override
     public byte[] getDataBytes() {
         byte[] blockData = new byte[0];

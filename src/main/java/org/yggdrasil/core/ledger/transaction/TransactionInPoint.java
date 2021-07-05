@@ -1,8 +1,10 @@
 package org.yggdrasil.core.ledger.transaction;
 
+import java.io.Serializable;
 import java.math.BigInteger;
 
-public class TransactionInPoint {
+
+public class TransactionInPoint implements Serializable {
 
     protected final Transaction txn;
     protected final BigInteger value;

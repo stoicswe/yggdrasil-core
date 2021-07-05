@@ -3,10 +3,11 @@ package org.yggdrasil.core.ledger.transaction;
 import org.yggdrasil.core.utils.CryptoHasher;
 import org.yggdrasil.core.utils.CryptoKeyGenerator;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.security.*;
 
-public class TransactionOutput {
+public class TransactionOutput implements Serializable {
 
     // public key of the wallet in question
     // receiver must be able to sign an output in order
