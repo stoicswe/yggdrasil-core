@@ -18,6 +18,6 @@ public class BlockMiner {
     @Autowired
     private Blockchain blockchain;
 
-    
+
 
 }

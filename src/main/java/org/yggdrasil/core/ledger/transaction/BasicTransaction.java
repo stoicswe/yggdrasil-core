@@ -1,5 +1,6 @@
 package org.yggdrasil.core.ledger.transaction;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -21,9 +22,7 @@ import java.time.ZonedDateTime;
 public class BasicTransaction implements LedgerHashableItem {
 
     private final ZonedDateTime timestamp;
-    @JsonSerialize(using = HashSerializer.class)
     private final String originAddress;
-    @JsonSerialize(using = HashSerializer.class)
     private final String destinationAddress;
     private final BigDecimal value;
     @JsonSerialize(using = HashSerializer.class)
@@ -57,6 +56,7 @@ public class BasicTransaction implements LedgerHashableItem {
         return txnHash;
     }
 
+    @JsonIgnore
     @Override
     public byte[] getDataBytes() {
         byte[] txnData = new byte[0];
