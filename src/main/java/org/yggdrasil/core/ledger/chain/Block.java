@@ -249,6 +249,7 @@ public final class Block implements LedgerHashableItem {
                 data.add(Transaction.Builder.builder().buildFromMessage(txnPayload));
             }
             this.data = data;
+            this.merkleRoot = blockMessage.getMerkleRoot();
             Block blck = new Block(this);
             if(CryptoHasher.isEqualHashes(this.blockHash, blck.blockHash)){
                 logger.debug("Locally generated blockhash matched incoming blockhash from payload");
@@ -257,7 +258,6 @@ public final class Block implements LedgerHashableItem {
                 blck.setBlockHash(this.blockHash);
             }
             blck.setSignature(blockMessage.getSignature());
-            blck.setValidator(blockMessage.getValidator());
             return blck;
         }
 

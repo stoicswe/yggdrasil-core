@@ -27,7 +27,7 @@ public class BlockMessage implements MessagePayload {
     @NotNull
     private final byte[] blockHash;
     @NotNull
-    private final byte[] validator;
+    private final byte[] merkleRoot;
     @NotNull
     private final byte[] signature;
     @NotNull
@@ -39,7 +39,7 @@ public class BlockMessage implements MessagePayload {
         this.txnPayloads = builder.txnPayloads;
         this.previousBlockHash = builder.previousBlockHash;
         this.blockHash = builder.blockHash;
-        this.validator = builder.validator;
+        this.merkleRoot = builder.merkleRoot;
         this.signature = builder.signature;
         this.nonce = builder.nonce;
     }
@@ -64,8 +64,8 @@ public class BlockMessage implements MessagePayload {
         return blockHash;
     }
 
-    public byte[] getValidator() {
-        return validator;
+    public byte[] getMerkleRoot() {
+        return merkleRoot;
     }
 
     public byte[] getSignature() {
@@ -86,7 +86,7 @@ public class BlockMessage implements MessagePayload {
         }
         messageBytes = appendBytes(messageBytes, previousBlockHash);
         messageBytes = appendBytes(messageBytes, blockHash);
-        messageBytes = appendBytes(messageBytes, validator);
+        messageBytes = appendBytes(messageBytes, merkleRoot);
         messageBytes = appendBytes(messageBytes, signature);
         messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(nonce));
         return messageBytes;
@@ -102,7 +102,7 @@ public class BlockMessage implements MessagePayload {
         protected TransactionPayload[] txnPayloads;
         protected byte[] previousBlockHash;
         protected byte[] blockHash;
-        protected byte[] validator;
+        protected byte[] merkleRoot;
         protected byte[] signature;
         protected int nonce;
 
@@ -137,8 +137,8 @@ public class BlockMessage implements MessagePayload {
             return this;
         }
 
-        public Builder setValidator(byte[] validator) {
-            this.validator = validator;
+        public Builder setMerkleRoot(byte[] merkleRoot) {
+            this.merkleRoot = merkleRoot;
             return this;
         }
 

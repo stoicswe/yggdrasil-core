@@ -68,7 +68,6 @@ public class BlockchainService {
     private Mempool mempool;
     @Autowired
     private WalletIndexer walletIndexer;
-    private Wallet currentWallet;
 
     /**
      * Returns the current local blockchain instance.
@@ -104,15 +103,15 @@ public class BlockchainService {
         logger.info("Received new transaction request: {} [{} -> {}]", transaction.toString(), transaction.getOriginAddress(), transaction.getDestinationAddress());
         // build a Mempool txn
         Transaction mempoolTxn = null;
-        if(CryptoHasher.isEqualHashes(this.currentWallet.getAddress(), CryptoHasher.hashByteArray(transaction.getOriginAddress()))) {
+        if(CryptoHasher.isEqualHashes(this.walletIndexer.getCurrentWallet().getAddress(), CryptoHasher.hashByteArray(transaction.getOriginAddress()))) {
             mempoolTxn = Transaction.Builder.builder()
                     .setTimestamp(transaction.getTimestamp())
                     .setOriginAddress(transaction.getOriginAddress())
-                    .setOriginPublicKey(this.currentWallet.getPublicKey())
+                    .setOriginPublicKey(this.walletIndexer.getCurrentWallet().getPublicKey())
                     // add the inputs and outputs to here
                     .setDestinationAddress(transaction.getDestinationAddress())
                     .build();
-            this.currentWallet.signTransaction(mempoolTxn);
+            this.walletIndexer.getCurrentWallet().signTransaction(mempoolTxn);
         } else {
             throw new TransactionException("The current wallet's address does not match the origin address of the submitted transaction.");
         }
@@ -145,7 +144,7 @@ public class BlockchainService {
         if(allWallets) {
             return this.walletIndexer.getAllWallets();
         }
-        return List.of(currentWallet);
+        return List.of(this.walletIndexer.getCurrentWallet());
     }
 
     /**
@@ -160,7 +159,7 @@ public class BlockchainService {
         logger.info("Generating new wallet...");
         Wallet wallet = this.walletIndexer.createNewWallet();
         logger.info("New wallet generated with address: {}", CryptoHasher.humanReadableHash(wallet.getAddress()));
-        currentWallet = wallet;
+        this.walletIndexer.switchCurrentWallet(wallet);
         return wallet;
     }
 
@@ -174,9 +173,10 @@ public class BlockchainService {
      */
     public Wallet selectWallet(String walletAddress) throws NoSuchAlgorithmException, NoSuchProviderException, InvalidKeySpecException {
         logger.debug("Selecting a wallet...");
-        currentWallet = this.walletIndexer.getWallet(CryptoHasher.hashByteArray(walletAddress));
-        logger.info("Wallet selected with address: {}", CryptoHasher.humanReadableHash(currentWallet.getAddress()));
-        return currentWallet;
+        Wallet wallet = this.walletIndexer.getWallet(CryptoHasher.hashByteArray(walletAddress));
+        this.walletIndexer.switchCurrentWallet(wallet);
+        logger.info("Wallet selected with address: {}", CryptoHasher.humanReadableHash(wallet.getAddress()));
+        return wallet;
     }
 
     // test code for testing messaging connections
@@ -193,14 +193,14 @@ public class BlockchainService {
 
     public void testSigning() throws NoSuchAlgorithmException, SignatureException, InvalidKeyException, InvalidKeySpecException, NoSuchProviderException {
         Transaction txn = Transaction.Builder.builder()
-                .setOriginPublicKey(currentWallet.getPublicKey())
+                .setOriginPublicKey(this.walletIndexer.getCurrentWallet().getPublicKey())
                 .setDestinationAddress("6ad28d3fda4e10bdc0aaf7112f7818e181defa7e")
                 .build();
-        this.currentWallet.signTransaction(txn);
+        this.walletIndexer.getCurrentWallet().signTransaction(txn);
         logger.info("signing...");
         logger.info(String.valueOf(txn));
         Signature ecdsaVerify = Signature.getInstance(CryptoKeyGenerator.getSignatureAlgorithm());
-        ecdsaVerify.initVerify(currentWallet.getPublicKey());
+        ecdsaVerify.initVerify(this.walletIndexer.getCurrentWallet().getPublicKey());
         ecdsaVerify.update(txn.getTxnHash());
         logger.info(String.valueOf(ecdsaVerify.verify(txn.getSignature())));
         logger.info("done");
@@ -240,7 +240,7 @@ public class BlockchainService {
 
         Transaction blockMineAward = Transaction.Builder.builder()
                 .setOriginPublicKey(CryptoKeyGenerator.readPublicKeyFromBytes(CryptoHasher.hashByteArray("7c5ec4b1ad5bdfc593587f3a9d50327ede02076b")))
-                .setDestinationAddress(currentWallet.getHumanReadableAddress())
+                .setDestinationAddress(this.walletIndexer.getCurrentWallet().getHumanReadableAddress())
                 //.setValue(new BigDecimal(newBlock.toString().length() / 9.23).setScale(12, RoundingMode.FLOOR))
                 .build();
 
