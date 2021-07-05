@@ -13,6 +13,7 @@ import org.yggdrasil.core.utils.DateTimeUtil;
 import org.yggdrasil.node.network.messages.payloads.MempoolTransactionPayload;
 import org.yggdrasil.node.network.messages.payloads.TransactionPayload;
 
+import java.math.BigDecimal;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PublicKey;
@@ -81,6 +82,18 @@ public class Transaction implements LedgerHashableItem {
 
     public byte[] getSignature() {
         return signature;
+    }
+
+    @JsonIgnore
+    public BigDecimal getValue() {
+        BigDecimal val = BigDecimal.ZERO;
+        for(TransactionInput txnIn: txnInputs) {
+            val = val.add(txnIn.value);
+        }
+        for(TransactionOutput txnOut: txnOutPuts) {
+            val = val.subtract(txnOut.value);
+        }
+        return val;
     }
 
     public TransactionInput[] getTxnInputs() {

@@ -1,7 +1,7 @@
 package org.yggdrasil.node.service;
 
 import org.yggdrasil.core.ledger.chain.Block;
-import org.yggdrasil.core.ledger.chain.BlockMiner;
+import org.yggdrasil.core.ledger.chain.BlockMine;
 import org.yggdrasil.core.ledger.chain.Blockchain;
 import org.yggdrasil.core.ledger.Mempool;
 import org.yggdrasil.core.ledger.exceptions.TransactionException;
@@ -63,7 +63,7 @@ public class BlockchainService {
     @Autowired
     private Blockchain blockchain;
     @Autowired
-    private BlockMiner blockMiner;
+    private BlockMine blockMiner;
     @Autowired
     private Mempool mempool;
     @Autowired
