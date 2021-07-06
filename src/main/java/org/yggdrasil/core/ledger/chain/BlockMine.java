@@ -1,5 +1,6 @@
 package org.yggdrasil.core.ledger.chain;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.openjdk.jol.info.GraphLayout;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,6 +21,7 @@ import javax.annotation.PostConstruct;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.RoundingMode;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -95,17 +97,28 @@ public class BlockMine {
         this.mempool.putAllTransaction(memTxns);
         // Get the last known block to reference in the new block
         Block lastBlock = this.blockchain.getLastBlock().orElse(null);
-        // Merkle root variable for including in the block
-        byte[] merkleRoot = null;
         // Transaction payloiad for including in the block message
-        TransactionPayload[] txnMessagePayloads = null;
-        
+        List<TransactionPayload> txnMessagePayloads = new ArrayList<>();
+        for(Transaction txn : bTxnCandidates) {
+            // Validate every txn
+            
+            // Once the txn is validated, add to the transactionPayload
+            TransactionPayload txnP = TransactionPayload.Builder.newBuilder()
+                    .buildFromTransaction(txn)
+                    .build();
+            txnMessagePayloads.add(txnP);
+        }
+        // Merkle root variable for including in the block
+        byte[] merkleRoot = generateMerkleTree(new ArrayList<>(bTxnCandidates));
+        // Compile the block
         Block newBlock = Block.Builder.newBuilder()
                 .setBlockHeight(lastBlock.getBlockHeight().add(BigInteger.ONE))
                 .setPreviousBlock(lastBlock.getBlockHash())
                 .setData(new ArrayList<>(bTxnCandidates))
                 .setMerkleRoot(merkleRoot)
                 .build();
+        // Perform the proof of work
+        newBlock = this.proofOfWork(newBlock, this._PREFIX);
         // add the block to the blockchain
         this.blockchain.addBlock(newBlock);
         logger.info("Added new block to the chain: {}", newBlock);
@@ -115,7 +128,7 @@ public class BlockMine {
                 .setBlockHeight(newBlock.getBlockHeight())
                 .setBlockHash(newBlock.getBlockHash())
                 .setPreviousBlockHash(newBlock.getPreviousBlockHash())
-                .setTxnPayloads(txnMessagePayloads)
+                .setTxnPayloads(txnMessagePayloads.toArray(TransactionPayload[]::new))
                 .setMerkleRoot(newBlock.getMerkleRoot())
                 .setSignature(newBlock.getSignature())
                 .build();
@@ -130,7 +143,23 @@ public class BlockMine {
         logger.debug("New block {} has been forwarded to other nodes.", newBlock);
     }
 
-    private Block proofOfWork(int prefix, Block currentBlock) throws Exception {
+    private byte[] generateMerkleTree(List<Transaction> txns) throws NoSuchAlgorithmException {
+        byte[] temp = new byte[0];
+        if(txns.size() == 2) {
+            temp = appendBytes(temp, txns.get(0).getTxnHash());
+            temp = appendBytes(temp, txns.get(1).getTxnHash());
+            return CryptoHasher.dhash(temp);
+        }
+        if(txns.size() == 1) {
+            temp = appendBytes(temp, txns.get(0).getTxnHash());
+            temp = appendBytes(temp, txns.get(0).getTxnHash());
+            return CryptoHasher.dhash(temp);
+        }
+        // pass first 1/2 and second 1/2
+        return CryptoHasher.dhash(appendBytes(generateMerkleTree(txns.subList(0, (txns.size()/2)-1)), generateMerkleTree(txns.subList((txns.size()/2), txns.size()-1))));
+    }
+
+    private Block proofOfWork(Block currentBlock, int prefix) throws Exception {
         List<Transaction> blockTransactions = currentBlock.getData();
         blockTransactions.sort(Comparator.comparing(Transaction::getTimestamp));
         Block sortedBlock = Block.Builder.newBuilder()
@@ -143,6 +172,10 @@ public class BlockMine {
             sortedBlock.setBlockHash(CryptoHasher.hash(sortedBlock));
         }
         return sortedBlock;
+    }
+
+    private static byte[] appendBytes(byte[] base, byte[] extension) {
+        return ArrayUtils.addAll(base, extension);
     }
 
 }
