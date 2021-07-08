@@ -32,7 +32,6 @@ import java.util.stream.Collectors;
 public class BlockMine {
 
     private final Logger logger = LoggerFactory.getLogger(BlockMine.class);
-    private final Integer _PREFIX = 4;
     private final Integer _MAX_BLOCK_SIZE = 2048;
 
     @Autowired
@@ -74,7 +73,7 @@ public class BlockMine {
     }
 
     // method that will be called by the runner.
-    private void mineBlocks() throws Exception {
+    public void mineBlocks() throws Exception {
         logger.info("Mining new block...");
         // make a blocking check here for memTxns size > 10.
         List<Transaction> memTxns = this.mempool.getTransaction(_MAX_BLOCK_SIZE);
@@ -87,21 +86,21 @@ public class BlockMine {
         BigDecimal mV = memTxns.stream().map(Transaction::getValue).reduce(BigDecimal::add).orElse(BigDecimal.ONE).divide(BigDecimal.valueOf(memTxns.size()), RoundingMode.HALF_UP);
         logger.info("Median value of {} transactions to be evaluated: {}", memTxns.size(), mV);
         bTxnCandidates = memTxns.stream().filter(memTxnF -> memTxnF.getValue().compareTo(mV) > 0).collect(Collectors.toSet());
-        int tenPercent = (int) Math.floor(1.0*memTxns.size()*0.1);
+        int tenPercent = (int) Math.round(1.0*memTxns.size()*0.1);
         logger.info("{} high value transactions selected, with {} low value ones to be added.", bTxnCandidates.size(), tenPercent);
         // shifting the percent and size by one to avoid one-off errors
         bTxnCandidates.addAll(memTxns.subList(memTxns.size()-(tenPercent+1), memTxns.size()-1));
         logger.info("New block will contain {} total txns.", bTxnCandidates.size());
-        memTxns.removeAll(bTxnCandidates);
-        logger.debug("Dumping low-value transactions back into the mempool for later block.");
-        this.mempool.putAllTransaction(memTxns);
+        // Generate a coinbase transaction to be included in the block
+        // verify that only one can be added to the block
+
         // Get the last known block to reference in the new block
         Block lastBlock = this.blockchain.getLastBlock().orElse(null);
         // Transaction payloiad for including in the block message
         List<TransactionPayload> txnMessagePayloads = new ArrayList<>();
         for(Transaction txn : bTxnCandidates) {
             // Validate every txn
-            
+
             // Once the txn is validated, add to the transactionPayload
             TransactionPayload txnP = TransactionPayload.Builder.newBuilder()
                     .buildFromTransaction(txn)
@@ -118,9 +117,13 @@ public class BlockMine {
                 .setMerkleRoot(merkleRoot)
                 .build();
         // Perform the proof of work
-        newBlock = this.proofOfWork(newBlock, this._PREFIX);
+        this.walletIndexer.getCurrentWallet().signBlock(newBlock);
+        newBlock = this.proofOfWork(newBlock, this.blockchain.calculateDifficulty());
         // add the block to the blockchain
         this.blockchain.addBlock(newBlock);
+        memTxns.removeAll(bTxnCandidates);
+        logger.debug("Dumping low-value transactions back into the mempool for later block.");
+        this.mempool.putAllTransaction(memTxns);
         logger.info("Added new block to the chain: {}", newBlock);
         // make the transaction list
         BlockMessage blockMessage = BlockMessage.Builder.newBuilder()
@@ -144,6 +147,9 @@ public class BlockMine {
     }
 
     private byte[] generateMerkleTree(List<Transaction> txns) throws NoSuchAlgorithmException {
+        if(txns.size()%2 != 0) {
+            txns.add(txns.get(txns.size()-1));
+        }
         byte[] temp = new byte[0];
         if(txns.size() == 2) {
             temp = appendBytes(temp, txns.get(0).getTxnHash());
@@ -159,19 +165,32 @@ public class BlockMine {
         return CryptoHasher.dhash(appendBytes(generateMerkleTree(txns.subList(0, (txns.size()/2)-1)), generateMerkleTree(txns.subList((txns.size()/2), txns.size()-1))));
     }
 
-    private Block proofOfWork(Block currentBlock, int prefix) throws Exception {
+    private Block proofOfWork(Block currentBlock, int difficulty) throws Exception {
         List<Transaction> blockTransactions = currentBlock.getData();
         blockTransactions.sort(Comparator.comparing(Transaction::getTimestamp));
+        blockTransactions.sort(Comparator.comparing(Transaction::isCoinbase));
         Block sortedBlock = Block.Builder.newBuilder()
                 .setPreviousBlock(currentBlock.getPreviousBlockHash())
+                .setBlockHeight(currentBlock.getBlockHeight())
+                .setMerkleRoot(currentBlock.getMerkleRoot())
                 .setData(blockTransactions)
                 .build();
-        String prefixString = new String(new char[prefix]).replace('\0', '0');
-        while (!sortedBlock.toString().substring(0, prefix).equals(prefixString)) {
+        logger.info("Initial new block hash value: {}", this.sumBytes(sortedBlock.getBlockHash()));
+        logger.info("Trying to beat difficulty: {}", difficulty);
+        String prefixString = new String(new char[difficulty]).replace('\0', '0');
+        while (!sortedBlock.toString().substring(0, difficulty).equals(prefixString)) {
             sortedBlock.incrementNonce();
             sortedBlock.setBlockHash(CryptoHasher.hash(sortedBlock));
         }
         return sortedBlock;
+    }
+
+    private int sumBytes(byte[] bytes) {
+        int sum = 0;
+        for(byte b : bytes) {
+            sum += b;
+        }
+        return sum;
     }
 
     private static byte[] appendBytes(byte[] base, byte[] extension) {

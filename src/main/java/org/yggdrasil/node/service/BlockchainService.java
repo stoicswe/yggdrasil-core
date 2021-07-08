@@ -5,8 +5,7 @@ import org.yggdrasil.core.ledger.chain.BlockMine;
 import org.yggdrasil.core.ledger.chain.Blockchain;
 import org.yggdrasil.core.ledger.Mempool;
 import org.yggdrasil.core.ledger.exceptions.TransactionException;
-import org.yggdrasil.core.ledger.transaction.BasicTransaction;
-import org.yggdrasil.core.ledger.transaction.Transaction;
+import org.yggdrasil.core.ledger.transaction.*;
 import org.yggdrasil.core.ledger.wallet.Wallet;
 import org.yggdrasil.core.ledger.wallet.WalletIndexer;
 import org.yggdrasil.core.utils.CryptoHasher;
@@ -29,6 +28,7 @@ import org.yggdrasil.node.network.messages.payloads.MempoolTransactionPayload;
 import org.yggdrasil.node.network.messages.payloads.PingPongMessage;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.security.*;
 import java.security.spec.InvalidKeySpecException;
@@ -108,8 +108,20 @@ public class BlockchainService {
                     .setTimestamp(transaction.getTimestamp())
                     .setOriginAddress(transaction.getOriginAddress())
                     .setOriginPublicKey(this.walletIndexer.getCurrentWallet().getPublicKey())
-                    // add the inputs and outputs to here
                     .setDestinationAddress(transaction.getDestinationAddress())
+                    // add the inputs and outputs to here
+                    // add 50% for some realism.
+
+                    // Values below atm are for testing.
+                    .setTxnInputs(new TransactionInput[]{
+                            new TransactionInput((TransactionOutPoint) null, transaction.getValue().add(transaction.getValue())),
+                            new TransactionInput((TransactionOutPoint) null, transaction.getValue().add(transaction.getValue().multiply(BigDecimal.valueOf(0.5))))
+                    })
+                    // Set some outputs
+                    .setTxnOutputs(new TransactionOutput[] {
+                            new TransactionOutput(CryptoHasher.generateWalletAddress(this.walletIndexer.getCurrentWallet().getPublicKey()), transaction.getValue().multiply(BigDecimal.valueOf(0.33))),
+                            new TransactionOutput(CryptoHasher.hashByteArray(transaction.getDestinationAddress()), transaction.getValue())
+                    })
                     .build();
             this.walletIndexer.getCurrentWallet().signTransaction(mempoolTxn);
         } else {
@@ -206,71 +218,18 @@ public class BlockchainService {
         logger.info("done");
     }
 
+    public void testMiningBlock() throws Exception {
+        this.blockMiner.mineBlocks();
+    }
+
     /**
      * Returns a most recent block response.
      *
      * @return
      */
-    public BlockResponse mineBlock() throws Exception {
-        logger.info("Mining new block...");
-
-        BlockResponse lastMinedBlock;
-        Block lastBlock = blockchain.getBlocks()[blockchain.getBlocks().length-1];
-        logger.info("Last block record: {}", lastBlock.toString());
-
-        List<Transaction> blockData = new ArrayList<>();
-        while(mempool.hasNext()) {
-            if(blockData.size() < _MAX_BLOCK_SIZE) {
-                //blockData.add(mempool.getTransaction());
-            } else {
-                break;
-            }
-        }
-        Block newBlock;
-        newBlock = Block.Builder.newBuilder()
-                .setData(blockData)
-                .setPreviousBlock(this.blockchain.getBlocks()[this.blockchain.getBlocks().length - 1].getBlockHash())
-                .build();
-
-        // Do some work
-        newBlock = this.proofOfWork(_PREFIX, newBlock);
-        this.blockchain.addBlocks(List.of(newBlock));
-
-        logger.info("New block: {}", newBlock.toString());
-
-        Transaction blockMineAward = Transaction.Builder.builder()
-                .setOriginPublicKey(CryptoKeyGenerator.readPublicKeyFromBytes(CryptoHasher.hashByteArray("7c5ec4b1ad5bdfc593587f3a9d50327ede02076b")))
-                .setDestinationAddress(this.walletIndexer.getCurrentWallet().getHumanReadableAddress())
-                //.setValue(new BigDecimal(newBlock.toString().length() / 9.23).setScale(12, RoundingMode.FLOOR))
-                .build();
-
-        //this.addNewTransaction(blockMineAward);
-
-        logger.info("Block mine awarded, transaction: {}", blockMineAward.toString());
-
-        return BlockResponse.Builder.builder()
-                .setBlockHeight(newBlock.getBlockHeight())
-                .setTimestamp(newBlock.getTimestamp())
-                .setSize(GraphLayout.parseInstance(newBlock).totalSize())
-                .setBlockhash(newBlock.getBlockHash())
-                .build();
-    }
-
-    // This will be replaced with the validator, using PoS as the system for validation
-    // This will could eventually be used for customizing the hash.
-    private Block proofOfWork(int prefix, Block currentBlock) throws Exception {
-        List<Transaction> blockTransactions = currentBlock.getData();
-        blockTransactions.sort(Comparator.comparing(Transaction::getTimestamp));
-        Block sortedBlock = Block.Builder.newBuilder()
-                .setPreviousBlock(currentBlock.getPreviousBlockHash())
-                .setData(blockTransactions)
-                .build();
-        String prefixString = new String(new char[prefix]).replace('\0', '0');
-        while (!sortedBlock.toString().substring(0, prefix).equals(prefixString)) {
-            sortedBlock.incrementNonce();
-            sortedBlock.setBlockHash(CryptoHasher.hash(sortedBlock));
-        }
-        return sortedBlock;
+    public void mineBlock() throws Exception {
+        logger.trace("In mineBlock");
+        this.blockMiner.mineBlocks();
     }
 
 }

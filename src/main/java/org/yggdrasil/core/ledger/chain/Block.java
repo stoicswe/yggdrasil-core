@@ -142,9 +142,9 @@ public final class Block implements LedgerHashableItem {
     }
 
     public static Block genesis() throws Exception {
-        TransactionOutput txnOut = new TransactionOutput(null, BigDecimal.valueOf(50));
+        TransactionOutput txnOut = new TransactionOutput(CryptoHasher.hashByteArray("6ad28d3fda4e10bdc0aaf7112f7818e181defa7e"), BigDecimal.valueOf(50));
         Transaction txn = Transaction.Builder.builder()
-                .setTimestamp(DateTimeUtil.getCurrentTimestamp())
+                .setTimestamp(DateTimeUtil.fromMessageTimestamp(1625616000))
                 .setOriginAddress(null)
                 .setDestinationAddress("6ad28d3fda4e10bdc0aaf7112f7818e181defa7e")
                 .setTxnInputs(new TransactionInput[]{new TransactionInput((TransactionOutPoint) null, BigDecimal.valueOf(50))})
@@ -167,10 +167,11 @@ public final class Block implements LedgerHashableItem {
     public byte[] getDataBytes() {
         byte[] blockData = new byte[0];
         blockData = appendBytes(blockData, SerializationUtils.serialize(this.timestamp));
-        blockData = appendBytes(blockData, SerializationUtils.serialize(this.data.hashCode()));
+        for(Transaction txn : this.data) {
+            blockData = appendBytes(blockData, txn.getTxnHash());
+        }
         blockData = appendBytes(blockData, SerializationUtils.serialize(this.previousBlockHash));
         blockData = appendBytes(blockData, SerializationUtils.serialize(this.nonce));
-        blockData = appendBytes(blockData, this.validator);
         blockData = appendBytes(blockData, this.signature);
         return blockData;
     }

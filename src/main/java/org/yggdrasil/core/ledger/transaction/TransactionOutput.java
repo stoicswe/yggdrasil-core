@@ -12,19 +12,18 @@ public class TransactionOutput implements Serializable {
     // public key of the wallet in question
     // receiver must be able to sign an output in order
     // claim it.
-    protected final PublicKey publicKey;
+    protected final byte[] address;
     protected final BigDecimal value;
 
-    public TransactionOutput(PublicKey publicKey, BigDecimal value) {
-        this.publicKey = publicKey;
+    public TransactionOutput(byte[] address, BigDecimal value) {
+        this.address = address;
         this.value = value;
     }
 
-    public boolean isMine(byte[] signature) throws NoSuchAlgorithmException, InvalidKeyException, SignatureException {
+    public boolean isMine(PublicKey publicKey, byte[] signature) throws NoSuchAlgorithmException, InvalidKeyException, SignatureException {
         Signature verify = Signature.getInstance(CryptoKeyGenerator.getSignatureAlgorithm());
         verify.initVerify(publicKey);
-        //verify.update(txn.getTxnHash());
-        return verify.verify(signature);
+        return CryptoHasher.isEqualHashes(this.address, CryptoHasher.generateWalletAddress(publicKey)) && verify.verify(signature);
     }
 
     public BigDecimal getValue() {
@@ -33,7 +32,7 @@ public class TransactionOutput implements Serializable {
 
     @Override
     public String toString() {
-        return String.format("TxOut(val=%d, key=%s)", value.intValue(), CryptoHasher.humanReadableHash(publicKey.getEncoded()));
+        return String.format("TxOut(val=%d, address=%s)", value.intValue(), CryptoHasher.humanReadableHash(this.address));
     }
 
 }

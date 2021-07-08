@@ -36,6 +36,9 @@ import java.util.concurrent.TimeUnit;
 public class Blockchain implements Cloneable {
 
     private Logger logger = LoggerFactory.getLogger(Blockchain.class);
+    // The size of the window in which the hash difficulty is calculated
+    private final Integer _BLOCK_SOLVE_WINDOW = 2016;
+    private Integer _BASE_DIFFICULTY = 4;
 
     @Autowired
     private transient NodeConfig nodeConfig;
@@ -48,6 +51,7 @@ public class Blockchain implements Cloneable {
     private HTreeMap hotBlocks;
     private transient DB database;
     private transient HTreeMap coldBlocks;
+    private transient HTreeMap blockchainState;
     private transient byte[] lastBlockHash;
 
     @PostConstruct
@@ -67,6 +71,11 @@ public class Blockchain implements Cloneable {
                 .keySerializer(Serializer.BYTE_ARRAY)
                 .counterEnable()
                 .createOrOpen();
+        this.blockchainState = this.database
+                .hashMap("BCState")
+                .keySerializer(Serializer.STRING)
+                .counterEnable()
+                .createOrOpen();
         this.hotBlocks = this.cache
                 .hashMap("hotChain")
                 .keySerializer(Serializer.BYTE_ARRAY)
@@ -75,9 +84,16 @@ public class Blockchain implements Cloneable {
                 .expireOverflow(this.coldBlocks)
                 .expireExecutor(Executors.newScheduledThreadPool(2))
                 .createOrOpen();
+        // restore necessary values
+        this.restoreState();
         if(this.coldBlocks.size() == 0) {
             Block genesis = Block.genesis();
             this.addBlock(genesis);
+            this._BASE_DIFFICULTY = 4;
+        } else if(this.coldBlocks.size() == 1){
+            this._BASE_DIFFICULTY = 4;
+        } else {
+            this._BASE_DIFFICULTY = this.calculateDifficulty();
         }
     }
 
@@ -86,6 +102,11 @@ public class Blockchain implements Cloneable {
         logger.info("Shutting down blockchain database.");
         this.hotBlocks.clearWithExpire();
         this.coldBlocks.close();
+        this.blockchainState.close();
+    }
+
+    private void restoreState() {
+        this.lastBlockHash = (byte[]) this.blockchainState.get("lastBlockHash");
     }
 
     public UUID getNodeIndex() {
@@ -114,6 +135,7 @@ public class Blockchain implements Cloneable {
         } else {
             this.hotBlocks.put(block.getBlockHash(), block);
             this.lastBlockHash = block.getBlockHash();
+            this.blockchainState.put("lastBlockHash", this.lastBlockHash);
         }
     }
 
@@ -151,6 +173,34 @@ public class Blockchain implements Cloneable {
     @Override
     protected Object clone() throws CloneNotSupportedException {
         return super.clone();
+    }
+
+    protected int calculateDifficulty() {
+        int window = this._BLOCK_SOLVE_WINDOW;
+        if(this.coldBlocks.size() < this._BLOCK_SOLVE_WINDOW) {
+            window = this.coldBlocks.size();
+        }
+        Block lastBlock = this.getBlock(this.lastBlockHash).get();
+        int averageTime = 1;
+        int bIndex = 0;
+        while(bIndex <= window) {
+            Block nextLast = null;
+            if(lastBlock.getPreviousBlockHash() != null) {
+                nextLast = this.getBlock(lastBlock.getPreviousBlockHash()).get();
+                averageTime = averageTime + ((int) (lastBlock.getTimestamp().toEpochSecond() - nextLast.getTimestamp().toEpochSecond()));
+            }
+            bIndex++;
+        }
+        if(window != 0) {
+            averageTime = averageTime / window;
+        }
+        if(averageTime < 600) {
+            this._BASE_DIFFICULTY -= 1;
+            return this._BASE_DIFFICULTY;
+        } else {
+            this._BASE_DIFFICULTY += 1;
+            return this._BASE_DIFFICULTY;
+        }
     }
 
 }

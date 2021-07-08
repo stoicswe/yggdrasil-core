@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.SerializationUtils;
 import org.yggdrasil.core.ledger.LedgerHashableItem;
+import org.yggdrasil.core.ledger.chain.Block;
 import org.yggdrasil.core.ledger.transaction.Transaction;
 import org.yggdrasil.core.ledger.transaction.TransactionOutput;
 import org.yggdrasil.core.ledger.transaction.WalletTransaction;
@@ -37,7 +38,7 @@ public class Wallet implements LedgerHashableItem {
      * be saved for reference later. Somehow make a way so that
      * the public portions of a wallet can be saved separate from
      * the private key, so that the private key is never stored in
-     * memory (to help guard against memory-read attacks).
+     * memory.
      */
     @JsonIgnore
     protected transient final PublicKey publicKey;
@@ -99,6 +100,13 @@ public class Wallet implements LedgerHashableItem {
         signature.update(txnData, 0, txnData.length);
         txn.setSignature(signature.sign());
         txn.rehash();
+    }
+
+    public void signBlock(Block block) throws InvalidKeyException, SignatureException, NoSuchAlgorithmException {
+        signature.initSign(privateKey);
+        byte[] merkleRoot = block.getMerkleRoot();
+        signature.update(merkleRoot, 0, merkleRoot.length);
+        block.setSignature(signature.sign());
     }
 
     public byte[] getSignature(TransactionOutput txnOutpt) throws SignatureException, InvalidKeyException {

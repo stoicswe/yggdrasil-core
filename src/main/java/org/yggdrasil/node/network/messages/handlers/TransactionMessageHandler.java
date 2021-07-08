@@ -32,7 +32,10 @@ public class TransactionMessageHandler implements MessageHandler<TransactionMess
 
     @Override
     public MessagePayload handleMessagePayload(TransactionMessage transactionMessage, NodeConnection nodeConnection) throws NoSuchAlgorithmException, InvalidKeySpecException, NoSuchProviderException {
-
+        // need to add some witness validation for the
+        // incoming txns to make sure duplicates are not
+        // added to the mempool. Witnesses *could* be in the
+        // message headers and hashes of the IP addresses.
         if(transactionMessage.getTxns().length == transactionMessage.getTxnCount()) {
             for(TransactionPayload txnp : transactionMessage.getTxns()) {
                 Transaction txn = Transaction.Builder.builder().buildFromMessage(txnp);

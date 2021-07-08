@@ -140,9 +140,9 @@ public class Transaction implements LedgerHashableItem {
         txnData = appendBytes(txnData, SerializationUtils.serialize(this.originAddress));
         txnData = appendBytes(txnData, SerializationUtils.serialize(this.origin));
         txnData = appendBytes(txnData, SerializationUtils.serialize(this.destinationAddress));
-        txnData = appendBytes(txnData, this.signature);
         txnData = appendBytes(txnData, SerializationUtils.serialize(this.txnInputs));
         txnData = appendBytes(txnData, SerializationUtils.serialize(this.txnOutPuts));
+        txnData = appendBytes(txnData, this.signature);
         return txnData;
     }
 

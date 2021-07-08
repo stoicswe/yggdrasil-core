@@ -59,7 +59,8 @@ public class BlockchainController {
 
     @RequestMapping(value = "/mine", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity mineBlock() throws Exception {
-        return new ResponseEntity<>(this.service.mineBlock(), HttpStatus.CREATED);
+        this.service.mineBlock();
+        return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
     @RequestMapping(value = "/wallet", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)

@@ -62,7 +62,6 @@ public class GetDataMessageHandler implements MessageHandler<GetDataMessage> {
                                 .setTxnPayloads(txnps.toArray(TransactionPayload[]::new))
                                 .setBlockHash(b.getBlockHash())
                                 .setPreviousBlockHash(b.getPreviousBlockHash())
-                                .setValidator(b.getValidator())
                                 .setSignature(b.getSignature())
                                 .build();
                     }
