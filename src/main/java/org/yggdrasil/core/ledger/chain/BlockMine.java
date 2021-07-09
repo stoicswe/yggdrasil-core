@@ -8,8 +8,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.yggdrasil.core.ledger.Mempool;
 import org.yggdrasil.core.ledger.transaction.Transaction;
+import org.yggdrasil.core.ledger.transaction.TransactionInput;
+import org.yggdrasil.core.ledger.transaction.TransactionOutPoint;
+import org.yggdrasil.core.ledger.transaction.TransactionOutput;
 import org.yggdrasil.core.ledger.wallet.WalletIndexer;
 import org.yggdrasil.core.utils.CryptoHasher;
+import org.yggdrasil.core.utils.CryptoKeyGenerator;
+import org.yggdrasil.core.utils.DateTimeUtil;
 import org.yggdrasil.node.network.NodeConfig;
 import org.yggdrasil.node.network.messages.Message;
 import org.yggdrasil.node.network.messages.Messenger;
@@ -22,10 +27,8 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.RoundingMode;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Set;
+import java.security.Signature;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Component
@@ -33,6 +36,7 @@ public class BlockMine {
 
     private final Logger logger = LoggerFactory.getLogger(BlockMine.class);
     private final Integer _MAX_BLOCK_SIZE = 2048;
+    private final Integer _BLOCK_REWARD_HALVING = 210000;
 
     @Autowired
     private NodeConfig nodeConfig;
@@ -45,12 +49,14 @@ public class BlockMine {
     @Autowired
     private WalletIndexer walletIndexer;
 
+    private Signature signatureVerification;
     private Thread miningThread;
     protected boolean isMiningState = false;
 
     @PostConstruct
-    private void init() {
+    private void init() throws NoSuchAlgorithmException {
         this.isMiningState = false;
+        this.signatureVerification = Signature.getInstance(CryptoKeyGenerator.getSignatureAlgorithm());
     }
 
     public void startMining() {
@@ -90,24 +96,96 @@ public class BlockMine {
         logger.info("{} high value transactions selected, with {} low value ones to be added.", bTxnCandidates.size(), tenPercent);
         // shifting the percent and size by one to avoid one-off errors
         bTxnCandidates.addAll(memTxns.subList(memTxns.size()-(tenPercent+1), memTxns.size()-1));
-        logger.info("New block will contain {} total txns.", bTxnCandidates.size());
-        // Generate a coinbase transaction to be included in the block
-        // verify that only one can be added to the block
-
         // Get the last known block to reference in the new block
+        // Should never return null, since there will always be a genesis block...
         Block lastBlock = this.blockchain.getLastBlock().orElse(null);
         // Transaction payloiad for including in the block message
         List<TransactionPayload> txnMessagePayloads = new ArrayList<>();
+        List<Transaction> bTxnsInvalid = new ArrayList<>();
+        logger.info("Validating block candidates");
         for(Transaction txn : bTxnCandidates) {
+            boolean txnIsValid = false;
             // Validate every txn
+            if(txn.isCoinbase()) {
+                logger.info("Txn: {} is invalid, was free-floating coinbase.", txn);
+                bTxnsInvalid.add(txn);
+                txnIsValid = false;
+            } else {
+                // "Holy IF statements batman!" ~ Robin.
 
-            // Once the txn is validated, add to the transactionPayload
-            TransactionPayload txnP = TransactionPayload.Builder.newBuilder()
-                    .buildFromTransaction(txn)
-                    .build();
-            txnMessagePayloads.add(txnP);
+                // Uncomment this once the wallet is finished being coded...
+                // this is commented for testing purposes.
+
+                /*
+                for (TransactionInput txnIn : txn.getTxnInputs()) {
+                    TransactionOutPoint txnOutPt = txnIn.getTxnOutPt();
+                    if(txnOutPt != null) {
+                        Optional<Block> prevBlock = this.blockchain.getBlock(txnOutPt.getTxnHash());
+                        if (prevBlock.isPresent()) {
+                            Optional<Transaction> prevTxn = prevBlock.get().getTransaction(txnOutPt.getTxnHash());
+                            if (prevTxn.isPresent()) {
+                                if (CryptoHasher.isEqualHashes(CryptoHasher.hashByteArray(prevTxn.get().getDestinationAddress()), CryptoHasher.hashByteArray(txn.getOriginAddress()))) {
+                                    if (CryptoHasher.isEqualHashes(CryptoHasher.hashByteArray(prevTxn.get().getDestinationAddress()), CryptoHasher.generateWalletAddress(txn.getOrigin()))) {
+                                        for (TransactionOutput txnOut : prevTxn.get().getTxnOutPuts()) {
+                                            if (txnOut.isMine(txn.getOrigin(), txn.getSignature())) {
+                                                if (txnOut.getValue().compareTo(txnOutPt.getValue()) == 0) {
+                                                    signatureVerification.initVerify(txn.getOrigin());
+                                                    if (signatureVerification.verify(txn.getSignature())) {
+                                                        logger.info("Txn: {} is valid.", txn);
+                                                        txnIsValid = true;
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            } else {
+                                logger.info("Txn: {} is invalid, prevTxn == null", txn);
+                                txnIsValid = false;
+                                break;
+                            }
+                        } else {
+                            logger.info("Txn: {} is invalid, prevBlock == null", txn);
+                            txnIsValid = false;
+                            break;
+                        }
+                    } else {
+                        logger.info("Txn: {} is invalid, txnOutPt == null", txn);
+                        txnIsValid = false;
+                        break;
+                    }
+                }*/
+                txnIsValid = true;
+            }
+            if(txnIsValid) {
+                logger.info("Txn: {} is valid.", txn);
+                // Once the txn is validated, add to the transactionPayload
+                TransactionPayload txnP = TransactionPayload.Builder.newBuilder()
+                        .buildFromTransaction(txn)
+                        .build();
+                txnMessagePayloads.add(txnP);
+            } else {
+                bTxnsInvalid.add(txn);
+            }
         }
+        if(bTxnsInvalid.size() > 0) {
+            bTxnCandidates.removeAll(bTxnsInvalid);
+        }
+        // Generate a coinbase transaction to be included in the block
+        // verify that only one can be added to the block
+        logger.info("Generating coinbase txn.");
+        Transaction coinbase = Transaction.Builder.builder()
+                .setTimestamp(DateTimeUtil.getCurrentTimestamp())
+                .setOriginAddress(null)
+                .setDestinationAddress(this.walletIndexer.getCurrentWallet().getHumanReadableAddress())
+                .setTxnInputs(new TransactionInput[]{new TransactionInput((TransactionOutPoint) null, this.calculateBlockReward(lastBlock.getBlockHeight()))})
+                .setTxnOutputs(new TransactionOutput[]{new TransactionOutput(CryptoHasher.hashByteArray(this.walletIndexer.getCurrentWallet().getHumanReadableAddress()), this.calculateBlockReward(lastBlock.getBlockHeight()))})
+                .build();
+        bTxnCandidates.add(coinbase);
+        logger.info("New block will contain {} total txns.", bTxnCandidates.size());
         // Merkle root variable for including in the block
+        // as part of generating the merkleRoot, find a way to add merkle branch
+        // to each txn to connect it back to the block
         byte[] merkleRoot = generateMerkleTree(new ArrayList<>(bTxnCandidates));
         // Compile the block
         Block newBlock = Block.Builder.newBuilder()
@@ -116,16 +194,23 @@ public class BlockMine {
                 .setData(new ArrayList<>(bTxnCandidates))
                 .setMerkleRoot(merkleRoot)
                 .build();
-        // Perform the proof of work
+        // Sign the block to validate it came from a real address of a miner
+        // signatures are actually signing the merkleRoot, since that never
+        // changes even after re-hashing the block
         this.walletIndexer.getCurrentWallet().signBlock(newBlock);
+        // Perform the proof of work
         newBlock = this.proofOfWork(newBlock, this.blockchain.calculateDifficulty());
-        // add the block to the blockchain
+        // add the block to the blockchain after performing PoW
         this.blockchain.addBlock(newBlock);
+        // Now that the work is done, we can remove the txns included in the block
+        // from the mempool, so we do not compute them again
         memTxns.removeAll(bTxnCandidates);
         logger.debug("Dumping low-value transactions back into the mempool for later block.");
+        // txns that we did not use (low val ones) can be put back into the mempool
         this.mempool.putAllTransaction(memTxns);
         logger.info("Added new block to the chain: {}", newBlock);
-        // make the transaction list
+        // the new block can now be transmitted to the other nodes
+        // when receiving these, other noes can validate the new block
         BlockMessage blockMessage = BlockMessage.Builder.newBuilder()
                 .setTimestamp((int) newBlock.getTimestamp().toEpochSecond())
                 .setBlockHeight(newBlock.getBlockHeight())
@@ -143,11 +228,14 @@ public class BlockMine {
                 .setChecksum(CryptoHasher.hash(blockMessage))
                 .build();
         this.messenger.sendBroadcastMessage(message);
-        logger.debug("New block {} has been forwarded to other nodes.", newBlock);
+        logger.info("New block {} has been forwarded to other nodes.", newBlock);
     }
 
     private byte[] generateMerkleTree(List<Transaction> txns) throws NoSuchAlgorithmException {
         if(txns.size()%2 != 0) {
+            // duplicate the last item in the list
+            // for adding to the merkle tree to ensure
+            // there is not an issue with the recursive call
             txns.add(txns.get(txns.size()-1));
         }
         byte[] temp = new byte[0];
@@ -162,29 +250,59 @@ public class BlockMine {
             return CryptoHasher.dhash(temp);
         }
         // pass first 1/2 and second 1/2
+        // need to test to make sure this never has issues
+        // or misses any txns...
         return CryptoHasher.dhash(appendBytes(generateMerkleTree(txns.subList(0, (txns.size()/2)-1)), generateMerkleTree(txns.subList((txns.size()/2), txns.size()-1))));
     }
 
     private Block proofOfWork(Block currentBlock, int difficulty) throws Exception {
+        // Get the txn data for sorting
         List<Transaction> blockTransactions = currentBlock.getData();
+        // first we want to sort by txn timestamp
         blockTransactions.sort(Comparator.comparing(Transaction::getTimestamp));
+        // then we want to move the coinbase txn to the top of the new block
         blockTransactions.sort(Comparator.comparing(Transaction::isCoinbase));
+        // Rebuild the block
         Block sortedBlock = Block.Builder.newBuilder()
                 .setPreviousBlock(currentBlock.getPreviousBlockHash())
                 .setBlockHeight(currentBlock.getBlockHeight())
                 .setMerkleRoot(currentBlock.getMerkleRoot())
                 .setData(blockTransactions)
                 .build();
+        // This output is mostly for testing, was curious about adding bytes together *shrugs*
         logger.info("Initial new block hash value: {}", this.sumBytes(sortedBlock.getBlockHash()));
+        // Output the difficulty (num of proceeding zeros)
         logger.info("Trying to beat difficulty: {}", difficulty);
+        // Resulting hash string to beat
         String prefixString = new String(new char[difficulty]).replace('\0', '0');
         while (!sortedBlock.toString().substring(0, difficulty).equals(prefixString)) {
+            // Every 100 nonce updates, we want to output a progress log
+            // so that the miner can see something happening in their computer
+            if(sortedBlock.getNonce() % 500 == 0) {
+                logger.info("Working block hash: {}", sortedBlock);
+            }
+            // move that nonce!
+            // there is a chance I might need to add a
+            // nonce to the coinbase txn as well to allow
+            // for more creative solving, but maybe later
             sortedBlock.incrementNonce();
             sortedBlock.setBlockHash(CryptoHasher.hash(sortedBlock));
         }
+        // Ooooo shiny new block, much wow!
         return sortedBlock;
     }
 
+    private BigDecimal calculateBlockReward(BigInteger blockHeight) {
+        BigInteger coin = BigInteger.valueOf(50);
+        BigDecimal factor = BigDecimal.valueOf(blockHeight.divide(BigInteger.valueOf(210000)).longValue()).setScale(2, RoundingMode.HALF_UP);
+        if(factor.compareTo(BigDecimal.ZERO) == 0) {
+            factor = BigDecimal.ONE;
+        }
+        return BigDecimal.valueOf(coin.longValue()).multiply(factor);
+    }
+
+    // This was just for testing an idea
+    // might leave here for awhile
     private int sumBytes(byte[] bytes) {
         int sum = 0;
         for(byte b : bytes) {
@@ -193,6 +311,7 @@ public class BlockMine {
         return sum;
     }
 
+    // Some helper function for sum(hash, hash)
     private static byte[] appendBytes(byte[] base, byte[] extension) {
         return ArrayUtils.addAll(base, extension);
     }

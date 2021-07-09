@@ -194,7 +194,7 @@ public class Blockchain implements Cloneable {
         if(window != 0) {
             averageTime = averageTime / window;
         }
-        if(averageTime < 600) {
+        if(averageTime > 600) {
             this._BASE_DIFFICULTY -= 1;
             return this._BASE_DIFFICULTY;
         } else {

@@ -52,8 +52,6 @@ public final class Block implements LedgerHashableItem {
     @JsonSerialize(using = HashSerializer.class)
     private byte[] blockHash;
     @JsonSerialize(using = HashSerializer.class)
-    private byte[] validator;
-    @JsonSerialize(using = HashSerializer.class)
     private byte[] signature;
     private int nonce;
 
@@ -93,14 +91,6 @@ public final class Block implements LedgerHashableItem {
 
     public byte[] getBlockHash() {
         return blockHash;
-    }
-
-    public byte[] getValidator() {
-        return validator;
-    }
-
-    public void setValidator(byte[] validator) {
-        this.validator = validator;
     }
 
     public byte[] getSignature() {
@@ -155,7 +145,7 @@ public final class Block implements LedgerHashableItem {
         genesisData = appendBytes(genesisData, txn.getTxnHash());
         byte[] genesisMerkleRoot = CryptoHasher.dhash(genesisData);
         return new Builder()
-                .setBlockHeight(BigInteger.ZERO)
+                .setBlockHeight(BigInteger.ONE)
                 .setMerkleRoot(genesisMerkleRoot)
                 .setPreviousBlock(null)
                 .setData(Collections.singletonList(txn))

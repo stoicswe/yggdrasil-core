@@ -7,6 +7,8 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.SerializationUtils;
 import org.yggdrasil.core.ledger.LedgerHashableItem;
 import org.yggdrasil.core.serialization.HashSerializer;
+import org.yggdrasil.core.serialization.TxnInputSerializer;
+import org.yggdrasil.core.serialization.TxnOutputSerializer;
 import org.yggdrasil.core.utils.CryptoHasher;
 import org.yggdrasil.core.utils.CryptoKeyGenerator;
 import org.yggdrasil.core.utils.DateTimeUtil;
@@ -39,7 +41,9 @@ public class Transaction implements LedgerHashableItem {
     @JsonIgnore
     private final PublicKey origin;
     private final String destinationAddress;
+    @JsonSerialize(using = TxnInputSerializer.class)
     private final TransactionInput[] txnInputs;
+    @JsonSerialize(using = TxnOutputSerializer.class)
     private final TransactionOutput[] txnOutPuts;
     @JsonSerialize(using = HashSerializer.class)
     private byte[] signature;

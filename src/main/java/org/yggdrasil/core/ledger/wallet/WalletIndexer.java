@@ -64,6 +64,7 @@ public class WalletIndexer {
     private void onDestroy() {
         logger.info("Shutting down wallet database.");
         this.walletCache.clearWithExpire();
+        this.walletCache.close();
         this.walletData.close();
     }
 
