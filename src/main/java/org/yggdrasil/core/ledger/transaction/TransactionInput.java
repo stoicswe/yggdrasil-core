@@ -1,17 +1,15 @@
 package org.yggdrasil.core.ledger.transaction;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+
+import java.io.Serializable;
 import java.math.BigDecimal;
 
-public class TransactionInput {
+@JsonInclude
+public class TransactionInput implements Serializable {
 
     // Reference to a transaction's output
     protected final TransactionOutPoint txnOutPt;
-    // Value of the input
-    // If this value is < txnOutPt, then there needs to
-    // be changed delivered. If it is greater than, need
-    // to check the other txnInputs to before failed validation
-
-    // this value below could be for the transaction fee...
     protected final BigDecimal value;
 
 
@@ -25,9 +23,16 @@ public class TransactionInput {
         this.value = value;
     }
 
-    public TransactionInput(byte[] prevTxHash, BigDecimal valueOut){
-        this.txnOutPt = new TransactionOutPoint(prevTxHash, valueOut);
+    public TransactionInput(byte[] prevBlkHash, byte[] prevTxHash,  BigDecimal valueOut){
+        this.txnOutPt = new TransactionOutPoint(prevBlkHash, prevTxHash, valueOut);
         this.value = valueOut;
     }
 
+    public TransactionOutPoint getTxnOutPt() {
+        return txnOutPt;
+    }
+
+    public BigDecimal getValue() {
+        return value;
+    }
 }

@@ -5,7 +5,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonNode;
-import org.yggdrasil.core.ledger.transaction.Transaction;
+import org.springframework.boot.json.JsonParseException;
+import org.yggdrasil.core.ledger.transaction.BasicTransaction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,9 +23,9 @@ import java.security.spec.InvalidKeySpecException;
  * @since 0.0.3
  * @author nathanielbunch
  */
-public class TransactionDeserializer extends JsonDeserializer<Transaction> {
+public class BasicTransactionDeserializer extends JsonDeserializer<BasicTransaction> {
 
-    Logger logger = LoggerFactory.getLogger(TransactionDeserializer.class);
+    Logger logger = LoggerFactory.getLogger(BasicTransactionDeserializer.class);
 
     /**
      * Accepts a JSON payload in the form of a JsonParser then pulls values
@@ -38,7 +39,7 @@ public class TransactionDeserializer extends JsonDeserializer<Transaction> {
      * @throws JsonProcessingException
      */
     @Override
-    public Transaction deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException, JsonProcessingException {
+    public BasicTransaction deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException, JsonParseException {
 
         JsonNode node = jsonParser.getCodec().readTree(jsonParser);
         String origin = node.get("origin").asText();
@@ -46,15 +47,14 @@ public class TransactionDeserializer extends JsonDeserializer<Transaction> {
         BigDecimal value = new BigDecimal(node.get("value").asText());
 
         try {
-            return Transaction.Builder.Builder()
+            return BasicTransaction.Builder.builder()
                     .setOrigin(origin)
                     .setDestination(destination)
+                    .setValue(value)
                     .build();
-        } catch (InvalidKeySpecException | NoSuchProviderException | NoSuchAlgorithmException e) {
-            logger.error("Deserialization of txn failed with: {}", e.toString());
+        } catch (NoSuchAlgorithmException e) {
+            logger.debug("Error while deserializing transaction: {}", e.getMessage());
+            throw new JsonParseException(e);
         }
-
-        return null;
-
     }
 }

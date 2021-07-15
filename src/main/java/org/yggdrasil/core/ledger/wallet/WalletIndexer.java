@@ -17,6 +17,8 @@ import java.security.InvalidAlgorithmParameterException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.spec.InvalidKeySpecException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
@@ -33,6 +35,7 @@ public class WalletIndexer {
     private HTreeMap walletData;
     private DB hotWallets;
     private HTreeMap walletCache;
+    private Wallet currentWallet;
 
     @PostConstruct
     private void init() {
@@ -61,7 +64,16 @@ public class WalletIndexer {
     private void onDestroy() {
         logger.info("Shutting down wallet database.");
         this.walletCache.clearWithExpire();
+        this.walletCache.close();
         this.walletData.close();
+    }
+
+    public Wallet getCurrentWallet() {
+        return currentWallet;
+    }
+
+    public void switchCurrentWallet(Wallet wallet) {
+        this.currentWallet = wallet;
     }
 
     /**
@@ -85,6 +97,14 @@ public class WalletIndexer {
 
     public Wallet getWallet(byte[] address) throws NoSuchAlgorithmException, InvalidKeySpecException, NoSuchProviderException {
         return Wallet.Builder.newBuilder().buildFromWalletRecord((WalletRecord) this.walletCache.get(address));
+    }
+
+    public List<Wallet> getAllWallets() throws NoSuchAlgorithmException, InvalidKeySpecException, NoSuchProviderException {
+        List<Wallet> wallets = new ArrayList<>();
+        for(Object wa : this.walletData.getKeys()) {
+            wallets.add(Wallet.Builder.newBuilder().buildFromWalletRecord((WalletRecord) this.walletCache.get(wa)));
+        }
+        return wallets;
     }
 
     public void deleteWallet(byte[] address) {

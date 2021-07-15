@@ -3,9 +3,12 @@ package org.yggdrasil.node.controller;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.web.bind.annotation.*;
+import org.yggdrasil.core.ledger.chain.Block;
 import org.yggdrasil.core.ledger.chain.Blockchain;
+import org.yggdrasil.core.ledger.transaction.BasicTransaction;
 import org.yggdrasil.core.ledger.transaction.Transaction;
 import org.yggdrasil.core.ledger.wallet.Wallet;
+import org.yggdrasil.core.utils.CryptoHasher;
 import org.yggdrasil.node.model.BlockResponse;
 import org.yggdrasil.node.service.BlockchainService;
 import org.slf4j.Logger;
@@ -17,8 +20,11 @@ import org.springframework.http.ResponseEntity;
 
 import javax.annotation.PostConstruct;
 import java.io.IOException;
+import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.security.SignatureException;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Provides the rest interface controller for interacting with the Blockchain.
@@ -43,17 +49,23 @@ public class BlockchainController {
 
     @RequestMapping(value = "/blocks", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Blockchain> getBlockchain(@RequestParam(name = "blocks", required = false) Integer blocks) throws Exception {
-        return new ResponseEntity<>(this.service.getBlockchain((blocks != null) ? blocks : -1), HttpStatus.OK);
+        return new ResponseEntity<>(this.service.getBlockchain(), HttpStatus.OK);
+    }
+
+    @RequestMapping(value = "/block", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Optional<Block>> getBlock(@RequestParam(name = "blockHash", required = true) String blockHash) throws Exception {
+        return new ResponseEntity<>(this.service.getBlock(CryptoHasher.hashByteArray(blockHash)), HttpStatus.OK);
     }
 
     @RequestMapping(value = "/mine", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<BlockResponse> mineBlock() throws Exception {
-        return new ResponseEntity<>(this.service.mineBlock(), HttpStatus.CREATED);
+    public ResponseEntity mineBlock() throws Exception {
+        this.service.mineBlock();
+        return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
     @RequestMapping(value = "/wallet", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Wallet> getCurrentWallet() throws Exception {
-        return new ResponseEntity<>(this.service.getWallet(), HttpStatus.OK);
+    public ResponseEntity<List<Wallet>> getWallet(@RequestParam(name = "allWallets", required = false) boolean allWallets) throws Exception {
+        return new ResponseEntity<>(this.service.getWallet(allWallets), HttpStatus.OK);
     }
 
     @RequestMapping(value = "/createWallet", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -67,9 +79,9 @@ public class BlockchainController {
     }
 
     @RequestMapping(value = "/transaction", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Transaction> putTransaction(@RequestBody JsonNode data) throws IOException, NoSuchAlgorithmException {
+    public ResponseEntity<BasicTransaction> putTransaction(@RequestBody JsonNode data) throws IOException, NoSuchAlgorithmException, SignatureException, InvalidKeyException {
         logger.trace("Received new data: {}", data);
-        Transaction transaction = objectMapper.treeToValue(data, Transaction.class);
+        BasicTransaction transaction = objectMapper.treeToValue(data, BasicTransaction.class);
         this.service.addNewTransaction(transaction);
         return new ResponseEntity<>(transaction, HttpStatus.CREATED);
     }

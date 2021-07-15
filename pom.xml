@@ -6,7 +6,7 @@
 
     <groupId>org.nathanielbunch</groupId>
     <artifactId>yggdrasil-core</artifactId>
-    <version>0.0.17-SNAPSHOT</version>
+    <version>0.0.21-SNAPSHOT</version>
     <name>Yggdrasil Core</name>
     <description>A simplistic blockchain project for learning more about blockchains.</description>
 

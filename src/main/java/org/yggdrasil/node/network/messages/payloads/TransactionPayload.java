@@ -3,10 +3,11 @@ package org.yggdrasil.node.network.messages.payloads;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.SerializationUtils;
 import org.yggdrasil.core.ledger.transaction.Transaction;
+import org.yggdrasil.core.ledger.transaction.TransactionInput;
+import org.yggdrasil.core.ledger.transaction.TransactionOutput;
 import org.yggdrasil.node.network.messages.MessagePayload;
 
 import javax.validation.constraints.NotNull;
-import java.math.BigDecimal;
 
 /**
  * The Transaction Message contains the full information of a transaction.
@@ -21,21 +22,30 @@ public class TransactionPayload implements MessagePayload {
     @NotNull
     private final byte[] originAddress;
     @NotNull
-    private final byte[] destinationAddress;
+    private final byte[] originPublicKey;
     @NotNull
-    private final BigDecimal value;
+    private final char[] destinationAddress;
+    @NotNull
+    private final TransactionInput[] txnIn;
+    @NotNull
+    private final TransactionOutput[] txnOut;
     @NotNull
     private final byte[] transactionHash;
     @NotNull
     private final byte[] signature;
+    @NotNull
+    private final byte[] merkleRoot;
     @NotNull
     private final byte[] blockHash;
 
     private TransactionPayload(Builder builder){
         this.timestamp = builder.timestamp;
         this.originAddress = builder.originAddress;
+        this.originPublicKey = builder.originPublicKey;
         this.destinationAddress = builder.destinationAddress;
-        this.value = builder.value;
+        this.txnIn = builder.txnIn;
+        this.txnOut = builder.txnOut;
+        this.merkleRoot = builder.merkleRoot;
         this.transactionHash = builder.transactionHash;
         this.signature = builder.signature;
         this.blockHash = builder.blockHash;
@@ -49,12 +59,24 @@ public class TransactionPayload implements MessagePayload {
         return originAddress;
     }
 
-    public byte[] getDestinationAddress() {
+    public char[] getDestinationAddress() {
         return destinationAddress;
     }
 
-    public BigDecimal getValue() {
-        return value;
+    public byte[] getOriginPublicKey() {
+        return originPublicKey;
+    }
+
+    public TransactionInput[] getTxnIn() {
+        return txnIn;
+    }
+
+    public TransactionOutput[] getTxnOut() {
+        return txnOut;
+    }
+
+    public byte[] getMerkleRoot() {
+        return merkleRoot;
     }
 
     public byte[] getTransactionHash() {
@@ -74,8 +96,11 @@ public class TransactionPayload implements MessagePayload {
         byte[] messageBytes = new byte[0];
         messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(timestamp));
         messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(originAddress));
+        messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(originPublicKey));
         messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(destinationAddress));
-        messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(value));
+        messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(txnIn));
+        messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(txnOut));
+        messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(merkleRoot));
         messageBytes = appendBytes(messageBytes, transactionHash);
         messageBytes = appendBytes(messageBytes, signature);
         messageBytes = appendBytes(messageBytes, blockHash);
@@ -90,8 +115,11 @@ public class TransactionPayload implements MessagePayload {
 
         private int timestamp;
         private byte[] originAddress;
-        private byte[] destinationAddress;
-        private BigDecimal value;
+        private byte[] originPublicKey;
+        private char[] destinationAddress;
+        private TransactionInput[] txnIn;
+        private TransactionOutput[] txnOut;
+        private byte[] merkleRoot;
         private byte[] transactionHash;
         private byte[] signature;
         private byte[] blockHash;
@@ -112,13 +140,28 @@ public class TransactionPayload implements MessagePayload {
             return this;
         }
 
-        public Builder setDestinationAddress(byte[] destinationAddress) {
+        public Builder setOriginPublicKey(byte[] originPublicKey) {
+            this.originPublicKey = originPublicKey;
+            return this;
+        }
+
+        public Builder setDestinationAddress(char[] destinationAddress) {
             this.destinationAddress = destinationAddress;
             return this;
         }
 
-        public Builder setValue(BigDecimal value) {
-            this.value = value;
+        public Builder setTransactionInput(TransactionInput[] txnIn) {
+            this.txnIn = txnIn;
+            return this;
+        }
+
+        public Builder setTransactionOutput(TransactionOutput[] txnOut) {
+            this.txnOut = txnOut;
+            return this;
+        }
+
+        public Builder setMerkleRoot(byte[] merkleRoot) {
+            this.merkleRoot = merkleRoot;
             return this;
         }
 
@@ -140,7 +183,7 @@ public class TransactionPayload implements MessagePayload {
         public Builder buildFromTransaction(Transaction txn) {
             this.timestamp = (int) txn.getTimestamp().toEpochSecond();
             this.originAddress = txn.getOrigin().getEncoded();
-            this.destinationAddress = txn.getDestination().getEncoded();
+            this.destinationAddress = txn.getDestinationAddress().toCharArray();
             this.transactionHash = txn.getTxnHash();
             this.signature = txn.getSignature();
             return this;
