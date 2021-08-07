@@ -2,10 +2,13 @@
 .idea
 *.iml
 
-# Ignore builds
+# Ignore java builds
 target
 
-# Ignore Blockchain Data
+# Ignore Haskell builds
+.stack-work/
+
+# Ignore Yggdrasil Data
 .yggdrasil
 
 # Ignore other OS Specific files
