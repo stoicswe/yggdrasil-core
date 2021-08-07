@@ -63,7 +63,7 @@ Tests can be run during the build proccess: run `mvn clean install` to build wit
 
 ## Authors
 
-* **Nathan Bunch** - *Original Author*
+* **[Nathan Bunch](https://twitter.com/stoicswe)** - *Original Author*
 
 ## Contributing
 
