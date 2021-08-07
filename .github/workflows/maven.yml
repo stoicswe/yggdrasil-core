@@ -6,6 +6,8 @@ name: Java CI with Maven
 on:
   push:
     branches: [ main ]
+    paths:
+      - 'yggdrasil-core-java/**'
   pull_request:
     branches: [ main ]
 
