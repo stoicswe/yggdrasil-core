@@ -1,3 +1,4 @@
+[![Java CI with Maven](https://github.com/nathanielbunch/yggdrasil/actions/workflows/maven.yml/badge.svg)](https://github.com/nathanielbunch/yggdrasil/actions/workflows/maven.yml)
 # Yggdrasil Core
 
 ### What is Yggdrasil?
