@@ -1,4 +1,4 @@
-[![Java CI with Maven](https://github.com/nathanielbunch/yggdrasil/actions/workflows/maven.yml/badge.svg)](https://github.com/nathanielbunch/yggdrasil/actions/workflows/maven.yml)
+[![Haskell Stack CI](https://github.com/nathanielbunch/yggdrasil/actions/workflows/stack.yml/badge.svg)](https://github.com/nathanielbunch/yggdrasil/actions/workflows/stack.yml) [![Java CI with Maven](https://github.com/nathanielbunch/yggdrasil/actions/workflows/maven.yml/badge.svg)](https://github.com/nathanielbunch/yggdrasil/actions/workflows/maven.yml)
 # Yggdrasil Core
 
 ### What is Yggdrasil?
@@ -63,7 +63,7 @@ Tests can be run during the build proccess: run `mvn clean install` to build wit
 
 ## Authors
 
-* **Nathan Bunch** - *Original Author*
+* **[Nathan Bunch](https://github.com/nathanielbunch)** - *Original Author*
 
 ## Contributing
 
