@@ -79,4 +79,4 @@ This project is licensed under the MIT - see the [LICENSE.md](LICENSE.md) file f
 
 ## Acknowledgements
 
-NA.
+_Original Author_ [Nathaniel Bunch](https://github.com/stoicswe)
