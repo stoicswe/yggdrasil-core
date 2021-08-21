@@ -1,4 +1,4 @@
-module Blockchain where
+module Yggdrasil.Core.Ledger.Chain.Blockchain where
 
   -- Module: Blockchain
   -- Author: Nathaniel Bunch
@@ -8,8 +8,6 @@ module Blockchain where
 
   -- Make these LedgerItems able to be exported to
   -- [Byte] for hashing.
-  data LedgerItem = Blockchain | Block | Txn
-
   data Blockchain = {
     _blockSolveWindow :: Integer
     _baseDifficulty :: Integer

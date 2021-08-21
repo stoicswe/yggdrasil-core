@@ -1,4 +1,4 @@
-module Txn where
+module Yggdrasil.Core.Ledger.Transaction.Txn where
 
   -- Module: Txn
   -- Author: Nathaniel Bunch
