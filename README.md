@@ -16,16 +16,13 @@ Option+A768
 &#42856;
 ```
 
-### Future of this Project
-In the future, once the Java variant of the source code is written, there is a goal to translate the project into the Haskell. The reason for this is performance improvement, further simplicity of the source code, and also further seperating itself from the other multitudes of cryptocurrencies out there. Haskell is a very capable language for the task, and there's only the matter of utilizing it. One may ask (and rightfully so) why the project was not first written in Haskell and is being prototyped in Java instead? The reason for this was because the creator of this project simply did not know Haskell well enough in order to begin prototyping. The translation period will being about a good opportunity for delving into the realm of Haskell and bring with it a much deeper understanding of the functional language. Hence this project can be stated to also provide another great learning opportunity for participants: the opportunity to learn purely functional programming techniques. There is potential in the future as well that other clients, nodes, and components of the network be written in other languages as well as time moves on ;-).
-
 ## Getting Started
 
 ### Prerequisites
 
 In order to run this project, you will need:
 ```
-JDK >= 1.15
+JDK 11 (IBM Semeru)
 Maven LATEST
 ```
 
