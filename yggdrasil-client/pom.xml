@@ -14,4 +14,20 @@
         <version>0.0.22-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
+
+    <dependencies>
+        <!-- Database and Storage -->
+        <dependency>
+            <groupId>org.mapdb</groupId>
+            <artifactId>mapdb</artifactId>
+            <version>${mapdb-version}</version>
+        </dependency>
+
+        <!-- Useful Utils -->
+        <dependency>
+            <groupId>org.openjdk.jol</groupId>
+            <artifactId>jol-core</artifactId>
+            <version>${jol-version}</version>
+        </dependency>
+    </dependencies>
 </project>
