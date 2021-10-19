@@ -11,7 +11,6 @@ import org.yggdrasil.core.ledger.wallet.WalletIndexer;
 import org.yggdrasil.core.utils.CryptoHasher;
 import org.yggdrasil.core.utils.CryptoKeyGenerator;
 import org.yggdrasil.node.controller.BlockchainController;
-import org.yggdrasil.node.model.BlockResponse;
 import org.yggdrasil.node.network.Node;
 import org.openjdk.jol.info.GraphLayout;
 import org.slf4j.Logger;
@@ -32,8 +31,6 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.security.*;
 import java.security.spec.InvalidKeySpecException;
-import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
@@ -123,7 +120,7 @@ public class BlockchainService {
                             new TransactionOutput(CryptoHasher.hashByteArray(transaction.getDestinationAddress()), transaction.getValue())
                     })
                     .build();
-            this.walletIndexer.getCurrentWallet().signTransaction(mempoolTxn);
+            this.walletIndexer.getCurrentWallet().signTxn(mempoolTxn);
         } else {
             throw new TransactionException("The current wallet's address does not match the origin address of the submitted transaction.");
         }
@@ -208,7 +205,7 @@ public class BlockchainService {
                 .setOriginPublicKey(this.walletIndexer.getCurrentWallet().getPublicKey())
                 .setDestinationAddress("6ad28d3fda4e10bdc0aaf7112f7818e181defa7e")
                 .build();
-        this.walletIndexer.getCurrentWallet().signTransaction(txn);
+        this.walletIndexer.getCurrentWallet().signTxn(txn);
         logger.info("signing...");
         logger.info(String.valueOf(txn));
         Signature ecdsaVerify = Signature.getInstance(CryptoKeyGenerator.getSignatureAlgorithm());

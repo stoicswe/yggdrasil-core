@@ -40,23 +40,38 @@ public class Wallet implements LedgerHashableItem {
      * the private key, so that the private key is never stored in
      * memory.
      */
+
+    // Public key from which an address is derived from
     @JsonIgnore
     protected transient final PublicKey publicKey;
+    // Private key used for generating signatures
+    // Sigs are used for verifying the ownership of txns
+    // Private keys must never be in the json output
     @JsonIgnore
     protected transient final PrivateKey privateKey;
+    // the creation date of the wallet
     @JsonInclude
     protected final ZonedDateTime creationDate;
+    // The public address for this wallet
+    // Used for other wallets to reference this one
     @JsonInclude
     @JsonSerialize(using = HashSerializer.class)
     private final byte[] address;
+    // The hash of this wallet, used for local storage
+    // and for referencing in the APIs
     @JsonInclude
     @JsonSerialize(using = HashSerializer.class)
     private final byte[] walletHash;
+    // A hashmap of local storage of txns that are associated with
+    // this wallet.
     @JsonIgnore
     private transient final HashMap<byte[], WalletTransaction> wTxns;
+    // A sig object used for signing txns
     @JsonIgnore
     private transient Signature signature;
 
+    // Build a new wallet, given the parameters that have been passed
+    // to the builder
     private Wallet(Builder builder) throws NoSuchAlgorithmException {
         this.publicKey = builder.publicKey;
         this.privateKey = builder.privateKey;
@@ -67,6 +82,8 @@ public class Wallet implements LedgerHashableItem {
         this.walletHash = CryptoHasher.hash(this);
     }
 
+    // Build a wallet from raw components, instead of from auto-generated
+    // parameters in the builder
     private Wallet(PublicKey publicKey, PrivateKey privateKey, ZonedDateTime creationDate, byte[] address, BigDecimal balance, byte[] walletHash) throws NoSuchAlgorithmException {
         this.publicKey = publicKey;
         this.privateKey = privateKey;
@@ -94,7 +111,7 @@ public class Wallet implements LedgerHashableItem {
         return bal;
     }
 
-    public void signTransaction(Transaction txn) throws InvalidKeyException, SignatureException, NoSuchAlgorithmException {
+    public void signTxn(Transaction txn) throws InvalidKeyException, SignatureException, NoSuchAlgorithmException {
         signature.initSign(privateKey);
         byte[] txnData = txn.getTxnHash();
         signature.update(txnData, 0, txnData.length);
@@ -107,13 +124,6 @@ public class Wallet implements LedgerHashableItem {
         byte[] merkleRoot = block.getMerkleRoot();
         signature.update(merkleRoot, 0, merkleRoot.length);
         block.setSignature(signature.sign());
-    }
-
-    public byte[] getSignature(TransactionOutput txnOutpt) throws SignatureException, InvalidKeyException {
-        signature.initSign(privateKey);
-        byte[] sigRandBits = SerializationUtils.serialize(UUID.randomUUID());
-        signature.update(sigRandBits, 0, sigRandBits.length);
-        return signature.sign();
     }
 
     public PublicKey getPublicKey() {
@@ -138,6 +148,8 @@ public class Wallet implements LedgerHashableItem {
         return new WalletRecord(this);
     }
 
+    // In the cryptohasher, this method is called in order
+    // to generate the hash of this item.
     @JsonIgnore
     @Override
     public byte[] getDataBytes() {
