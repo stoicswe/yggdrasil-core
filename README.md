@@ -1,4 +1,4 @@
-[![Java CI with Maven](https://github.com/nathanielbunch/yggdrasil/actions/workflows/maven.yml/badge.svg)](https://github.com/nathanielbunch/yggdrasil/actions/workflows/maven.yml)
+[![Java CI with Maven](https://github.com/stoicswe/yggdrasil-core/actions/workflows/maven.yml/badge.svg)](https://github.com/stoicswe/yggdrasil-core/actions/workflows/maven.yml)
 # Yggdrasil Core
 
 ### What is Yggdrasil?
@@ -66,9 +66,9 @@ Tests can be run during the build proccess: run `mvn clean install` to build wit
 
 Contributions are welcome!
 
-Before contributing, take time to review the [code of conduct](https://github.com/nathanielbunch/AStupidlySimpleBlockchain/blob/main/CODE_OF_CONDUCT.md).
+Before contributing, take time to review the [code of conduct](https://github.com/stoicswe/yggdrasil-core/blob/main/CODE_OF_CONDUCT.md).
 
-See also other contributors on the list of [contributors](https://github.com/taranoshi/AStupidlySimpleBlockchain/graphs/contributors).
+See also other contributors on the list of [contributors](https://github.com/stoicswe/yggdrasil-core/graphs/contributors).
 
 ## License
 
