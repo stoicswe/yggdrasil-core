@@ -25,7 +25,10 @@ import org.yggdrasil.node.network.messages.enums.RequestType;
 import org.yggdrasil.node.network.messages.payloads.MempoolTransactionMessage;
 import org.yggdrasil.node.network.messages.payloads.MempoolTransactionPayload;
 import org.yggdrasil.node.network.messages.payloads.PingPongMessage;
+import org.yggdrasil.ui.MainFrame;
 
+import javax.annotation.PostConstruct;
+import javax.swing.*;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -47,6 +50,7 @@ public class BlockchainService {
 
     private final Integer _PREFIX = 4;
     private final Integer _MAX_BLOCK_SIZE = 2048;
+    private final String _APPLICATION_NAME = "Yggdrasil Core";
     private final Logger logger = LoggerFactory.getLogger(BlockchainService.class);
 
     // Node dependencies
@@ -65,6 +69,17 @@ public class BlockchainService {
     private Mempool mempool;
     @Autowired
     private WalletIndexer walletIndexer;
+
+    @PostConstruct
+    public void postInit() {
+        // Deploy the frame
+        BlockchainService blockchainService = this;
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                new MainFrame(_APPLICATION_NAME, blockchainService);
+            }
+        });
+    }
 
     /**
      * Returns the current local blockchain instance.
@@ -164,9 +179,9 @@ public class BlockchainService {
      * @throws NoSuchProviderException
      * @throws InvalidAlgorithmParameterException
      */
-    public Wallet createWallet() throws NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParameterException {
+    public Wallet createWallet(String walletLabel) throws NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParameterException {
         logger.info("Generating new wallet...");
-        Wallet wallet = this.walletIndexer.createNewWallet();
+        Wallet wallet = this.walletIndexer.createNewWallet(walletLabel);
         logger.info("New wallet generated with address: {}", CryptoHasher.humanReadableHash(wallet.getAddress()));
         this.walletIndexer.switchCurrentWallet(wallet);
         return wallet;

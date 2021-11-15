@@ -9,6 +9,8 @@ server:
   shutdown: "graceful"
 blockchain:
   network: "main"
+  api:
+    enabled: true
   p2p:
     port: 9090
     active-connections: 10
