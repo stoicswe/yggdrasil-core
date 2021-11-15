@@ -39,7 +39,6 @@
 
     <modules>
         <module>yggdrasil-node</module>
-        <module>yggdrasil-client</module>
     </modules>
 
     <dependencyManagement>
