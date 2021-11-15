@@ -66,7 +66,7 @@ Tests can be run during the build proccess: run `mvn clean install` to build wit
 
 Contributions are welcome!
 
-Before contributing, take time to review the [code of conduct](https://github.com/stoicswe/yggdrasil-core/blob/main/CODE_OF_CONDUCT.md).
+Before contributing, take time to review the [code of conduct](https://github.com/stoicswe/yggdrasil-core/blob/main/docs/CODE_OF_CONDUCT.md) and [contributing](https://github.com/stoicswe/yggdrasil-core/blob/main/docs/CONTRIBUTING.md) documents.
 
 See also other contributors on the list of [contributors](https://github.com/stoicswe/yggdrasil-core/graphs/contributors).
 
