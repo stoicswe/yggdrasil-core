@@ -2,6 +2,7 @@ package org.yggdrasil.node.controller;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.web.bind.annotation.*;
 import org.yggdrasil.core.ledger.chain.Block;
 import org.yggdrasil.core.ledger.chain.Blockchain;
@@ -33,6 +34,7 @@ import java.util.Optional;
  * @author nathanielbunch
  */
 @RestController
+@ConditionalOnExpression("${blockchain.api.enabled:false}")
 public class BlockchainController {
 
     Logger logger = LoggerFactory.getLogger(BlockchainController.class);
@@ -69,8 +71,8 @@ public class BlockchainController {
     }
 
     @RequestMapping(value = "/createWallet", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Wallet> createNewWallet() throws Exception {
-        return new ResponseEntity<>(this.service.createWallet(), HttpStatus.OK);
+    public ResponseEntity<Wallet> createNewWallet(@RequestParam(name = "walletName", required = true) String walletName) throws Exception {
+        return new ResponseEntity<>(this.service.createWallet(walletName), HttpStatus.OK);
     }
 
     @RequestMapping(value = "/selectWallet", method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE)

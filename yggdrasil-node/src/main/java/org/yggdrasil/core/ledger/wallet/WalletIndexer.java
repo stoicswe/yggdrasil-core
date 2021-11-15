@@ -33,8 +33,10 @@ public class WalletIndexer {
     private CryptoKeyGenerator cryptoKeyGenerator;
     private DB coldWallets;
     private HTreeMap walletData;
+    private HTreeMap walletNames;
     private DB hotWallets;
     private HTreeMap walletCache;
+    private HTreeMap walletNameCache;
     private Wallet currentWallet;
 
     @PostConstruct
@@ -44,6 +46,11 @@ public class WalletIndexer {
                 .make();
         this.walletData = coldWallets.hashMap("walletData")
                 .keySerializer(Serializer.BYTE_ARRAY)
+                .counterEnable()
+                .createOrOpen();
+        this.walletNames = coldWallets.hashMap("walletNames")
+                .keySerializer(Serializer.STRING)
+                .valueSerializer(Serializer.BYTE_ARRAY)
                 .counterEnable()
                 .createOrOpen();
         this.hotWallets = DBMaker
@@ -58,14 +65,26 @@ public class WalletIndexer {
                 .expireAfterCreate(5, TimeUnit.SECONDS)
                 .expireExecutor(Executors.newScheduledThreadPool(2))
                 .createOrOpen();
+        this.walletNameCache = hotWallets
+                .hashMap("walletNameCache")
+                .keySerializer(Serializer.STRING)
+                .valueSerializer(Serializer.BYTE_ARRAY)
+                .expireOverflow(walletNames)
+                .expireAfterGet(5, TimeUnit.SECONDS)
+                .expireAfterCreate(5, TimeUnit.SECONDS)
+                .expireExecutor(Executors.newScheduledThreadPool(2))
+                .createOrOpen();
     }
 
     @PreDestroy
     private void onDestroy() {
         logger.info("Shutting down wallet database.");
         this.walletCache.clearWithExpire();
+        this.walletNameCache.clearWithExpire();
         this.walletCache.close();
+        this.walletNameCache.close();
         this.walletData.close();
+        this.walletNames.close();
     }
 
     public Wallet getCurrentWallet() {
@@ -80,11 +99,12 @@ public class WalletIndexer {
      * Create a new wallet and add to the walletCache.
      * @return
      */
-    public Wallet createNewWallet() throws InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchProviderException {
+    public Wallet createNewWallet(String walletLabel) throws InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchProviderException {
         Wallet w = Wallet.Builder.newBuilder()
                 .setKeyPair(cryptoKeyGenerator.generatePublicPrivateKeys())
                 .build();
         try {
+            this.walletNameCache.put(walletLabel, w.getAddress());
             this.walletCache.put(w.getAddress(), w.toWalletRecord());
         } catch (Exception e) {
             logger.error("Error while creating new wallet: {}", e.getMessage());

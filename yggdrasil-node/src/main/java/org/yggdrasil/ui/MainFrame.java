@@ -1,5 +1,6 @@
 package org.yggdrasil.ui;
 
+import org.yggdrasil.node.service.BlockchainService;
 import org.yggdrasil.ui.forms.ApplicationForm;
 
 import javax.swing.*;
@@ -13,8 +14,12 @@ import java.awt.*;
  */
 public class MainFrame {
 
-    public MainFrame(String applicationName, String applicationVersion) {
-        JFrame frame = new ApplicationForm(applicationName);
+    public static JFrame frame;
+    public static BlockchainService blockchainService;
+
+    public MainFrame(String applicationName, BlockchainService blokService) {
+        blockchainService = blokService;
+        frame = new ApplicationForm(applicationName);
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
         Dimension frameSize = frame.getSize();
         if (frameSize.height > screenSize.height) {
