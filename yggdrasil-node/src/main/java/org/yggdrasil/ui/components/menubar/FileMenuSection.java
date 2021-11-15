@@ -17,16 +17,16 @@ public class FileMenuSection extends JMenu {
 
     public FileMenuSection(String label) {
         this.setText(label);
-        this.add(createWallet);
-        this.add(openWallet);
-        this.add(closeWallet);
-        this.add(closeAllWallets);
+        this.add(this.createWallet);
+        this.add(this.openWallet);
+        this.add(this.closeWallet);
+        this.add(this.closeAllWallets);
         this.addSeparator();
-        this.add(backupWallet);
-        this.add(signMessage);
-        this.add(verifyMessage);
+        this.add(this.backupWallet);
+        this.add(this.signMessage);
+        this.add(this.verifyMessage);
         this.addSeparator();
-        this.add(exitApp);
+        this.add(this.exitApp);
     }
 
 }
