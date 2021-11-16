@@ -7,7 +7,7 @@ import javax.swing.*;
 public class FileMenuSection extends JMenu {
 
     JMenuItem createWallet = new CreateWalletMenuItem("Create Wallet");
-    JMenu openWallet = new OpenWalletMenu("Open Wallet");
+    JMenuItem openWallet = new OpenWalletMenu("Open Wallet");
     JMenuItem closeWallet = new CloseWalletMenuItem("Close Wallet");
     JMenuItem closeAllWallets = new CloseAllWalletsMenuItem("Close All Wallets");
     JMenuItem backupWallet = new BackupWalletMenuItem("Backup Wallet");

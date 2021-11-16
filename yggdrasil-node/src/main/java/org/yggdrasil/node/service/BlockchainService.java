@@ -1,5 +1,6 @@
 package org.yggdrasil.node.service;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.yggdrasil.core.ledger.chain.Block;
 import org.yggdrasil.core.ledger.chain.BlockMine;
 import org.yggdrasil.core.ledger.chain.Blockchain;
@@ -159,6 +160,15 @@ public class BlockchainService {
     }
 
     /**
+     * Returns the wallet names.
+     *
+     * @return
+     */
+    public List<Pair<String, byte[]>> getWalletNames() {
+        return this.walletIndexer.getAllWalletNames();
+    }
+
+    /**
      * Returns the currently loaded wallet.
      *
      * @return
@@ -184,6 +194,22 @@ public class BlockchainService {
         Wallet wallet = this.walletIndexer.createNewWallet(walletLabel);
         logger.info("New wallet generated with address: {}", CryptoHasher.humanReadableHash(wallet.getAddress()));
         this.walletIndexer.switchCurrentWallet(wallet);
+        return wallet;
+    }
+
+    /**
+     * Select a wallet to initiate transactions from.
+     *
+     * @return
+     * @throws NoSuchAlgorithmException
+     * @throws NoSuchProviderException
+     * @throws InvalidAlgorithmParameterException
+     */
+    public Wallet selectWallet(byte[] walletAddress) throws NoSuchAlgorithmException, NoSuchProviderException, InvalidKeySpecException {
+        logger.debug("Selecting a wallet...");
+        Wallet wallet = this.walletIndexer.getWallet(walletAddress);
+        this.walletIndexer.switchCurrentWallet(wallet);
+        logger.info("Wallet selected with address: {}", CryptoHasher.humanReadableHash(wallet.getAddress()));
         return wallet;
     }
 

@@ -1,5 +1,7 @@
 package org.yggdrasil.core.ledger.wallet;
 
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.mapdb.DB;
 import org.mapdb.DBMaker;
 import org.mapdb.HTreeMap;
@@ -117,6 +119,16 @@ public class WalletIndexer {
 
     public Wallet getWallet(byte[] address) throws NoSuchAlgorithmException, InvalidKeySpecException, NoSuchProviderException {
         return Wallet.Builder.newBuilder().buildFromWalletRecord((WalletRecord) this.walletCache.get(address));
+    }
+
+    public List<Pair<String, byte[]>> getAllWalletNames() {
+        this.walletNameCache.clearWithExpire();
+        List<Pair<String, byte[]>> results = new ArrayList<>();
+        for(Object wn : this.walletNames.getKeys()){
+            byte[] wa = (byte[]) walletNames.get(wn);
+            results.add(new ImmutablePair<>((String) wn, wa));
+        }
+        return results;
     }
 
     public List<Wallet> getAllWallets() throws NoSuchAlgorithmException, InvalidKeySpecException, NoSuchProviderException {

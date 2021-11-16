@@ -20,14 +20,8 @@ public class CreateWalletMenuItem extends JMenuItem {
                 try {
                     assert (walletName != null) && (!walletName.isEmpty());
                     MainFrame.blockchainService.createWallet(walletName);
-                } catch (NoSuchAlgorithmException ex) {
-                    JOptionPane.showMessageDialog(MainFrame.frame, ex.getMessage());
-                    ex.printStackTrace();
-                } catch (NoSuchProviderException ex) {
-                    JOptionPane.showMessageDialog(MainFrame.frame, ex.getMessage());
-                    ex.printStackTrace();
-                } catch (InvalidAlgorithmParameterException ex) {
-                    JOptionPane.showMessageDialog(MainFrame.frame, ex.getMessage());
+                } catch (NoSuchAlgorithmException | NoSuchProviderException | InvalidAlgorithmParameterException ex) {
+                    JOptionPane.showMessageDialog(MainFrame.frame, ex.getMessage(), "Error!", JOptionPane.ERROR_MESSAGE);
                     ex.printStackTrace();
                 }
             }
