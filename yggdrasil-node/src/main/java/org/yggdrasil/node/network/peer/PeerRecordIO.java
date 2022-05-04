@@ -75,6 +75,9 @@ public class PeerRecordIO {
     }
 
     private byte[] hashPeerRecord(PeerRecord peerRecord) throws NoSuchAlgorithmException {
+        // The use of MD5 for hashing the peer record is only used for unique peer dir
+        // save locations and is not used in any way for security of the network. Warnings
+        // caused by the scanner over the use of MD5 can be safely ignored.
         return MessageDigest.getInstance(_HASH_ALGORITHM).digest(SerializationUtils.serialize(peerRecord));
     }
 
