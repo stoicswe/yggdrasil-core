@@ -1,4 +1,5 @@
 [![Java CI with Maven](https://github.com/stoicswe/yggdrasil-core/actions/workflows/maven.yml/badge.svg)](https://github.com/stoicswe/yggdrasil-core/actions/workflows/maven.yml)
+[![CodeQL](https://github.com/stoicswe/yggdrasil-core/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/stoicswe/yggdrasil-core/actions/workflows/codeql-analysis.yml)
 # Yggdrasil Core
 
 ### What is Yggdrasil?
