@@ -1,4 +1,4 @@
-package org.yggdrasil.node.service;
+package org.yggdrasil.core.api.service;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.yggdrasil.core.ledger.chain.Block;
@@ -11,7 +11,7 @@ import org.yggdrasil.core.ledger.wallet.Wallet;
 import org.yggdrasil.core.ledger.wallet.WalletIndexer;
 import org.yggdrasil.core.utils.CryptoHasher;
 import org.yggdrasil.core.utils.CryptoKeyGenerator;
-import org.yggdrasil.node.controller.BlockchainController;
+import org.yggdrasil.core.api.controller.BlockchainController;
 import org.yggdrasil.node.network.Node;
 import org.openjdk.jol.info.GraphLayout;
 import org.slf4j.Logger;

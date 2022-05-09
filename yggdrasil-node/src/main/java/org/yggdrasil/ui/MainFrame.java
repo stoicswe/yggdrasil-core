@@ -1,6 +1,6 @@
 package org.yggdrasil.ui;
 
-import org.yggdrasil.node.service.BlockchainService;
+import org.yggdrasil.core.api.service.BlockchainService;
 import org.yggdrasil.ui.forms.ApplicationForm;
 
 import javax.swing.*;
