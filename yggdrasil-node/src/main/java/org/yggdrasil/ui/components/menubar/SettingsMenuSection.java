@@ -15,6 +15,7 @@ public class SettingsMenuSection extends JMenu {
     JMenuItem options = new OptionsMenuItem("Options...");
 
     public SettingsMenuSection(String label) {
+        this.setText(label);
         this.add(this.encryptWallet);
         this.add(this.changePassphrase);
         this.addSeparator();

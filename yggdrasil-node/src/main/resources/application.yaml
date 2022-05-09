@@ -5,6 +5,8 @@
 #######################################
 spring:
   application: "Yggdrasil Core"
+  main:
+    allow-circular-references: true
   profiles:
     active: "live"
   lifecycle:
