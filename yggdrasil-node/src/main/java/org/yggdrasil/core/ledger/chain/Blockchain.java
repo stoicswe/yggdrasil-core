@@ -6,6 +6,7 @@ import org.mapdb.DB;
 import org.mapdb.DBMaker;
 import org.mapdb.HTreeMap;
 import org.mapdb.Serializer;
+import org.springframework.beans.factory.annotation.Value;
 import org.yggdrasil.core.utils.CryptoHasher;
 import org.yggdrasil.core.utils.DateTimeUtil;
 import org.yggdrasil.node.network.NodeConfig;
@@ -44,11 +45,12 @@ public class Blockchain implements Cloneable {
     private final Integer _BLOCK_SOLVE_TIME = 840;
     // The time (in minutes) that blocks recently created and added to the blockchain
     // should expire from the cache.
-    private final Integer _CACHE_PUT_EXPIRATION = 5;
+    @Value("${blockchain.cache.put-expiration:5}")
+    private Integer _CACHE_PUT_EXPIRATION;
     // The time (in minutes) that blocks recently retrieved from archive
     // should expire from the cache.
-    private final Integer _CACHE_GET_EXPIRATION = 5;
-
+    @Value("${blockchain.cache.get-expiration:5}")
+    private Integer _CACHE_GET_EXPIRATION;
     // The base difficulty of the hash computation. This number is dynamic and
     // adjusts automatically to ensure proper solve time.
     private Integer _BASE_DIFFICULTY = 4;

@@ -1,3 +1,8 @@
+#######################################
+#
+# YGGDRASIL CORE INTERNAL CONFIGURATION
+#
+#######################################
 spring:
   application: "Yggdrasil Core"
   profiles:
@@ -7,14 +12,32 @@ spring:
 server:
   port: 9000
   shutdown: "graceful"
+
+######################################
+#
+# YGGDRASIL CORE CUSTOMIZATION PARAMS
+#
+######################################
 blockchain:
+  # Active network profile
   network: "main"
   api:
+    # Enables the built-in REST APIs
     enabled: true
+  cache:
+    # Cache insert expiration (in minutes)
+    put-expiration: 5
+    # Cache retrieval expiration (in minutes)
+    get-expiration: 5
   p2p:
+    # Port to listen on for p2p connection(s)
     port: 9090
+    # Maximum parallel p2p connections
     active-connections: 10
+    # This node's name (prefix to the random gen)
     node-name: "yggdrasil-branch"
+    # Pre-configured peer(s)
     peers: "192.168.1.122"
+    # Maximum peer connections records to keep
     peer-records: 25
     #connection-timeout: 30000
