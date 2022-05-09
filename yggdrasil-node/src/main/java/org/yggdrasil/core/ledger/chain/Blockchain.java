@@ -36,56 +36,91 @@ import java.util.concurrent.TimeUnit;
 public class Blockchain implements Cloneable {
 
     private Logger logger = LoggerFactory.getLogger(Blockchain.class);
-    // The size of the window in which the hash difficulty is calculated
+    // The size of the window in which the hash difficulty is calculated,
+    // in the number of blocks
     private final Integer _BLOCK_SOLVE_WINDOW = 2016;
-    private Integer _BASE_DIFFICULTY = 4;
+    // The targeted time that blocks should be solved. This target time is
+    // set to 14 minutes.
+    private final Integer _BLOCK_SOLVE_TIME = 840;
+    // The time (in minutes) that blocks recently created and added to the blockchain
+    // should expire from the cache.
+    private final Integer _CACHE_PUT_EXPIRATION = 5;
+    // The time (in minutes) that blocks recently retrieved from archive
+    // should expire from the cache.
+    private final Integer _CACHE_GET_EXPIRATION = 5;
 
+    // The base difficulty of the hash computation. This number is dynamic and
+    // adjusts automatically to ensure proper solve time.
+    private Integer _BASE_DIFFICULTY = 4;
+    // This current operating node configuration. Contains identification data
+    // about the machine (randomly generated UUIDs) and general node configuration.
     @Autowired
     private transient NodeConfig nodeConfig;
-    // Node name reference
+    // The node index is the identifying UUID of this current node. If not defined
+    // than a new one is randomly generated.
     private UUID nodeIndex;
-    // Time since last node launch
+    // This is the time since the node was last launched, providing the node a sense
+    // of lapse between being turned on/off.
     private ZonedDateTime timestamp;
-    // Data storage
+    // Cache storage for "hot blocks" or blocks that have been used recently or requested
+    // by other nodes, in the event they need to be used again. Data is written through the
+    // cache to disk, but end up persisting in the cache for a bit longer.
     private transient DB cache;
+    // The implementation for the cache.
     private HTreeMap hotBlocks;
+    // On-disk storage for the blockchain data. Blocks are written to disk as they are received
+    // or generated.
     private transient DB database;
+    // The archival, on-disk storage implementation for the blockchain.
     private transient HTreeMap coldBlocks;
+    // Storage for the state that the chain was in between runtimes of the node. Primarily
+    // just used for storing the last known block so that indexing and sync can occur.
     private transient HTreeMap blockchainState;
+    // The last known block's hash. Used for keeping track of the last processed block.
     private transient byte[] lastBlockHash;
 
+    // Initialize the blockchain by defining the databases and restoring previous state.
     @PostConstruct
     public void init() throws Exception {
+        // Get the node's name from the configuration
         this.nodeIndex = nodeConfig.getNodeIndex();
+        // Get the current timestamp
         this.timestamp = DateTimeUtil.getCurrentTimestamp();
-        // If the save directory is not made, make it
+        // If the save directory for the cache is not made create it.
         this.cache = DBMaker
                 .memoryDirectDB()
                 .make();
+        // If the save directory for the archival database is not made create it.
         this.database = DBMaker
                 .fileDB(nodeConfig._CURRENT_DIRECTORY + "/chain" + nodeConfig._FILE_EXTENSION)
                 .fileMmapEnableIfSupported()
                 .make();
+        // Create the cold block storage
         this.coldBlocks = this.database
                 .hashMap("coldChain")
                 .keySerializer(Serializer.BYTE_ARRAY)
                 .counterEnable()
                 .createOrOpen();
+        // Create the blockchain state storage
         this.blockchainState = this.database
                 .hashMap("BCState")
                 .keySerializer(Serializer.STRING)
                 .counterEnable()
                 .createOrOpen();
+        // Create the hot block storage
         this.hotBlocks = this.cache
                 .hashMap("hotChain")
                 .keySerializer(Serializer.BYTE_ARRAY)
-                .expireAfterCreate(30, TimeUnit.MINUTES)
-                .expireAfterGet(15, TimeUnit.MINUTES)
+                .expireAfterCreate(_CACHE_PUT_EXPIRATION, TimeUnit.MINUTES)
+                .expireAfterGet(_CACHE_GET_EXPIRATION, TimeUnit.MINUTES)
                 .expireOverflow(this.coldBlocks)
                 .expireExecutor(Executors.newScheduledThreadPool(2))
                 .createOrOpen();
-        // restore necessary values
+        // If there was state previously stored, restore that state
         this.restoreState();
+        // If the cold block storage has nothing in it, generate the genesis block
+        // regardless, set the base difficulty, either to the default or calculate
+        // if there are blocks that have been stored previously
         if(this.coldBlocks.size() == 0) {
             Block genesis = Block.genesis();
             this.addBlock(genesis);
@@ -97,6 +132,7 @@ public class Blockchain implements Cloneable {
         }
     }
 
+    // Before this object is removed from memory, dump all data to disk.
     @PreDestroy
     public void onDestroy() throws Exception {
         logger.info("Shutting down blockchain database.");
@@ -105,25 +141,51 @@ public class Blockchain implements Cloneable {
         this.blockchainState.close();
     }
 
+    // Private function to set the current state from storage
     private void restoreState() {
         this.lastBlockHash = (byte[]) this.blockchainState.get("lastBlockHash");
     }
 
+    /**
+     * Get the current node's index (name) as known by the blockchain network.
+     *
+     * @return nodeIndex
+     */
     public UUID getNodeIndex() {
         return nodeIndex;
     }
 
+    /**
+     * Return the timestamp since last launch.
+     *
+     * @return
+     */
     public ZonedDateTime getTimestamp() {
         return timestamp;
     }
 
+    /**
+     * Get the current blocks from the cache in an array.
+     *
+     * @return blocks[]
+     */
     public Block[] getBlocks() {
         return (Block[]) this.hotBlocks.values().toArray(Block[]::new);
     }
 
+    /**
+     * Add a new block to the chain. This block will be written through to the archive, with a 10m
+     * expiration from the cache.
+     *
+     * @param block
+     */
     public void addBlock(Block block) {
         logger.trace("Received a block to evaluate for adding to the chain");
+        // Check if the block already exists
         Block storedBlck = (Block) this.hotBlocks.get(block.getBlockHash());
+        // If the block already exists, we will determine whether ot not to
+        // update the block. Better checks might need to be put in place to ensure
+        // that accurate data is stored properly.
         if (storedBlck != null) {
             if (storedBlck.getTimestamp().compareTo(block.getTimestamp()) > 0) {
                 this.hotBlocks.replace(block.getBlockHash(), block);
@@ -134,26 +196,52 @@ public class Blockchain implements Cloneable {
             }
         } else {
             this.hotBlocks.put(block.getBlockHash(), block);
-            this.lastBlockHash = block.getBlockHash();
             this.blockchainState.put("lastBlockHash", this.lastBlockHash);
         }
+        // Update the last block hash seen
+        this.lastBlockHash = block.getBlockHash();
     }
 
+    /**
+     * Add multiple blocks to the chain. These blocks will be written through to the archive, with a 10m
+     * expiration from the cache.
+     *
+     * @param blocks
+     * @throws CloneNotSupportedException
+     */
     public void addBlocks(List<Block> blocks) throws CloneNotSupportedException {
         for(Block b : blocks) {
             this.hotBlocks.put(b.getBlockHash(), b);
         }
     }
 
+    /**
+     * Get a block from disk, indexed by block hash.
+     *
+     * @param blockHash
+     * @return block
+     */
     public Optional<Block> getBlock(byte[] blockHash) {
         return Optional.ofNullable((Block) this.hotBlocks.get(blockHash));
     }
 
+    /**
+     * Get the last received block from the chain.
+     *
+     * @return
+     */
     @JsonIgnore
     public Optional<Block> getLastBlock() {
         return Optional.ofNullable((Block) this.hotBlocks.get(this.lastBlockHash));
     }
 
+    /**
+     * Check if the chain is valid by comparing the block hashes and if they are connected
+     *
+     * @param chain
+     * @return isValid
+     * @throws Exception
+     */
     public static boolean isValidChain(HashMap<byte[], Block> chain) throws Exception {
         List<Block> chainBlocks = (List<Block>) chain.values();
         if(!chainBlocks.get(0).toString().contentEquals(Block.genesis().toString())){
@@ -170,11 +258,23 @@ public class Blockchain implements Cloneable {
         return true;
     }
 
+    /**
+     * Returns a clone of self.
+     *
+     * @return blockchain
+     * @throws CloneNotSupportedException
+     */
     @Override
     protected Object clone() throws CloneNotSupportedException {
         return super.clone();
     }
 
+    /**
+     * Calculate the hashing difficulty based on the solve time between the number
+     * of blocks in the block window, with the target time of 14 minutes between blocks.
+     *
+     * @return
+     */
     protected int calculateDifficulty() {
         int window = this._BLOCK_SOLVE_WINDOW;
         if(this.coldBlocks.size() < this._BLOCK_SOLVE_WINDOW) {
@@ -194,7 +294,7 @@ public class Blockchain implements Cloneable {
         if(window != 0) {
             averageTime = averageTime / window;
         }
-        if(averageTime > 600) {
+        if(averageTime > _BLOCK_SOLVE_TIME) {
             this._BASE_DIFFICULTY -= 1;
             return this._BASE_DIFFICULTY;
         } else {
