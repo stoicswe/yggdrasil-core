@@ -1,6 +1,7 @@
 package org.yggdrasil.core.api.service;
 
 import org.apache.commons.lang3.tuple.Pair;
+import org.springframework.core.env.Environment;
 import org.yggdrasil.core.ledger.chain.Block;
 import org.yggdrasil.core.ledger.chain.BlockMine;
 import org.yggdrasil.core.ledger.chain.Blockchain;
@@ -54,6 +55,8 @@ public class BlockchainService {
     private final String _APPLICATION_NAME = "Yggdrasil Core";
     private final Logger logger = LoggerFactory.getLogger(BlockchainService.class);
 
+    @Autowired
+    private Environment environment;
     // Node dependencies
     @Autowired
     private Node node;
@@ -77,7 +80,7 @@ public class BlockchainService {
         BlockchainService blockchainService = this;
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                new MainFrame(_APPLICATION_NAME, blockchainService);
+                new MainFrame(environment, _APPLICATION_NAME, blockchainService);
             }
         });
     }

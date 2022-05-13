@@ -138,6 +138,9 @@ public class Blockchain implements Cloneable {
     @PreDestroy
     public void onDestroy() throws Exception {
         logger.info("Shutting down blockchain database.");
+        if (this.lastBlockHash != null) {
+            this.blockchainState.put("lastBlockHash", this.lastBlockHash);
+        }
         this.hotBlocks.clearWithExpire();
         this.coldBlocks.close();
         this.blockchainState.close();
@@ -198,7 +201,6 @@ public class Blockchain implements Cloneable {
             }
         } else {
             this.hotBlocks.put(block.getBlockHash(), block);
-            this.blockchainState.put("lastBlockHash", this.lastBlockHash);
         }
         // Update the last block hash seen
         this.lastBlockHash = block.getBlockHash();
