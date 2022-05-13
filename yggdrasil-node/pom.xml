@@ -86,7 +86,7 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
-                <!--<version>${springboot-maven-version}</version>-->
+                <version>${springboot-maven-version}</version>
                 <configuration>
                     <mainClass>org.yggdrasil.Application</mainClass>
                     <layout>JAR</layout>
