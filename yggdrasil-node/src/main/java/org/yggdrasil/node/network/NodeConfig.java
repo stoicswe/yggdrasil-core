@@ -18,7 +18,7 @@ import java.util.UUID;
 
 /**
  * The node config contains customizations that are set
- * from the application.yaml.
+ * from the application.yml.
  *
  * @since 0.0.8
  * @author nathanielbunch

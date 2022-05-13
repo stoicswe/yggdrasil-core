@@ -41,6 +41,14 @@
             <scope>test</scope>
         </dependency>
 
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-dependencies</artifactId>
+            <version>${springboot-version}</version>
+            <type>pom</type>
+            <scope>import</scope>
+        </dependency>
+
         <!-- Hashing Tools -->
         <dependency>
             <groupId>org.apache.commons</groupId>
@@ -78,7 +86,18 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
-                <version>${springboot-maven-version}</version>
+                <!--<version>${springboot-maven-version}</version>-->
+                <configuration>
+                    <mainClass>org.yggdrasil.Application</mainClass>
+                    <layout>JAR</layout>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>repackage</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
