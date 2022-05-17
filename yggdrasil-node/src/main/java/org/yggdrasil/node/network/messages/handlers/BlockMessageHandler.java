@@ -30,7 +30,11 @@ public class BlockMessageHandler implements MessageHandler<BlockMessage>{
 
         logger.trace("Handling block message");
         Block blck = Block.Builder.newBuilder().buildFromBlockMessage(blockMessage);
-        this.blockchain.addBlock(blck);
+        try {
+            this.blockchain.addBlock(blck);
+        } catch (Exception e) {
+            logger.debug("Exception while trying to insert a new block! Exception: {}", e.getMessage());
+        }
 
         return AcknowledgeMessage.Builder.newBuilder()
                 .setAcknowledgeChecksum(CryptoHasher.hash(blockMessage))

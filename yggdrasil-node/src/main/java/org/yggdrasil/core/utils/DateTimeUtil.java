@@ -23,4 +23,8 @@ public class DateTimeUtil {
         return ZonedDateTime.ofInstant(Instant.ofEpochSecond(timestamp), ZoneId.of(_ZONE_ID));
     }
 
+    public static long toEpochSecondTimeStamp(ZonedDateTime timestamp) {
+        return timestamp.toEpochSecond();
+    }
+
 }
