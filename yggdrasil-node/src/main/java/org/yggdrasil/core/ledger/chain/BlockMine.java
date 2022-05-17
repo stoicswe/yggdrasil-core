@@ -211,7 +211,7 @@ public class BlockMine {
         logger.info("Added new block to the chain: {}", newBlock);
         // the new block can now be transmitted to the other nodes
         // when receiving these, other noes can validate the new block
-        BlockMessage blockMessage = BlockMessage.Builder.newBuilder()
+        BlockMessage blockMessage = BlockMessage.Builder.builder()
                 .setTimestamp((int) newBlock.getTimestamp().toEpochSecond())
                 .setBlockHeight(newBlock.getBlockHeight())
                 .setBlockHash(newBlock.getBlockHash())

@@ -57,11 +57,11 @@ public class GetDataMessageHandler implements MessageHandler<GetDataMessage> {
                                     .setSignature(txn.getSignature())
                                     .build());
                         }
-                        messagePayload = BlockMessage.Builder.newBuilder()
+                        messagePayload = BlockMessage.Builder.builder()
                                 .setTimestamp((int) b.getTimestamp().toEpochSecond())
                                 .setTxnPayloads(txnps.toArray(TransactionPayload[]::new))
                                 .setBlockHash(b.getBlockHash())
-                                .setPreviousBlockHash(b.getPreviousBlockHash())
+                                .setPreviousBlock(b.getPreviousBlockHash())
                                 .setSignature(b.getSignature())
                                 .build();
                     }

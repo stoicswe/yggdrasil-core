@@ -238,11 +238,10 @@ public final class Block {
          * @throws NoSuchAlgorithmException
          */
         public Block buildFromBlockHeaderMessage(BlockHeaderPayload blockHeaderPayload) throws NoSuchAlgorithmException {
-            this.blockHash = blockHeaderPayload.getHash();
+            this.header = BlockHeader.Builder.builder().buildFromMessage(blockHeaderPayload);
+            this.blockHash = CryptoHasher.hash(this.header);
             this.data = new ArrayList<>();
-            Block blck = new Block(this);
-            blck.setBlockHash(this.blockHash);
-            return blck;
+            return new Block(this);
         }
 
         /**
@@ -251,26 +250,20 @@ public final class Block {
          * block, with txns for archival storage.
          *
          * @param blockMessage
-         * @return
+         * @return block
          * @throws NoSuchAlgorithmException
          * @throws InvalidKeySpecException
          * @throws NoSuchProviderException
          */
         public Block buildFromBlockMessage(BlockMessage blockMessage) throws NoSuchAlgorithmException, InvalidKeySpecException, NoSuchProviderException {
-            this.blockHash = blockMessage.getBlockHash();
+            this.header = BlockHeader.Builder.builder().buildFromMessage(blockMessage);
+            this.blockHash = CryptoHasher.hash(this.header);
             List<Transaction> data = new ArrayList<>();
             for(TransactionPayload txnPayload : blockMessage.getTxnPayloads()){
                 data.add(Transaction.Builder.builder().buildFromMessage(txnPayload));
             }
             this.data = data;
-            Block blck = new Block(this);
-            if(CryptoHasher.isEqualHashes(this.blockHash, blck.blockHash)){
-                logger.debug("Locally generated blockhash matched incoming blockhash from payload");
-            } else {
-                logger.debug("Locally generated blockhash did not match, manually setting blockhaash from payload");
-                blck.setBlockHash(this.blockHash);
-            }
-            return blck;
+            return new Block(this);
         }
 
     }

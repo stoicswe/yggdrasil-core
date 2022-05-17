@@ -10,6 +10,7 @@ import org.yggdrasil.core.ledger.LedgerHashableItem;
 import org.yggdrasil.core.serialization.HashSerializer;
 import org.yggdrasil.core.utils.DateTimeUtil;
 import org.yggdrasil.node.network.messages.payloads.BlockHeaderPayload;
+import org.yggdrasil.node.network.messages.payloads.BlockMessage;
 
 import java.time.ZonedDateTime;
 
@@ -41,7 +42,10 @@ public class BlockHeader implements LedgerHashableItem {
     private BlockHeader(Builder builder) {
         this.version = builder.version;
         this.previousBlockHash = builder.previousBlockHash;
+        this.merkleRoot = builder.merkleRoot;
+        this.time = builder.time;
         this.diff = builder.diff;
+        this.nonce = builder.nonce;
     }
 
     /**
@@ -168,6 +172,10 @@ public class BlockHeader implements LedgerHashableItem {
         return ArrayUtils.addAll(base, extension);
     }
 
+    /**
+     * Builder class for facilitating the instantiation of block headers. This is to ensure some level
+     * of data protection by enforcing non-direct data access and immutable data.
+     */
     public static class Builder {
 
         private static final Logger logger = LoggerFactory.getLogger(BlockHeader.class);
@@ -175,7 +183,13 @@ public class BlockHeader implements LedgerHashableItem {
         private int version;
         private byte[] previousBlockHash;
         private byte[] merkleRoot;
+        private ZonedDateTime time;
         private int diff;
+        private int nonce;
+
+        public static Builder builder() {
+            return new Builder();
+        }
 
         public Builder setVersion(int version) {
             this.version = version;
@@ -192,8 +206,18 @@ public class BlockHeader implements LedgerHashableItem {
             return this;
         }
 
+        public Builder setTime(ZonedDateTime time){
+            this.time = time;
+            return this;
+        }
+
         public Builder setDiff(int diff) {
             this.diff = diff;
+            return this;
+        }
+
+        public Builder setNonce(int nonce) {
+            this.nonce = nonce;
             return this;
         }
 
@@ -201,8 +225,29 @@ public class BlockHeader implements LedgerHashableItem {
             return new BlockHeader(this);
         }
 
+        /**
+         * Builds a block object from the
+         *
+         * @param message
+         * @return blockHeader
+         */
         public BlockHeader buildFromMessage(BlockHeaderPayload message) {
+            this.version = message.getVersion();
+            this.previousBlockHash = message.getPrevBlock();
+            this.merkleRoot = message.getMerkleRoot();
+            this.time = DateTimeUtil.fromMessageTimestamp(message.getTimestamp());
+            this.diff = message.getDiff();
+            this.nonce = message.getNonce();
+            return new BlockHeader(this);
+        }
 
+        public BlockHeader buildFromMessage(BlockMessage message) {
+            this.version = message.getVersion();
+            this.previousBlockHash = message.getPrevBlock();
+            this.merkleRoot = message.getMerkleRoot();
+            this.time = DateTimeUtil.fromMessageTimestamp(message.getTimestamp());
+            this.diff = message.getDiff();
+            this.nonce = message.getNonce();
             return new BlockHeader(this);
         }
 

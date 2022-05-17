@@ -19,60 +19,68 @@ import java.math.BigInteger;
 public class BlockHeaderPayload implements MessagePayload {
 
     @NotNull
-    private final int blockHeight;
+    private final int version;
     @NotNull
-    private final byte[] hash;
+    private final byte[] prevBlock;
     @NotNull
-    private final byte[] prevHash;
-    @NotNull
-    private final int transactionCount;
+    private final byte[] merkleRoot;
     @NotNull
     private final int timestamp;
     @NotNull
+    private final int diff;
+    @NotNull
     private final int nonce;
+    @NotNull
+    private final int txnCount;
 
     private BlockHeaderPayload(Builder builder) {
-        this.blockHeight = builder.blockHeight;
-        this.hash = builder.hash;
-        this.prevHash = builder.previousHash;
-        this.transactionCount = builder.transactionCount;
+        this.version = builder.version;
+        this.prevBlock = builder.previousHash;
+        this.merkleRoot = builder.merkleRoot;
         this.timestamp = builder.timestamp;
+        this.diff = builder.diff;
         this.nonce = builder.nonce;
+        this.txnCount = builder.transactionCount;
     }
 
-    public int getBlockHeight() {
-        return blockHeight;
+    public int getVersion() {
+        return version;
     }
 
-    public byte[] getHash() {
-        return hash;
+    public byte[] getPrevBlock() {
+        return prevBlock;
     }
 
-    public byte[] getPrevHash() {
-        return prevHash;
-    }
-
-    public int getTransactionCount() {
-        return transactionCount;
+    public byte[] getMerkleRoot() {
+        return merkleRoot;
     }
 
     public int getTimestamp() {
         return timestamp;
     }
 
+    public int getDiff() {
+        return diff;
+    }
+
     public int getNonce() {
         return nonce;
+    }
+
+    public int getTxnCount() {
+        return txnCount;
     }
 
     @Override
     public byte[] getDataBytes() {
         byte[] messageBytes = new byte[0];
-        messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(blockHeight));
-        messageBytes = appendBytes(messageBytes, hash);
-        messageBytes = appendBytes(messageBytes, prevHash);
-        messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(transactionCount));
+        messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(version));
+        messageBytes = appendBytes(messageBytes, prevBlock);
+        messageBytes = appendBytes(messageBytes, merkleRoot);
         messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(timestamp));
+        messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(diff));
         messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(nonce));
+        messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(txnCount));
         return messageBytes;
     }
 
@@ -82,12 +90,13 @@ public class BlockHeaderPayload implements MessagePayload {
 
     public static class Builder {
 
-        private int blockHeight;
-        private byte[] hash;
+        private int version;
         private byte[] previousHash;
-        private int transactionCount;
+        private byte[] merkleRoot;
         private int timestamp;
+        private int diff;
         private int nonce;
+        private int transactionCount;
 
         private Builder(){}
 
@@ -95,13 +104,8 @@ public class BlockHeaderPayload implements MessagePayload {
             return new Builder();
         }
 
-        public Builder setBlockHeight(BigInteger blockHeight) {
-            this.blockHeight = blockHeight.intValue();
-            return this;
-        }
-
-        public Builder setHash(byte[] hash) {
-            this.hash = hash;
+        public Builder setVersion(BigInteger version) {
+            this.version = version.intValue();
             return this;
         }
 
@@ -110,8 +114,8 @@ public class BlockHeaderPayload implements MessagePayload {
             return this;
         }
 
-        public Builder setTransactionCount(int transactionCount) {
-            this.transactionCount = transactionCount;
+        public Builder setMerkleRoot(byte[] merkleRoot) {
+            this.merkleRoot = merkleRoot;
             return this;
         }
 
@@ -120,8 +124,18 @@ public class BlockHeaderPayload implements MessagePayload {
             return this;
         }
 
+        public Builder setDiff(int diff) {
+            this.diff = diff;
+            return this;
+        }
+
         public Builder setNonce(int nonce) {
             this.nonce = nonce;
+            return this;
+        }
+
+        public Builder setTxnCount(int transactionCount) {
+            this.transactionCount = transactionCount;
             return this;
         }
 
