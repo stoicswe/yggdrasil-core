@@ -23,9 +23,9 @@ public class Message implements Serializable {
     @NotNull
     private final BigInteger payloadSize;
     @NotNull
-    private final MessagePayload payload;
-    @NotNull
     private final byte[] checksum;
+    @NotNull
+    private final MessagePayload payload;
 
     private Message(Builder builder) {
         this.network = builder.network;
