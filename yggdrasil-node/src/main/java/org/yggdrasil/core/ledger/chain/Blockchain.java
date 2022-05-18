@@ -18,6 +18,7 @@ import org.springframework.stereotype.Component;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import java.io.File;
+import java.math.BigInteger;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.ZonedDateTime;
@@ -35,8 +36,10 @@ import java.util.concurrent.TimeUnit;
 @Component
 @JsonInclude
 public class Blockchain implements Cloneable {
-
     private Logger logger = LoggerFactory.getLogger(Blockchain.class);
+    //The software version
+    public static final int _VERSION = 0x010;
+
     // The size of the window in which the hash difficulty is calculated,
     // in the number of blocks
     private final Integer _BLOCK_SOLVE_WINDOW = 2016;
@@ -198,6 +201,8 @@ public class Blockchain implements Cloneable {
         if (prevBlock.getHeader().getTime().compareTo(block.getHeader().getTime()) >= 0) throw new RuntimeException("Block's timestamp too early");
         // Check the proof of work
 
+        // Increment the blockHeight
+        block.setBlockHeight(prevBlock.getBlockHeight().add(BigInteger.ONE));
         // The block is safe to be placed into the chain storage!
         this.hotBlocks.put(block.getBlockHash(), block);
         // Update the last block hash seen

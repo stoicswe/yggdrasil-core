@@ -58,11 +58,14 @@ public class GetDataMessageHandler implements MessageHandler<GetDataMessage> {
                                     .build());
                         }
                         messagePayload = BlockMessage.Builder.builder()
-                                .setTimestamp((int) b.getTimestamp().toEpochSecond())
+                                .setVersion(b.getHeader().getVersion())
+                                .setPreviousBlock(b.getHeader().getPreviousBlockHash())
+                                .setMerkleRoot(b.getHeader().getMerkleRoot())
+                                .setTimestamp((int) b.getHeader().getEpochTime())
+                                .setDiff(b.getHeader().getDiff())
+                                .setNonce(b.getHeader().getNonce())
+                                .setTxnCount(txnps.size())
                                 .setTxnPayloads(txnps.toArray(TransactionPayload[]::new))
-                                .setBlockHash(b.getBlockHash())
-                                .setPreviousBlock(b.getPreviousBlockHash())
-                                .setSignature(b.getSignature())
                                 .build();
                     }
                 }
@@ -77,10 +80,13 @@ public class GetDataMessageHandler implements MessageHandler<GetDataMessage> {
                     if(bs.isPresent()) {
                         Block b = bs.get();
                         BlockHeaderPayload hp = BlockHeaderPayload.Builder.newBuilder()
-                                .setTimestamp((int) b.getTimestamp().toEpochSecond())
-                                .setHash(b.getBlockHash())
-                                .setTransactionCount(b.getData().size())
-                                .setPreviousHash(b.getPreviousBlockHash())
+                                .setVersion(b.getHeader().getVersion())
+                                .setPreviousHash(b.getHeader().getPreviousBlockHash())
+                                .setMerkleRoot(b.getHeader().getMerkleRoot())
+                                .setTimestamp((int) b.getHeader().getEpochTime())
+                                .setDiff(b.getHeader().getDiff())
+                                .setNonce(b.getHeader().getNonce())
+                                .setTxnCount(b.getTxnCount())
                                 .build();
                         headers.add(hp);
                     }

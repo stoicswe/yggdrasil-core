@@ -47,7 +47,7 @@ public final class Block {
     // The height of the block in the chain. The block height will provide
     // a sense of "time" or indexed record of the general era when a block was
     // created.
-    private final BigInteger blockHeight;
+    private BigInteger blockHeight;
     // The list of txns that are stored in the block after being mined. Once txns are confirmed
     // and the block stored, this list becomes immutable...a permanent record in the blockchain.
     private final List<Transaction> data;
@@ -75,6 +75,16 @@ public final class Block {
     }
 
     /**
+     * Sets the blockheight at the point a
+     * block has been created.
+     *
+     * @return blockHeight
+     */
+    protected void setBlockHeight(BigInteger blockHeight) {
+        this.blockHeight = blockHeight;
+    }
+
+    /**
      * Returns a BigDecimal value that indicates the blockheight at the point a
      * block has been created.
      *
@@ -94,16 +104,6 @@ public final class Block {
     }
 
     /**
-     * Sets this current block's hash. Set during the building of the block
-     * in the mining process.
-     *
-     * @param blockHash
-     */
-    public void setBlockHash(byte[] blockHash) {
-        this.blockHash = blockHash;
-    }
-
-    /**
      * Returns this current block's hash.
      *
      * @return blockHash
@@ -120,6 +120,11 @@ public final class Block {
      */
     public Optional<Transaction> getTransaction(byte[] txnHash) {
         return this.data.stream().filter(ftxn -> ftxn.compareTxnHash(txnHash)).findFirst();
+    }
+
+    public int getTxnCount() {
+        if(data != null) return this.data.size();
+        return -1;
     }
 
     /**

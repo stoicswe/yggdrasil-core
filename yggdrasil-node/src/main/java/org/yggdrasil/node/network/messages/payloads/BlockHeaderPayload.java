@@ -104,8 +104,8 @@ public class BlockHeaderPayload implements MessagePayload {
             return new Builder();
         }
 
-        public Builder setVersion(BigInteger version) {
-            this.version = version.intValue();
+        public Builder setVersion(int version) {
+            this.version = version;
             return this;
         }
 
