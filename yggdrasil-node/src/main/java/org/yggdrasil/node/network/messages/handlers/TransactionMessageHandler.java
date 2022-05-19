@@ -11,8 +11,6 @@ import org.yggdrasil.core.utils.CryptoHasher;
 import org.yggdrasil.node.network.exceptions.InvalidMessageException;
 import org.yggdrasil.node.network.messages.MessagePayload;
 import org.yggdrasil.node.network.messages.payloads.AcknowledgeMessage;
-import org.yggdrasil.node.network.messages.payloads.TransactionMessage;
-import org.yggdrasil.node.network.messages.payloads.TransactionPayload;
 import org.yggdrasil.node.network.runners.NodeConnection;
 
 import java.security.NoSuchAlgorithmException;

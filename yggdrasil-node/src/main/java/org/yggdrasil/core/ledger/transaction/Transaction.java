@@ -13,7 +13,6 @@ import org.yggdrasil.core.utils.CryptoHasher;
 import org.yggdrasil.core.utils.CryptoKeyGenerator;
 import org.yggdrasil.core.utils.DateTimeUtil;
 import org.yggdrasil.node.network.messages.payloads.MempoolTransactionPayload;
-import org.yggdrasil.node.network.messages.payloads.TransactionPayload;
 
 import java.math.BigDecimal;
 import java.security.NoSuchAlgorithmException;

@@ -1,32 +1,25 @@
 package org.yggdrasil.core.ledger.chain;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.SerializationUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yggdrasil.core.ledger.LedgerHashableItem;
 import org.yggdrasil.core.ledger.transaction.Transaction;
 import org.yggdrasil.core.ledger.transaction.TransactionInput;
 import org.yggdrasil.core.ledger.transaction.TransactionOutPoint;
 import org.yggdrasil.core.ledger.transaction.TransactionOutput;
 import org.yggdrasil.core.serialization.HashSerializer;
 import org.yggdrasil.core.utils.CryptoHasher;
-import org.yggdrasil.core.utils.CryptoKeyGenerator;
 import org.yggdrasil.core.utils.DateTimeUtil;
 import org.yggdrasil.node.network.messages.payloads.BlockHeaderPayload;
 import org.yggdrasil.node.network.messages.payloads.BlockMessage;
-import org.yggdrasil.node.network.messages.payloads.TransactionPayload;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.spec.InvalidKeySpecException;
-import java.time.ZonedDateTime;
 import java.util.*;
 
 /**

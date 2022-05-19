@@ -1,5 +1,6 @@
 package org.yggdrasil.node.network.messages.payloads;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.SerializationUtils;
 import org.yggdrasil.node.network.messages.MessagePayload;
@@ -15,6 +16,7 @@ import java.math.BigInteger;
  * @since 0.0.10
  * @author nathanielbunch
  */
+@JsonInclude
 public class AddressPayload implements MessagePayload {
 
     @NotNull

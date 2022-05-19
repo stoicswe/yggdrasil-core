@@ -160,9 +160,8 @@ public class BlockMine {
             if(txnIsValid) {
                 logger.info("Txn: {} is valid.", txn);
                 // Once the txn is validated, add to the transactionPayload
-                TransactionPayload txnP = TransactionPayload.Builder.newBuilder()
-                        .buildFromTransaction(txn)
-                        .build();
+                TransactionPayload txnP = TransactionPayload.Builder.builder()
+                        .buildFromTxn(txn);
                 txnMessagePayloads.add(txnP);
             } else {
                 bTxnsInvalid.add(txn);

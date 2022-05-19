@@ -1,5 +1,6 @@
 package org.yggdrasil.node.network.messages.payloads;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import org.apache.commons.lang3.SerializationUtils;
 import org.yggdrasil.node.network.messages.MessagePayload;
 
@@ -12,6 +13,7 @@ import javax.validation.constraints.NotNull;
  * @since 0.0.10
  * @author nathanielbunch
  */
+@JsonInclude
 public class PingPongMessage implements MessagePayload {
 
     @NotNull

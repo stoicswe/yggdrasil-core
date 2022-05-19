@@ -1,7 +1,10 @@
 package org.yggdrasil.node.network.messages.payloads;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.SerializationUtils;
+import org.yggdrasil.core.serialization.HashSerializer;
 import org.yggdrasil.node.network.messages.MessagePayload;
 
 import javax.validation.constraints.NotNull;
@@ -16,13 +19,16 @@ import java.math.BigInteger;
  * @since 0.0.10
  * @author nathanielbunch
  */
+@JsonInclude
 public class BlockHeaderPayload implements MessagePayload {
 
     @NotNull
     private final int version;
     @NotNull
+    @JsonSerialize(using = HashSerializer.class)
     private final byte[] prevBlock;
     @NotNull
+    @JsonSerialize(using = HashSerializer.class)
     private final byte[] merkleRoot;
     @NotNull
     private final int timestamp;
