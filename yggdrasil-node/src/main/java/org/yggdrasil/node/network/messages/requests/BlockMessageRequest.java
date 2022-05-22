@@ -1,35 +1,38 @@
 package org.yggdrasil.node.network.messages.requests;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.apache.commons.lang3.SerializationUtils;
+import org.yggdrasil.core.serialization.HashArraySerializer;
+import org.yggdrasil.core.serialization.HashSerializer;
 import org.yggdrasil.node.network.messages.MessagePayload;
-import org.yggdrasil.node.network.messages.enums.GetDataType;
 import org.yggdrasil.node.network.messages.util.DataUtil;
 
 import javax.validation.constraints.NotNull;
 
 /**
- * The Get Data message is used by a node to retrieve data from another node.
- * That data could be block related (blocks, chain, or transactions) and in that case
- * the object hashes will be populated. Otherwise, the message is a command message,
- * used by the distributed system for system data, such as IP addresses.
+ * Requests made to retrieve blocks will result with an inv message response,
+ * containing records for complete block payloads.
  *
- * @since 0.0.10
  * @author nathanielbunch
  */
 @JsonInclude
-public class BlockRequestMessage implements MessagePayload {
+public class BlockMessageRequest implements MessagePayload {
 
     @NotNull
     private final int version;
     @NotNull
     private final int hashCount;
     @NotNull
+    @JsonSerialize(using = HashArraySerializer.class)
     private final byte[][] objectHashes;
+    // If the stopHash is empty, then grab the maximum blocks possible in response
+    // with the maximum set to 500.
     @NotNull
+    @JsonSerialize(using = HashSerializer.class)
     private final byte[] stopHash;
 
-    private BlockRequestMessage(Builder builder) {
+    private BlockMessageRequest(Builder builder) {
         this.version = builder.version;
         this.hashCount = builder.hashCount;
         this.objectHashes = builder.objectHashes;
@@ -95,8 +98,8 @@ public class BlockRequestMessage implements MessagePayload {
             return this;
         }
 
-        public BlockRequestMessage build() {
-            return new BlockRequestMessage(this);
+        public BlockMessageRequest build() {
+            return new BlockMessageRequest(this);
         }
 
     }

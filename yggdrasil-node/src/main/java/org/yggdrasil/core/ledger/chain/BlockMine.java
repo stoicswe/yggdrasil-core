@@ -18,7 +18,7 @@ import org.yggdrasil.core.utils.DateTimeUtil;
 import org.yggdrasil.node.network.NodeConfig;
 import org.yggdrasil.node.network.messages.Message;
 import org.yggdrasil.node.network.messages.Messenger;
-import org.yggdrasil.node.network.messages.enums.RequestType;
+import org.yggdrasil.node.network.messages.enums.CommandType;
 import org.yggdrasil.node.network.messages.payloads.BlockMessage;
 import org.yggdrasil.node.network.messages.payloads.TransactionPayload;
 
@@ -224,7 +224,7 @@ public class BlockMine {
                 .build();
         Message message = Message.Builder.newBuilder()
                 .setNetwork(nodeConfig.getNetwork())
-                .setRequestType(RequestType.DATA_RESP)
+                .setRequestType(CommandType.INVENTORY_PAYLOAD)
                 .setMessagePayload(blockMessage)
                 .setPayloadSize(BigInteger.valueOf(GraphLayout.parseInstance(blockMessage).totalSize()))
                 .setChecksum(CryptoHasher.hash(blockMessage))

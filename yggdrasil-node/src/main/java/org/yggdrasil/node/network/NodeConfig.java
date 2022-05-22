@@ -52,6 +52,14 @@ public class NodeConfig {
     @Value("${blockchain.p2p.connection-timeout: 30000}")
     private Integer connectionTimeout;
 
+    // Types: full, archival, relay
+    // full = all services available
+    // archival = only store new blocks
+    // relay = only relay new information, do not store anything
+    // TODO: Implement this switch, with logic to have only a specific ratio of relay to full or archival nodes
+    @Value("${blockchain.client.mode: full}")
+    private String mode;
+
     private Integer protocolVersion = 1;
 
     @PostConstruct
@@ -123,5 +131,9 @@ public class NodeConfig {
 
     public Integer getProtocolVersion() {
         return protocolVersion;
+    }
+
+    public String getMode() {
+        return mode;
     }
 }

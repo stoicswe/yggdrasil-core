@@ -12,14 +12,13 @@ import org.yggdrasil.node.network.exceptions.HandshakeInitializeException;
 import org.yggdrasil.node.network.messages.Message;
 import org.yggdrasil.node.network.messages.Messenger;
 import org.yggdrasil.node.network.messages.enums.NetworkType;
-import org.yggdrasil.node.network.messages.enums.RequestType;
+import org.yggdrasil.node.network.messages.enums.CommandType;
 import org.yggdrasil.node.network.messages.payloads.*;
 import org.yggdrasil.node.network.peer.PeerRecordIndexer;
 
 import java.io.IOException;
 import java.math.BigInteger;
 import java.security.NoSuchAlgorithmException;
-import java.util.Locale;
 
 /**
  * The handshake runner is used to initialize the handshake
@@ -72,7 +71,7 @@ public class HandshakeRunner implements Runnable {
                 // build the message
                 sentMessage = Message.Builder.newBuilder()
                         .setNetwork(nodeConfig.getNetwork())
-                        .setRequestType(RequestType.HANDSHAKE_OFFR)
+                        .setRequestType(CommandType.HANDSHAKE_OFFR)
                         .setPayloadSize(BigInteger.valueOf(GraphLayout.parseInstance(offerHandshake).totalSize()))
                         .setMessagePayload(offerHandshake)
                         .setChecksum(CryptoHasher.hash(offerHandshake))
@@ -88,7 +87,7 @@ public class HandshakeRunner implements Runnable {
                     messenger.getValidator().isValidMessage(receivedMessage);
                     // complete the handshake
                     logger.info("Verifying handshake response from [{}]", this.nodeConnection.getNodeSocket().getInetAddress());
-                    if(RequestType.HANDSHAKE_RESP.isEqualToLiteral(receivedMessage.getRequest())){
+                    if(CommandType.HANDSHAKE_RESP.isEqualToLiteral(receivedMessage.getCommand())){
                         // verify the handshake
                         HandshakeMessage rhm = (HandshakeMessage) receivedMessage.getPayload();
                         // Check is correct supported version
@@ -117,7 +116,7 @@ public class HandshakeRunner implements Runnable {
                                     .build();
                             Message ackMessage = Message.Builder.newBuilder()
                                     .setNetwork(NetworkType.getByValue(receivedMessage.getNetwork()))
-                                    .setRequestType(RequestType.ACKNOWLEDGE)
+                                    .setRequestType(CommandType.ACKNOWLEDGE_PAYLOAD)
                                     .setPayloadSize(BigInteger.valueOf(GraphLayout.parseInstance(ackPayload).totalSize()))
                                     .setMessagePayload(ackPayload)
                                     .setChecksum(CryptoHasher.hash(ackPayload))
@@ -133,7 +132,7 @@ public class HandshakeRunner implements Runnable {
                                         .setIpAddresses(new AddressPayload[0])
                                         .build();
                                 Message message = Message.Builder.newBuilder()
-                                        .setRequestType(RequestType.GET_ADDR)
+                                        .setRequestType(CommandType.REQUEST_ADDRESS)
                                         .setNetwork(nodeConfig.getNetwork())
                                         .setMessagePayload(am)
                                         .setPayloadSize(BigInteger.valueOf(GraphLayout.parseInstance(am).totalSize()))
@@ -156,7 +155,7 @@ public class HandshakeRunner implements Runnable {
                     messenger.getValidator().isValidMessage(receivedMessage);
                     // complete the handshake
                     logger.info("Verifying handshake offer from [{}]", this.nodeConnection.getNodeSocket().getInetAddress());
-                    if(RequestType.HANDSHAKE_OFFR.isEqualToLiteral(receivedMessage.getRequest())){
+                    if(CommandType.HANDSHAKE_OFFR.isEqualToLiteral(receivedMessage.getCommand())){
                         // verify the handshake
                         HandshakeMessage rhm = (HandshakeMessage) receivedMessage.getPayload();
                         // Check is correct supported version
@@ -195,7 +194,7 @@ public class HandshakeRunner implements Runnable {
                             // build the message
                             sentMessage = Message.Builder.newBuilder()
                                     .setNetwork(nodeConfig.getNetwork())
-                                    .setRequestType(RequestType.HANDSHAKE_RESP)
+                                    .setRequestType(CommandType.HANDSHAKE_RESP)
                                     .setPayloadSize(BigInteger.valueOf(GraphLayout.parseInstance(offerHandshake).totalSize()))
                                     .setMessagePayload(offerHandshake)
                                     .setChecksum(CryptoHasher.hash(offerHandshake))
@@ -210,7 +209,7 @@ public class HandshakeRunner implements Runnable {
                                 // validate the message
                                 messenger.getValidator().isValidMessage(receivedMessage);
                                 logger.info("Verifying acknowledgement from [{}]", this.nodeConnection.getNodeIdentifier());
-                                if(RequestType.ACKNOWLEDGE.isEqualToLiteral(receivedMessage.getRequest())){
+                                if(CommandType.ACKNOWLEDGE_PAYLOAD.isEqualToLiteral(receivedMessage.getCommand())){
                                     // get the acknowledgment
                                     AcknowledgeMessage rackm = (AcknowledgeMessage) receivedMessage.getPayload();
                                     // verify the acknowledgement was for the correct message

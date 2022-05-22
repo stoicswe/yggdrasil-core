@@ -23,7 +23,7 @@ import org.yggdrasil.node.network.NodeConfig;
 import org.yggdrasil.node.network.messages.Message;
 import org.yggdrasil.node.network.messages.Messenger;
 import org.yggdrasil.node.network.messages.enums.NetworkType;
-import org.yggdrasil.node.network.messages.enums.RequestType;
+import org.yggdrasil.node.network.messages.enums.CommandType;
 import org.yggdrasil.node.network.messages.payloads.PingPongMessage;
 import org.yggdrasil.ui.MainFrame;
 
@@ -152,7 +152,7 @@ public class BlockchainService {
                 .build();
         Message txnMsg = Message.Builder.newBuilder()
                 .setNetwork(nodeConfig.getNetwork())
-                .setRequestType(RequestType.DATA_RESP)
+                .setRequestType(CommandType.INVENTORY_PAYLOAD)
                 .setMessagePayload(txnMessage)
                 .setPayloadSize(BigInteger.valueOf(GraphLayout.parseInstance(txnMessage).totalSize()))
                 .setChecksum(CryptoHasher.hash(txnMessage))
@@ -235,7 +235,7 @@ public class BlockchainService {
         PingPongMessage pingPongMessage = PingPongMessage.Builder.newBuilder().setNonce(25).build();
         Message message = Message.Builder.newBuilder()
                 .setNetwork(NetworkType.MAIN_NET)
-                .setRequestType(RequestType.PING)
+                .setRequestType(CommandType.PING)
                 .setPayloadSize(BigInteger.valueOf(GraphLayout.parseInstance(pingPongMessage).totalSize()))
                 .setMessagePayload(pingPongMessage)
                 .setChecksum(CryptoHasher.hash(pingPongMessage)).build();

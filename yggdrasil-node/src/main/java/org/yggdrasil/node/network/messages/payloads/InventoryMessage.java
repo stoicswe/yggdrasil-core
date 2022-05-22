@@ -1,11 +1,8 @@
 package org.yggdrasil.node.network.messages.payloads;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.apache.commons.lang3.SerializationUtils;
-import org.yggdrasil.core.serialization.HashSerializer;
 import org.yggdrasil.node.network.messages.MessagePayload;
-import org.yggdrasil.node.network.messages.enums.InventoryType;
 import org.yggdrasil.node.network.messages.util.DataUtil;
 
 import javax.validation.constraints.NotNull;
@@ -14,43 +11,45 @@ import javax.validation.constraints.NotNull;
 public class InventoryMessage implements MessagePayload {
 
     @NotNull
-    private final int type;
+    private int count;
     @NotNull
-    @JsonSerialize(using = HashSerializer.class)
-    private final byte[] hash;
+    private InventoryVector[] inventory;
 
     private InventoryMessage(Builder builder) {
-        this.type = builder.type;
-        this.hash = builder.hash;
+        this.count = builder.count;
+        this.inventory = builder.inventory;
     }
 
-    public InventoryType getType() {
-        return InventoryType.getByValue(type);
+    public int getCount() {
+        return count;
     }
 
-    public byte[] getHash() {
-        return hash;
+    public InventoryVector[] getInventory() {
+        return inventory;
     }
 
     @Override
     public byte[] getDataBytes() {
         byte[] messageBytes = new byte[0];
-        messageBytes = DataUtil.appendBytes(messageBytes, SerializationUtils.serialize(type));
-        messageBytes = DataUtil.appendBytes(messageBytes, hash);
-        return messageBytes;
+        messageBytes = DataUtil.appendBytes(messageBytes, SerializationUtils.serialize(count));
+        for(InventoryVector v : inventory) {
+            messageBytes = DataUtil.appendBytes(messageBytes, v.getDataBytes());
+        }
+        return new byte[0];
     }
 
     public static class Builder {
 
-        private int type;
-        private byte[] hash;
+        private int count;
+        private InventoryVector[] inventory;
 
         public static Builder builder() {
             return new Builder();
         }
 
-        public Builder setType(InventoryType type) {
-            this.type = type.getValue();
+        public Builder setInventory(InventoryVector[] inventory) {
+            this.count = inventory.length;
+            this.inventory = inventory;
             return this;
         }
 

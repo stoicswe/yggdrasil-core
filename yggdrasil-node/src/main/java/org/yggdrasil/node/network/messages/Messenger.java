@@ -7,12 +7,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.yggdrasil.core.utils.CryptoHasher;
 import org.yggdrasil.node.network.Node;
-import org.yggdrasil.node.network.messages.requests.BlockRequestMessage;
+import org.yggdrasil.node.network.messages.requests.BlockMessageRequest;
 import org.yggdrasil.node.network.runners.MessagePoolRunner;
 import org.yggdrasil.node.network.runners.NodeConnection;
 import org.yggdrasil.node.network.exceptions.NodeDisconnectException;
 import org.yggdrasil.node.network.messages.enums.NetworkType;
-import org.yggdrasil.node.network.messages.enums.RequestType;
+import org.yggdrasil.node.network.messages.enums.CommandType;
 import org.yggdrasil.node.network.messages.handlers.*;
 import org.yggdrasil.node.network.messages.payloads.*;
 import org.yggdrasil.node.network.messages.validators.MessageValidator;
@@ -122,137 +122,137 @@ public class Messenger {
             this.validator.isValidMessage(message);
             logger.info("Handling valid message.");
             // This should never be null, since the message is validated before it is handled.
-            switch (Objects.requireNonNull(RequestType.getByValue(message.getRequest()))) {
-                case GET_DATA:
-                    logger.info("Handling {} message.", RequestType.GET_DATA);
-                    messagePayload = this.getDataMessageHandler.handleMessagePayload((BlockRequestMessage) message.getPayload(), nodeConnection);
+            switch (Objects.requireNonNull(CommandType.getByValue(message.getCommand()))) {
+                case REQUEST_BLOCK_HEADER:
+                    logger.info("Handling {} message.", CommandType.REQUEST_BLOCK_HEADER);
+                    messagePayload = this.getDataMessageHandler.handleMessagePayload((BlockMessageRequest) message.getPayload(), nodeConnection);
                     returnMessage = Message.Builder.newBuilder()
                             .setNetwork(NetworkType.getByValue(message.getNetwork()))
-                            .setRequestType(RequestType.DATA_RESP)
+                            .setRequestType(CommandType.INVENTORY_PAYLOAD)
                             .setMessagePayload(messagePayload)
                             .setPayloadSize(BigInteger.valueOf(GraphLayout.parseInstance(messagePayload).totalSize()))
                             .setChecksum(CryptoHasher.hash(messagePayload))
                             .build();
                     break;
-                case DATA_RESP:
-                    logger.info("Handling {} message.", RequestType.DATA_RESP);
+                case INVENTORY_PAYLOAD:
+                    logger.info("Handling {} message.", CommandType.INVENTORY_PAYLOAD);
                     if (message.getPayload() instanceof BlockHeaderResponsePayload) {
-                        logger.info("{} message is a BlockchainMessage.", RequestType.DATA_RESP);
+                        logger.info("{} message is a BlockchainMessage.", CommandType.INVENTORY_PAYLOAD);
                         this.blockchainMessageHandler.handleMessagePayload((BlockHeaderResponsePayload) message.getPayload(), nodeConnection);
                         messagePayload = AcknowledgeMessage.Builder.newBuilder()
                                 .setAcknowledgeChecksum(message.getChecksum())
                                 .build();
                         returnMessage = Message.Builder.newBuilder()
                                 .setNetwork(NetworkType.getByValue(message.getNetwork()))
-                                .setRequestType(RequestType.ACKNOWLEDGE)
+                                .setRequestType(CommandType.ACKNOWLEDGE_PAYLOAD)
                                 .setMessagePayload(messagePayload)
                                 .setPayloadSize(BigInteger.valueOf(GraphLayout.parseInstance(messagePayload).totalSize()))
                                 .setChecksum(CryptoHasher.hash(messagePayload))
                                 .build();
                     }
                     if (message.getPayload() instanceof BlockMessage) {
-                        logger.info("{} message is a BlockMessage", RequestType.DATA_RESP);
+                        logger.info("{} message is a BlockMessage", CommandType.INVENTORY_PAYLOAD);
                         this.blockMessageHandler.handleMessagePayload((BlockMessage) message.getPayload(), nodeConnection);
                         messagePayload = AcknowledgeMessage.Builder.newBuilder()
                                 .setAcknowledgeChecksum(message.getChecksum())
                                 .build();
                         returnMessage = Message.Builder.newBuilder()
                                 .setNetwork(NetworkType.getByValue(message.getNetwork()))
-                                .setRequestType(RequestType.ACKNOWLEDGE)
+                                .setRequestType(CommandType.ACKNOWLEDGE_PAYLOAD)
                                 .setMessagePayload(messagePayload)
                                 .setPayloadSize(BigInteger.valueOf(GraphLayout.parseInstance(messagePayload).totalSize()))
                                 .setChecksum(CryptoHasher.hash(messagePayload))
                                 .build();
                     }
                     if (message.getPayload() instanceof MempoolTransactionMessage) {
-                        logger.info("{} message is a BasicTransactionMessage.", RequestType.DATA_RESP);
+                        logger.info("{} message is a BasicTransactionMessage.", CommandType.INVENTORY_PAYLOAD);
                         this.basicTransactionMessageHandler.handleMessagePayload((MempoolTransactionMessage) message.getPayload(), nodeConnection);
                         messagePayload = AcknowledgeMessage.Builder.newBuilder()
                                 .setAcknowledgeChecksum(message.getChecksum())
                                 .build();
                         returnMessage = Message.Builder.newBuilder()
                                 .setNetwork(NetworkType.getByValue(message.getNetwork()))
-                                .setRequestType(RequestType.ACKNOWLEDGE)
+                                .setRequestType(CommandType.ACKNOWLEDGE_PAYLOAD)
                                 .setMessagePayload(messagePayload)
                                 .setPayloadSize(BigInteger.valueOf(GraphLayout.parseInstance(messagePayload).totalSize()))
                                 .setChecksum(CryptoHasher.hash(messagePayload))
                                 .build();
                     }
                     if (message.getPayload() instanceof TransactionMessage) {
-                        logger.info("{} message is a TransactionMessage.", RequestType.DATA_RESP);
+                        logger.info("{} message is a TransactionMessage.", CommandType.INVENTORY_PAYLOAD);
                         this.transactionMessageHandler.handleMessagePayload((TransactionMessage) message.getPayload(), nodeConnection);
                         messagePayload = AcknowledgeMessage.Builder.newBuilder()
                                 .setAcknowledgeChecksum(message.getChecksum())
                                 .build();
                         returnMessage = Message.Builder.newBuilder()
                                 .setNetwork(NetworkType.getByValue(message.getNetwork()))
-                                .setRequestType(RequestType.ACKNOWLEDGE)
+                                .setRequestType(CommandType.ACKNOWLEDGE_PAYLOAD)
                                 .setMessagePayload(messagePayload)
                                 .setPayloadSize(BigInteger.valueOf(GraphLayout.parseInstance(messagePayload).totalSize()))
                                 .setChecksum(CryptoHasher.hash(messagePayload))
                                 .build();
                     }
                     break;
-                case GET_ADDR:
-                    logger.info("Handling {} message.", RequestType.GET_ADDR);
+                case REQUEST_ADDRESS:
+                    logger.info("Handling {} message.", CommandType.REQUEST_ADDRESS);
                     // Return an AddressMessage, with AddressPayloads
                     messagePayload = this.getAddressMessageHandler.handleMessagePayload((AddressMessage) message.getPayload(), nodeConnection);
                     returnMessage = Message.Builder.newBuilder()
                             .setNetwork(NetworkType.getByValue(message.getNetwork()))
-                            .setRequestType(RequestType.ADDR_RESP)
+                            .setRequestType(CommandType.ADDRESS_PAYLOAD)
                             .setMessagePayload(messagePayload)
                             .setPayloadSize(BigInteger.valueOf(GraphLayout.parseInstance(messagePayload).totalSize()))
                             .setChecksum(CryptoHasher.hash(messagePayload))
                             .build();
                     break;
-                case ADDR_RESP:
-                    logger.info("Handling {} message.", RequestType.ADDR_RESP);
+                case ADDRESS_PAYLOAD:
+                    logger.info("Handling {} message.", CommandType.ADDRESS_PAYLOAD);
                     this.addressResponseHandler.handleMessagePayload((AddressMessage) message.getPayload(), nodeConnection);
                     messagePayload = AcknowledgeMessage.Builder.newBuilder()
                             .setAcknowledgeChecksum(message.getChecksum())
                             .build();
                     returnMessage = Message.Builder.newBuilder()
                             .setNetwork(NetworkType.getByValue(message.getNetwork()))
-                            .setRequestType(RequestType.ACKNOWLEDGE)
+                            .setRequestType(CommandType.ACKNOWLEDGE_PAYLOAD)
                             .setPayloadSize(BigInteger.valueOf(GraphLayout.parseInstance(messagePayload).totalSize()))
                             .setMessagePayload(messagePayload)
                             .setChecksum(CryptoHasher.hash(messagePayload))
                             .build();
                     break;
                 case PING:
-                    logger.info("Handling {} message.", RequestType.PING);
+                    logger.info("Handling {} message.", CommandType.PING);
                     messagePayload = this.pingMessageHandler.handleMessagePayload((PingPongMessage) message.getPayload(), nodeConnection);
                     returnMessage = Message.Builder.newBuilder()
                             .setNetwork(NetworkType.getByValue(message.getNetwork()))
-                            .setRequestType(RequestType.PONG)
+                            .setRequestType(CommandType.PONG)
                             .setMessagePayload(messagePayload)
                             .setPayloadSize(BigInteger.valueOf(GraphLayout.parseInstance(messagePayload).totalSize()))
                             .setChecksum(CryptoHasher.hash(messagePayload))
                             .build();
                     break;
                 case PONG:
-                    logger.info("Handling {} message.", RequestType.PONG);
+                    logger.info("Handling {} message.", CommandType.PONG);
                     messagePayload = AcknowledgeMessage.Builder.newBuilder()
                             .setAcknowledgeChecksum(message.getChecksum())
                             .build();
                     returnMessage = Message.Builder.newBuilder()
                             .setNetwork(NetworkType.getByValue(message.getNetwork()))
-                            .setRequestType(RequestType.ACKNOWLEDGE)
+                            .setRequestType(CommandType.ACKNOWLEDGE_PAYLOAD)
                             .setPayloadSize(BigInteger.valueOf(GraphLayout.parseInstance(messagePayload).totalSize()))
                             .setMessagePayload(messagePayload)
                             .setChecksum(CryptoHasher.hash(messagePayload))
                             .build();
                     break;
                 case HANDSHAKE_OFFR:
-                    logger.info("Received {} message.", RequestType.HANDSHAKE_OFFR);
-                    logger.debug("Ignoring the {} message (received outside of handshake).", RequestType.HANDSHAKE_OFFR);
+                    logger.info("Received {} message.", CommandType.HANDSHAKE_OFFR);
+                    logger.debug("Ignoring the {} message (received outside of handshake).", CommandType.HANDSHAKE_OFFR);
                     break;
                 case HANDSHAKE_RESP:
-                    logger.info("Received {} message.", RequestType.HANDSHAKE_RESP);
-                    logger.debug("Ignoring the {} message (received outside of handshake).", RequestType.HANDSHAKE_RESP);
+                    logger.info("Received {} message.", CommandType.HANDSHAKE_RESP);
+                    logger.debug("Ignoring the {} message (received outside of handshake).", CommandType.HANDSHAKE_RESP);
                     break;
-                case ACKNOWLEDGE:
-                    logger.info("Handling {} message.", RequestType.ACKNOWLEDGE);
+                case ACKNOWLEDGE_PAYLOAD:
+                    logger.info("Handling {} message.", CommandType.ACKNOWLEDGE_PAYLOAD);
                     logger.debug("Acknowledgement received for the checksum: {}", CryptoHasher.humanReadableHash(message.getChecksum()));
                     AcknowledgeMessage ackPayload = (AcknowledgeMessage) message.getPayload();
                     ExpiringMessageRecord emr = this.messagePool.getMessage(ackPayload.getAcknowledgeChecksum());

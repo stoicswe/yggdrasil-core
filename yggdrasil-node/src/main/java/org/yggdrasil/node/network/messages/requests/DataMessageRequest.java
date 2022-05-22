@@ -2,13 +2,15 @@ package org.yggdrasil.node.network.messages.requests;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import org.apache.commons.lang3.SerializationUtils;
 import org.yggdrasil.core.serialization.HashArraySerializer;
 import org.yggdrasil.node.network.messages.MessagePayload;
+import org.yggdrasil.node.network.messages.util.DataUtil;
 
 import javax.validation.constraints.NotNull;
 
 @JsonInclude
-public class DataRequestMessage implements MessagePayload {
+public class DataMessageRequest implements MessagePayload {
 
     @NotNull
     private int requestCount;
@@ -16,7 +18,7 @@ public class DataRequestMessage implements MessagePayload {
     @JsonSerialize(using = HashArraySerializer.class)
     private byte[][] requestedTransactions;
 
-    private DataRequestMessage(Builder builder) {
+    private DataMessageRequest(Builder builder) {
         this.requestCount = builder.requestCount;
         this.requestedTransactions = builder.requestedTransactions;
     }
@@ -31,7 +33,12 @@ public class DataRequestMessage implements MessagePayload {
 
     @Override
     public byte[] getDataBytes() {
-        return new byte[0];
+        byte[] messageBytes = new byte[0];
+        messageBytes = DataUtil.appendBytes(messageBytes, SerializationUtils.serialize(requestCount));
+        for(byte[] t : requestedTransactions) {
+            messageBytes = DataUtil.appendBytes(messageBytes, t);
+        }
+        return messageBytes;
     }
 
     public static class Builder {
@@ -49,8 +56,8 @@ public class DataRequestMessage implements MessagePayload {
             return this;
         }
 
-        public DataRequestMessage build() {
-            return new DataRequestMessage(this);
+        public DataMessageRequest build() {
+            return new DataMessageRequest(this);
         }
 
     }
