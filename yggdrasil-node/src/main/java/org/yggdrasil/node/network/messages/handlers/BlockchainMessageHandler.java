@@ -9,7 +9,7 @@ import org.yggdrasil.core.ledger.chain.Blockchain;
 import org.yggdrasil.core.utils.CryptoHasher;
 import org.yggdrasil.node.network.messages.MessagePayload;
 import org.yggdrasil.node.network.messages.payloads.AcknowledgeMessage;
-import org.yggdrasil.node.network.messages.payloads.BlockchainMessage;
+import org.yggdrasil.node.network.messages.payloads.BlockHeaderResponsePayload;
 import org.yggdrasil.node.network.messages.payloads.BlockHeaderPayload;
 import org.yggdrasil.node.network.runners.NodeConnection;
 
@@ -18,7 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Component
-public class BlockchainMessageHandler implements MessageHandler<BlockchainMessage> {
+public class BlockchainMessageHandler implements MessageHandler<BlockHeaderResponsePayload> {
 
     Logger logger = LoggerFactory.getLogger(BlockchainMessageHandler.class);
 
@@ -26,12 +26,12 @@ public class BlockchainMessageHandler implements MessageHandler<BlockchainMessag
     Blockchain blockchain;
 
     @Override
-    public MessagePayload handleMessagePayload(BlockchainMessage blockchainMessage, NodeConnection nodeConnection) throws NoSuchAlgorithmException {
+    public MessagePayload handleMessagePayload(BlockHeaderResponsePayload blockHeaderResponsePayload, NodeConnection nodeConnection) throws NoSuchAlgorithmException {
 
         logger.trace("Handling blockchain message");
-        if(blockchainMessage.getHeaders().length == blockchainMessage.getHeaderCount()) {
+        if(blockHeaderResponsePayload.getHeaders().length == blockHeaderResponsePayload.getHeaderCount()) {
             List<Block> blcks = new ArrayList<>();
-            for(BlockHeaderPayload hp : blockchainMessage.getHeaders()) {
+            for(BlockHeaderPayload hp : blockHeaderResponsePayload.getHeaders()) {
                 Block blck = Block.Builder.newBuilder().buildFromBlockHeaderMessage(hp);
                 logger.debug("Rebuilt block {} from block header payload.", blck.toString());
                 if(blockchain.getBlock(blck.getBlockHash()).isEmpty()) {
@@ -48,7 +48,7 @@ public class BlockchainMessageHandler implements MessageHandler<BlockchainMessag
         }
 
         return AcknowledgeMessage.Builder.newBuilder()
-                .setAcknowledgeChecksum(CryptoHasher.hash(blockchainMessage))
+                .setAcknowledgeChecksum(CryptoHasher.hash(blockHeaderResponsePayload))
                 .build();
 
     }

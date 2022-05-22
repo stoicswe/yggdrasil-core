@@ -1,10 +1,10 @@
-package org.yggdrasil.node.network.messages.payloads;
+package org.yggdrasil.node.network.messages.requests;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.SerializationUtils;
 import org.yggdrasil.node.network.messages.MessagePayload;
 import org.yggdrasil.node.network.messages.enums.GetDataType;
+import org.yggdrasil.node.network.messages.util.DataUtil;
 
 import javax.validation.constraints.NotNull;
 
@@ -18,12 +18,10 @@ import javax.validation.constraints.NotNull;
  * @author nathanielbunch
  */
 @JsonInclude
-public class GetDataMessage implements MessagePayload {
+public class BlockRequestMessage implements MessagePayload {
 
     @NotNull
     private final int version;
-    @NotNull
-    private final char[] type;
     @NotNull
     private final int hashCount;
     @NotNull
@@ -31,9 +29,8 @@ public class GetDataMessage implements MessagePayload {
     @NotNull
     private final byte[] stopHash;
 
-    private GetDataMessage(Builder builder) {
+    private BlockRequestMessage(Builder builder) {
         this.version = builder.version;
-        this.type = builder.type;
         this.hashCount = builder.hashCount;
         this.objectHashes = builder.objectHashes;
         this.stopHash = builder.stopHash;
@@ -41,10 +38,6 @@ public class GetDataMessage implements MessagePayload {
 
     public int getVersion() {
         return version;
-    }
-
-    public char[] getType() {
-        return type;
     }
 
     public int getHashCount() {
@@ -62,22 +55,16 @@ public class GetDataMessage implements MessagePayload {
     @Override
     public byte[] getDataBytes() {
         byte[] messageBytes = new byte[0];
-        messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(version));
-        messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(type));
-        messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(hashCount));
-        messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(objectHashes));
-        messageBytes = appendBytes(messageBytes, stopHash);
+        messageBytes = DataUtil.appendBytes(messageBytes, SerializationUtils.serialize(version));
+        messageBytes = DataUtil.appendBytes(messageBytes, SerializationUtils.serialize(hashCount));
+        messageBytes = DataUtil.appendBytes(messageBytes, SerializationUtils.serialize(objectHashes));
+        messageBytes = DataUtil.appendBytes(messageBytes, stopHash);
         return messageBytes;
-    }
-
-    private static byte[] appendBytes(byte[] base, byte[] extension) {
-        return ArrayUtils.addAll(base, extension);
     }
 
     public static class Builder {
 
         private int version;
-        private char[] type;
         private int hashCount;
         private byte[][] objectHashes;
         private byte[] stopHash;
@@ -90,11 +77,6 @@ public class GetDataMessage implements MessagePayload {
 
         public Builder setVersion(int version) {
             this.version = version;
-            return this;
-        }
-
-        public Builder setDataType(GetDataType type) {
-            this.type = type.getMessageValue();
             return this;
         }
 
@@ -113,8 +95,8 @@ public class GetDataMessage implements MessagePayload {
             return this;
         }
 
-        public GetDataMessage build() {
-            return new GetDataMessage(this);
+        public BlockRequestMessage build() {
+            return new BlockRequestMessage(this);
         }
 
     }

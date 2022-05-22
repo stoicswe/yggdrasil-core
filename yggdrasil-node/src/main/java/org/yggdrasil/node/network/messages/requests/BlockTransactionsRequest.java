@@ -1,11 +1,11 @@
-package org.yggdrasil.node.network.messages.payloads;
+package org.yggdrasil.node.network.messages.requests;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.SerializationUtils;
 import org.yggdrasil.core.serialization.HashSerializer;
 import org.yggdrasil.node.network.messages.MessagePayload;
+import org.yggdrasil.node.network.messages.util.DataUtil;
 
 import javax.validation.constraints.NotNull;
 
@@ -41,14 +41,10 @@ public class BlockTransactionsRequest implements MessagePayload {
     @Override
     public byte[] getDataBytes() {
         byte[] messageBytes = new byte[0];
-        messageBytes = appendBytes(messageBytes, header);
-        messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(indexesCount));
-        messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(indexes));
+        messageBytes = DataUtil.appendBytes(messageBytes, header);
+        messageBytes = DataUtil.appendBytes(messageBytes, SerializationUtils.serialize(indexesCount));
+        messageBytes = DataUtil.appendBytes(messageBytes, SerializationUtils.serialize(indexes));
         return messageBytes;
-    }
-
-    private static byte[] appendBytes(byte[] base, byte[] extension) {
-        return ArrayUtils.addAll(base, extension);
     }
 
     public static class Builder {

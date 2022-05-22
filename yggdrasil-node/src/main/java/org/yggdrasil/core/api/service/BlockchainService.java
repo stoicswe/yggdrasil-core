@@ -24,8 +24,6 @@ import org.yggdrasil.node.network.messages.Message;
 import org.yggdrasil.node.network.messages.Messenger;
 import org.yggdrasil.node.network.messages.enums.NetworkType;
 import org.yggdrasil.node.network.messages.enums.RequestType;
-import org.yggdrasil.node.network.messages.payloads.MempoolTransactionMessage;
-import org.yggdrasil.node.network.messages.payloads.MempoolTransactionPayload;
 import org.yggdrasil.node.network.messages.payloads.PingPongMessage;
 import org.yggdrasil.ui.MainFrame;
 

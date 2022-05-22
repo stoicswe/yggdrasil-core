@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.SerializationUtils;
 import org.yggdrasil.node.network.messages.MessagePayload;
+import org.yggdrasil.node.network.messages.util.DataUtil;
 
 import javax.validation.constraints.NotNull;
 
@@ -38,15 +39,11 @@ public class AddressMessage implements MessagePayload {
     @Override
     public byte[] getDataBytes() {
         byte[] messageBytes = new byte[0];
-        messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(ipAddressCount));
+        messageBytes = DataUtil.appendBytes(messageBytes, SerializationUtils.serialize(ipAddressCount));
         for(AddressPayload ap : ipAddresses) {
-            messageBytes = appendBytes(messageBytes, ap.getDataBytes());
+            messageBytes = DataUtil.appendBytes(messageBytes, ap.getDataBytes());
         }
         return messageBytes;
-    }
-
-    private static byte[] appendBytes(byte[] base, byte[] extension) {
-        return ArrayUtils.addAll(base, extension);
     }
 
     public static class Builder {

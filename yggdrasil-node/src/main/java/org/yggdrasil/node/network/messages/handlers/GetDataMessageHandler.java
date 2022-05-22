@@ -11,6 +11,7 @@ import org.yggdrasil.node.network.messages.MessagePayload;
 import org.yggdrasil.node.network.messages.MessagePool;
 import org.yggdrasil.node.network.messages.enums.GetDataType;
 import org.yggdrasil.node.network.messages.payloads.*;
+import org.yggdrasil.node.network.messages.requests.BlockRequestMessage;
 import org.yggdrasil.node.network.runners.NodeConnection;
 
 import java.security.NoSuchAlgorithmException;
@@ -20,7 +21,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 @Component
-public class GetDataMessageHandler implements MessageHandler<GetDataMessage> {
+public class GetDataMessageHandler implements MessageHandler<BlockRequestMessage> {
 
     @Autowired
     private Mempool mempool;
@@ -30,17 +31,17 @@ public class GetDataMessageHandler implements MessageHandler<GetDataMessage> {
     private Blockchain blockchain;
 
     @Override
-    public MessagePayload handleMessagePayload(GetDataMessage getDataMessage, NodeConnection nodeConnection) throws NoSuchAlgorithmException {
+    public MessagePayload handleMessagePayload(BlockRequestMessage blockRequestMessage, NodeConnection nodeConnection) throws NoSuchAlgorithmException {
 
         MessagePayload messagePayload = null;
 
         List<BlockHeaderPayload> headers;
-        switch (Objects.requireNonNull(GetDataType.getByValue(getDataMessage.getType()))) {
+        switch (Objects.requireNonNull(GetDataType.getByValue(blockRequestMessage.getType()))) {
             case BLOCK:
-                if(getDataMessage.getHashCount() > 0 || getDataMessage.getObjectHashes().length > 0){
+                if(blockRequestMessage.getHashCount() > 0 || blockRequestMessage.getObjectHashes().length > 0){
                     throw new InvalidMessageException("Message received is invalid for this type of data.");
                 }
-                Optional<Block> opBlock = blockchain.getBlock(getDataMessage.getStopHash());
+                Optional<Block> opBlock = blockchain.getBlock(blockRequestMessage.getStopHash());
                 if (opBlock.isPresent()) {
                     Block b = opBlock.get();
                     BlockMessage bm;
@@ -49,7 +50,7 @@ public class GetDataMessageHandler implements MessageHandler<GetDataMessage> {
                         List<Transaction> txns = b.getData();
                         for(Object txnObj : txns) {
                             Transaction txn = (Transaction) txnObj;
-                            txnps.add(TransactionPayload.Builder.newBuilder()
+                            txnps.add(TransactionPayload.Builder.builder()
                                     .setTimestamp((int) txn.getTimestamp().toEpochSecond())
                                     .setDestinationAddress(txn.getDestinationAddress().toCharArray())
                                     .setOriginAddress(txn.getOrigin().getEncoded())
@@ -71,11 +72,11 @@ public class GetDataMessageHandler implements MessageHandler<GetDataMessage> {
                 }
                 break;
             case BLOCKCHAIN:
-                if(getDataMessage.getHashCount() != getDataMessage.getObjectHashes().length) {
+                if(blockRequestMessage.getHashCount() != blockRequestMessage.getObjectHashes().length) {
                     throw new InvalidMessageException("Message received reported wrong hash count versus data provided.");
                 }
                 headers = new ArrayList<>();
-                for (byte[] blockHash : getDataMessage.getObjectHashes()) {
+                for (byte[] blockHash : blockRequestMessage.getObjectHashes()) {
                     Optional<Block> bs = blockchain.getBlock(blockHash);
                     if(bs.isPresent()) {
                         Block b = bs.get();
@@ -91,19 +92,19 @@ public class GetDataMessageHandler implements MessageHandler<GetDataMessage> {
                         headers.add(hp);
                     }
                 }
-                messagePayload = BlockchainMessage.Builder.newBuilder()
+                messagePayload = BlockHeaderResponsePayload.Builder.newBuilder()
                         .setHeaderCount(headers.size())
                         .setHeaders(headers.toArray(BlockHeaderPayload[]::new))
                         .build();
                 break;
             case TRANSACTION:
-                if(getDataMessage.getHashCount() > 0 || getDataMessage.getObjectHashes().length > 0) {
+                if(blockRequestMessage.getHashCount() > 0 || blockRequestMessage.getObjectHashes().length > 0) {
                     throw new InvalidMessageException("Message received reported requested too many items for the type.");
                 }
-                Optional<Block> txnOpBlock = blockchain.getBlock(getDataMessage.getStopHash());
+                Optional<Block> txnOpBlock = blockchain.getBlock(blockRequestMessage.getStopHash());
                 if(txnOpBlock.isPresent()){
                     Block b = txnOpBlock.get();
-                    Optional<Transaction> txnObj = b.getTransaction(getDataMessage.getStopHash());
+                    Optional<Transaction> txnObj = b.getTransaction(blockRequestMessage.getStopHash());
                     if(txnObj.isPresent()) {
                         Transaction txn = txnObj.get();
                         TransactionPayload txnPayload = TransactionPayload.Builder.newBuilder()
@@ -121,8 +122,8 @@ public class GetDataMessageHandler implements MessageHandler<GetDataMessage> {
             case MEMPOOL:
                 // make an array of transaction payloads and put into a
                 // transaction message
-                if(getDataMessage.getHashCount() > 0) {
-                    List<Transaction> transactions = mempool.peekTransaction(getDataMessage.getHashCount());
+                if(blockRequestMessage.getHashCount() > 0) {
+                    List<Transaction> transactions = mempool.peekTransaction(blockRequestMessage.getHashCount());
                     List<MempoolTransactionPayload> txnPayloads = new ArrayList<>();
                     for(Transaction txn : transactions) {
                         MempoolTransactionPayload txnp = MempoolTransactionPayload.Builder.builder()

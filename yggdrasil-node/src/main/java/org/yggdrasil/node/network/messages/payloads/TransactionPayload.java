@@ -1,10 +1,10 @@
 package org.yggdrasil.node.network.messages.payloads;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.SerializationUtils;
 import org.yggdrasil.core.ledger.transaction.Transaction;
 import org.yggdrasil.node.network.messages.MessagePayload;
+import org.yggdrasil.node.network.messages.util.DataUtil;
 
 import javax.validation.constraints.NotNull;
 
@@ -77,25 +77,21 @@ public class TransactionPayload implements MessagePayload {
     @Override
     public byte[] getDataBytes() {
         byte[] messageBytes = new byte[0];
-        messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(version));
-        messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(isWitness));
-        messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(txInCount));
+        messageBytes = DataUtil.appendBytes(messageBytes, SerializationUtils.serialize(version));
+        messageBytes = DataUtil.appendBytes(messageBytes, SerializationUtils.serialize(isWitness));
+        messageBytes = DataUtil.appendBytes(messageBytes, SerializationUtils.serialize(txInCount));
         for(TransactionIn txin : txnIn) {
-            messageBytes = appendBytes(messageBytes, txin.getDataBytes());
+            messageBytes = DataUtil.appendBytes(messageBytes, txin.getDataBytes());
         }
-        messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(txOutCount));
+        messageBytes = DataUtil.appendBytes(messageBytes, SerializationUtils.serialize(txOutCount));
         for(TransactionOut txOut : txOut) {
-            messageBytes = appendBytes(messageBytes, txOut.getDataBytes());
+            messageBytes = DataUtil.appendBytes(messageBytes, txOut.getDataBytes());
         }
         for(TransactionWitness witness : witnesses) {
-            messageBytes = appendBytes(messageBytes, witness.getDataBytes());
+            messageBytes = DataUtil.appendBytes(messageBytes, witness.getDataBytes());
         }
-        messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(lockTime));
+        messageBytes = DataUtil.appendBytes(messageBytes, SerializationUtils.serialize(lockTime));
         return messageBytes;
-    }
-
-    private static byte[] appendBytes(byte[] base, byte[] extension) {
-        return ArrayUtils.addAll(base, extension);
     }
 
     public static class Builder {

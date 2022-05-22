@@ -1,9 +1,9 @@
 package org.yggdrasil.node.network.messages.payloads;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.SerializationUtils;
 import org.yggdrasil.node.network.messages.MessagePayload;
+import org.yggdrasil.node.network.messages.util.DataUtil;
 
 import javax.validation.constraints.NotNull;
 
@@ -16,14 +16,14 @@ import javax.validation.constraints.NotNull;
  * @author nathanielbunch
  */
 @JsonInclude
-public class BlockchainMessage implements MessagePayload {
+public class BlockHeaderResponsePayload implements MessagePayload {
 
     @NotNull
     private final int headerCount;
     @NotNull
     private final BlockHeaderPayload[] headers;
 
-    private BlockchainMessage(Builder builder) {
+    private BlockHeaderResponsePayload(Builder builder) {
         this.headerCount = builder.headerCount;
         this.headers = builder.headers;
     }
@@ -39,15 +39,11 @@ public class BlockchainMessage implements MessagePayload {
     @Override
     public byte[] getDataBytes() {
         byte[] messageBytes = new byte[0];
-        messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(headerCount));
+        messageBytes = DataUtil.appendBytes(messageBytes, SerializationUtils.serialize(headerCount));
         for(BlockHeaderPayload hp : headers) {
-            messageBytes = appendBytes(messageBytes, hp.getDataBytes());
+            messageBytes = DataUtil.appendBytes(messageBytes, hp.getDataBytes());
         }
         return messageBytes;
-    }
-
-    private static byte[] appendBytes(byte[] base, byte[] extension) {
-        return ArrayUtils.addAll(base, extension);
     }
 
     public static class Builder {
@@ -73,8 +69,8 @@ public class BlockchainMessage implements MessagePayload {
             return this;
         }
 
-        public BlockchainMessage build() {
-            return new BlockchainMessage(this);
+        public BlockHeaderResponsePayload build() {
+            return new BlockHeaderResponsePayload(this);
         }
 
     }

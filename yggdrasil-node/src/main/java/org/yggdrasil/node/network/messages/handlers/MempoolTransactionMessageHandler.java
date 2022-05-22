@@ -9,8 +9,6 @@ import org.yggdrasil.core.ledger.transaction.Transaction;
 import org.yggdrasil.core.utils.CryptoHasher;
 import org.yggdrasil.node.network.messages.MessagePayload;
 import org.yggdrasil.node.network.messages.payloads.AcknowledgeMessage;
-import org.yggdrasil.node.network.messages.payloads.MempoolTransactionMessage;
-import org.yggdrasil.node.network.messages.payloads.MempoolTransactionPayload;
 import org.yggdrasil.node.network.runners.NodeConnection;
 
 @Component

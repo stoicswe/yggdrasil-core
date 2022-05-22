@@ -6,6 +6,7 @@ import org.apache.commons.lang3.SerializationUtils;
 import org.springframework.lang.NonNull;
 import org.yggdrasil.node.network.messages.MessagePayload;
 import org.yggdrasil.node.network.messages.enums.ServicesType;
+import org.yggdrasil.node.network.messages.util.DataUtil;
 
 import javax.validation.constraints.NotNull;
 import java.math.BigInteger;
@@ -111,23 +112,19 @@ public class HandshakeMessage implements MessagePayload {
     @Override
     public byte[] getDataBytes() {
         byte[] messageBytes = new byte[0];
-        messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(version));
-        messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(services));
-        messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(timestamp));
-        messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(receiverAddress));
-        messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(receiverPort));
-        messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(senderAddress));
-        messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(senderListeningPort));
-        messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(senderPort));
-        messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(userAgent));
-        messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(startHeight));
-        messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(nonce));
-        messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(senderIdentifier));
+        messageBytes = DataUtil.appendBytes(messageBytes, SerializationUtils.serialize(version));
+        messageBytes = DataUtil.appendBytes(messageBytes, SerializationUtils.serialize(services));
+        messageBytes = DataUtil.appendBytes(messageBytes, SerializationUtils.serialize(timestamp));
+        messageBytes = DataUtil.appendBytes(messageBytes, SerializationUtils.serialize(receiverAddress));
+        messageBytes = DataUtil.appendBytes(messageBytes, SerializationUtils.serialize(receiverPort));
+        messageBytes = DataUtil.appendBytes(messageBytes, SerializationUtils.serialize(senderAddress));
+        messageBytes = DataUtil.appendBytes(messageBytes, SerializationUtils.serialize(senderListeningPort));
+        messageBytes = DataUtil.appendBytes(messageBytes, SerializationUtils.serialize(senderPort));
+        messageBytes = DataUtil.appendBytes(messageBytes, SerializationUtils.serialize(userAgent));
+        messageBytes = DataUtil.appendBytes(messageBytes, SerializationUtils.serialize(startHeight));
+        messageBytes = DataUtil.appendBytes(messageBytes, SerializationUtils.serialize(nonce));
+        messageBytes = DataUtil.appendBytes(messageBytes, SerializationUtils.serialize(senderIdentifier));
         return messageBytes;
-    }
-
-    private static byte[] appendBytes(byte[] base, byte[] extension) {
-        return ArrayUtils.addAll(base, extension);
     }
 
     public static class Builder {

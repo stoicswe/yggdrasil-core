@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.yggdrasil.core.utils.CryptoHasher;
 import org.yggdrasil.node.network.Node;
+import org.yggdrasil.node.network.messages.requests.BlockRequestMessage;
 import org.yggdrasil.node.network.runners.MessagePoolRunner;
 import org.yggdrasil.node.network.runners.NodeConnection;
 import org.yggdrasil.node.network.exceptions.NodeDisconnectException;
@@ -124,7 +125,7 @@ public class Messenger {
             switch (Objects.requireNonNull(RequestType.getByValue(message.getRequest()))) {
                 case GET_DATA:
                     logger.info("Handling {} message.", RequestType.GET_DATA);
-                    messagePayload = this.getDataMessageHandler.handleMessagePayload((GetDataMessage) message.getPayload(), nodeConnection);
+                    messagePayload = this.getDataMessageHandler.handleMessagePayload((BlockRequestMessage) message.getPayload(), nodeConnection);
                     returnMessage = Message.Builder.newBuilder()
                             .setNetwork(NetworkType.getByValue(message.getNetwork()))
                             .setRequestType(RequestType.DATA_RESP)
@@ -135,9 +136,9 @@ public class Messenger {
                     break;
                 case DATA_RESP:
                     logger.info("Handling {} message.", RequestType.DATA_RESP);
-                    if (message.getPayload() instanceof BlockchainMessage) {
+                    if (message.getPayload() instanceof BlockHeaderResponsePayload) {
                         logger.info("{} message is a BlockchainMessage.", RequestType.DATA_RESP);
-                        this.blockchainMessageHandler.handleMessagePayload((BlockchainMessage) message.getPayload(), nodeConnection);
+                        this.blockchainMessageHandler.handleMessagePayload((BlockHeaderResponsePayload) message.getPayload(), nodeConnection);
                         messagePayload = AcknowledgeMessage.Builder.newBuilder()
                                 .setAcknowledgeChecksum(message.getChecksum())
                                 .build();

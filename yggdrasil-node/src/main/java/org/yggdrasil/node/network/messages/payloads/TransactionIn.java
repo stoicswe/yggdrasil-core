@@ -1,9 +1,9 @@
 package org.yggdrasil.node.network.messages.payloads;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.SerializationUtils;
 import org.yggdrasil.node.network.messages.MessagePayload;
+import org.yggdrasil.node.network.messages.util.DataUtil;
 
 import javax.validation.constraints.NotNull;
 
@@ -45,15 +45,11 @@ public class TransactionIn implements MessagePayload {
     @Override
     public byte[] getDataBytes() {
         byte[] messageBytes = new byte[0];
-        messageBytes = appendBytes(messageBytes, txnOutPoint.getDataBytes());
-        messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(scriptLength));
-        messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(sigScript));
-        messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(sequence));
+        messageBytes = DataUtil.appendBytes(messageBytes, txnOutPoint.getDataBytes());
+        messageBytes = DataUtil.appendBytes(messageBytes, SerializationUtils.serialize(scriptLength));
+        messageBytes = DataUtil.appendBytes(messageBytes, SerializationUtils.serialize(sigScript));
+        messageBytes = DataUtil.appendBytes(messageBytes, SerializationUtils.serialize(sequence));
         return messageBytes;
-    }
-
-    private static byte[] appendBytes(byte[] base, byte[] extension) {
-        return ArrayUtils.addAll(base, extension);
     }
 
     public static class Builder {

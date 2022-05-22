@@ -6,6 +6,7 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.SerializationUtils;
 import org.yggdrasil.core.serialization.HashSerializer;
 import org.yggdrasil.node.network.messages.MessagePayload;
+import org.yggdrasil.node.network.messages.util.DataUtil;
 
 import javax.validation.constraints.NotNull;
 
@@ -41,16 +42,12 @@ public class BlockTransactions implements MessagePayload {
     @Override
     public byte[] getDataBytes() {
         byte[] messageBytes = new byte[0];
-        messageBytes = appendBytes(messageBytes, blockHash);
-        messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(transactionsLength));
+        messageBytes = DataUtil.appendBytes(messageBytes, blockHash);
+        messageBytes = DataUtil.appendBytes(messageBytes, SerializationUtils.serialize(transactionsLength));
         for(TransactionPayload t : this.transactions) {
-            messageBytes = appendBytes(messageBytes, t.getDataBytes());
+            messageBytes = DataUtil.appendBytes(messageBytes, t.getDataBytes());
         }
         return messageBytes;
-    }
-
-    private static byte[] appendBytes(byte[] base, byte[] extension) {
-        return ArrayUtils.addAll(base, extension);
     }
 
     public static class Builder {

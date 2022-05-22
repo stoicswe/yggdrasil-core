@@ -6,6 +6,7 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.SerializationUtils;
 import org.yggdrasil.core.serialization.HashSerializer;
 import org.yggdrasil.node.network.messages.MessagePayload;
+import org.yggdrasil.node.network.messages.util.DataUtil;
 
 import javax.validation.constraints.NotNull;
 
@@ -84,21 +85,17 @@ public class BlockMessage implements MessagePayload {
     @Override
     public byte[] getDataBytes() {
         byte[] messageBytes = new byte[0];
-        messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(version));
-        messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(timestamp));
-        messageBytes = appendBytes(messageBytes, prevBlock);
-        messageBytes = appendBytes(messageBytes, merkleRoot);
-        messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(diff));
-        messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(nonce));
-        messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(txnCount));
+        messageBytes = DataUtil.appendBytes(messageBytes, SerializationUtils.serialize(version));
+        messageBytes = DataUtil.appendBytes(messageBytes, SerializationUtils.serialize(timestamp));
+        messageBytes = DataUtil.appendBytes(messageBytes, prevBlock);
+        messageBytes = DataUtil.appendBytes(messageBytes, merkleRoot);
+        messageBytes = DataUtil.appendBytes(messageBytes, SerializationUtils.serialize(diff));
+        messageBytes = DataUtil.appendBytes(messageBytes, SerializationUtils.serialize(nonce));
+        messageBytes = DataUtil.appendBytes(messageBytes, SerializationUtils.serialize(txnCount));
         for(TransactionPayload txnPayload : txnPayloads) {
-            messageBytes = appendBytes(messageBytes, txnPayload.getDataBytes());
+            messageBytes = DataUtil.appendBytes(messageBytes, txnPayload.getDataBytes());
         }
         return messageBytes;
-    }
-
-    private static byte[] appendBytes(byte[] base, byte[] extension) {
-        return ArrayUtils.addAll(base, extension);
     }
 
     public static class Builder {

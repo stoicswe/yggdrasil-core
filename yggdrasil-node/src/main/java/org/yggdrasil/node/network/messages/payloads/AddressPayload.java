@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.SerializationUtils;
 import org.yggdrasil.node.network.messages.MessagePayload;
+import org.yggdrasil.node.network.messages.util.DataUtil;
 
 import javax.validation.constraints.NotNull;
 import java.math.BigInteger;
@@ -61,16 +62,12 @@ public class AddressPayload implements MessagePayload {
     @Override
     public byte[] getDataBytes() {
         byte[] messageBytes = new byte[0];
-        messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(timestamp));
-        messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(services));
-        messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(nodeIdentifier));
-        messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(ipAddress));
-        messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(port));
+        messageBytes = DataUtil.appendBytes(messageBytes, SerializationUtils.serialize(timestamp));
+        messageBytes = DataUtil.appendBytes(messageBytes, SerializationUtils.serialize(services));
+        messageBytes = DataUtil.appendBytes(messageBytes, SerializationUtils.serialize(nodeIdentifier));
+        messageBytes = DataUtil.appendBytes(messageBytes, SerializationUtils.serialize(ipAddress));
+        messageBytes = DataUtil.appendBytes(messageBytes, SerializationUtils.serialize(port));
         return messageBytes;
-    }
-
-    private static byte[] appendBytes(byte[] base, byte[] extension) {
-        return ArrayUtils.addAll(base, extension);
     }
 
     public static class Builder {
