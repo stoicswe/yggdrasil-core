@@ -87,7 +87,7 @@ public class HandshakeRunner implements Runnable {
                     messenger.getValidator().isValidMessage(receivedMessage);
                     // complete the handshake
                     logger.info("Verifying handshake response from [{}]", this.nodeConnection.getNodeSocket().getInetAddress());
-                    if(CommandType.HANDSHAKE_RESP.isEqualToLiteral(receivedMessage.getCommand())){
+                    if(CommandType.HANDSHAKE_RESP.isEqual(receivedMessage.getCommand())){
                         // verify the handshake
                         HandshakeMessage rhm = (HandshakeMessage) receivedMessage.getPayload();
                         // Check is correct supported version
@@ -155,7 +155,7 @@ public class HandshakeRunner implements Runnable {
                     messenger.getValidator().isValidMessage(receivedMessage);
                     // complete the handshake
                     logger.info("Verifying handshake offer from [{}]", this.nodeConnection.getNodeSocket().getInetAddress());
-                    if(CommandType.HANDSHAKE_OFFR.isEqualToLiteral(receivedMessage.getCommand())){
+                    if(CommandType.HANDSHAKE_OFFR.isEqual(receivedMessage.getCommand())){
                         // verify the handshake
                         HandshakeMessage rhm = (HandshakeMessage) receivedMessage.getPayload();
                         // Check is correct supported version
@@ -209,7 +209,7 @@ public class HandshakeRunner implements Runnable {
                                 // validate the message
                                 messenger.getValidator().isValidMessage(receivedMessage);
                                 logger.info("Verifying acknowledgement from [{}]", this.nodeConnection.getNodeIdentifier());
-                                if(CommandType.ACKNOWLEDGE_PAYLOAD.isEqualToLiteral(receivedMessage.getCommand())){
+                                if(CommandType.ACKNOWLEDGE_PAYLOAD.isEqual(receivedMessage.getCommand())){
                                     // get the acknowledgment
                                     AcknowledgeMessage rackm = (AcknowledgeMessage) receivedMessage.getPayload();
                                     // verify the acknowledgement was for the correct message

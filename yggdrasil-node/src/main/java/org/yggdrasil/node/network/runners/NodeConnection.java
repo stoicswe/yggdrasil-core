@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import org.yggdrasil.core.utils.DateTimeUtil;
 import org.yggdrasil.node.network.messages.Message;
 import org.yggdrasil.node.network.messages.Messenger;
+import org.yggdrasil.node.network.messages.enums.ServicesType;
 import org.yggdrasil.node.network.peer.PeerRecord;
 
 import java.io.*;
@@ -27,7 +28,7 @@ public class NodeConnection implements Runnable {
     private final ObjectOutputStream objectOutputStream;
     private final ObjectInputStream objectInputStream;
     private String nodeIdentifier;
-    private BigInteger supportedServices;
+    private ServicesType supportedServices;
 
     public NodeConnection(Socket node, Messenger messenger) throws IOException {
         this.nodeSocket = node;
@@ -40,7 +41,7 @@ public class NodeConnection implements Runnable {
         this.nodeIdentifier = nodeIdentifier;
     }
 
-    protected void setSupportedServices(BigInteger supportedServices) {
+    protected void setSupportedServices(ServicesType supportedServices) {
         this.supportedServices = supportedServices;
     }
 
@@ -64,7 +65,7 @@ public class NodeConnection implements Runnable {
         return this.objectOutputStream;
     }
 
-    public BigInteger getSupportedServices() {
+    public ServicesType getSupportedServices() {
         return this.supportedServices;
     }
 

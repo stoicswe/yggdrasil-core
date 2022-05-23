@@ -1,4 +1,4 @@
-package org.yggdrasil.node.network.messages.handlers;
+package org.yggdrasil.node.network.messages.handlers.response;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -8,6 +8,7 @@ import org.yggdrasil.core.ledger.chain.Block;
 import org.yggdrasil.core.ledger.chain.Blockchain;
 import org.yggdrasil.core.utils.CryptoHasher;
 import org.yggdrasil.node.network.messages.MessagePayload;
+import org.yggdrasil.node.network.messages.handlers.MessageHandler;
 import org.yggdrasil.node.network.messages.payloads.AcknowledgeMessage;
 import org.yggdrasil.node.network.messages.payloads.BlockHeaderResponsePayload;
 import org.yggdrasil.node.network.messages.payloads.BlockHeaderPayload;
@@ -18,9 +19,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Component
-public class BlockchainMessageHandler implements MessageHandler<BlockHeaderResponsePayload> {
+public class BlockHeaderMessageHandler implements MessageHandler<BlockHeaderResponsePayload> {
 
-    Logger logger = LoggerFactory.getLogger(BlockchainMessageHandler.class);
+    Logger logger = LoggerFactory.getLogger(BlockHeaderMessageHandler.class);
 
     @Autowired
     Blockchain blockchain;

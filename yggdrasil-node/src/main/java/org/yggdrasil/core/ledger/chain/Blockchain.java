@@ -38,7 +38,7 @@ import java.util.concurrent.TimeUnit;
 public class Blockchain implements Cloneable {
     private Logger logger = LoggerFactory.getLogger(Blockchain.class);
     //The software version
-    public static final int _VERSION = 0x010;
+    public static final int _VERSION = 0x000010;
 
     // The size of the window in which the hash difficulty is calculated,
     // in the number of blocks

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.SerializationUtils;
 import org.yggdrasil.node.network.messages.MessagePayload;
+import org.yggdrasil.node.network.messages.enums.ServicesType;
 import org.yggdrasil.node.network.messages.util.DataUtil;
 
 import javax.validation.constraints.NotNull;
@@ -23,7 +24,7 @@ public class AddressPayload implements MessagePayload {
     @NotNull
     private final int timestamp;
     @NotNull
-    private final BigInteger services;
+    private final int services;
     @NotNull
     private final char[] nodeIdentifier;
     @NotNull
@@ -43,8 +44,8 @@ public class AddressPayload implements MessagePayload {
         return timestamp;
     }
 
-    public BigInteger getServices() {
-        return services;
+    public ServicesType getServices() {
+        return ServicesType.getByValue(services);
     }
 
     public char[] getNodeIdentifier() {
@@ -73,7 +74,7 @@ public class AddressPayload implements MessagePayload {
     public static class Builder {
 
         private int timestamp;
-        private BigInteger services;
+        private int services;
         private char[] nodeIdentifier;
         private char[] ipAddress;
         private int port;
@@ -89,8 +90,8 @@ public class AddressPayload implements MessagePayload {
             return this;
         }
 
-        public Builder setServices(BigInteger services) {
-            this.services = services;
+        public Builder setServices(ServicesType services) {
+            this.services = services.getValue();
             return this;
         }
 

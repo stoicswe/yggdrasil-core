@@ -56,7 +56,7 @@ public class BlockTransactions implements MessagePayload {
         private int transactionsLength;
         private TransactionPayload[] transactions;
 
-        public Builder builder() {
+        public static Builder builder() {
             return new Builder();
         }
 

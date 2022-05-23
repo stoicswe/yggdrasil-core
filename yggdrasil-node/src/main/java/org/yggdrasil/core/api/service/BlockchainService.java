@@ -22,8 +22,11 @@ import org.springframework.stereotype.Service;
 import org.yggdrasil.node.network.NodeConfig;
 import org.yggdrasil.node.network.messages.Message;
 import org.yggdrasil.node.network.messages.Messenger;
+import org.yggdrasil.node.network.messages.enums.InventoryType;
 import org.yggdrasil.node.network.messages.enums.NetworkType;
 import org.yggdrasil.node.network.messages.enums.CommandType;
+import org.yggdrasil.node.network.messages.payloads.InventoryMessage;
+import org.yggdrasil.node.network.messages.payloads.InventoryVector;
 import org.yggdrasil.node.network.messages.payloads.PingPongMessage;
 import org.yggdrasil.ui.MainFrame;
 
@@ -144,18 +147,19 @@ public class BlockchainService {
         // add the newly created txn to the mempool
         this.mempool.putTransaction(mempoolTxn);
         // need to broadcast the mempool transaction.
-        MempoolTransactionPayload txnPayload = MempoolTransactionPayload.Builder.builder()
-                .buildFromMempool(mempoolTxn);
-        MempoolTransactionMessage txnMessage = MempoolTransactionMessage.Builder.builder()
-                .setTxnCount(1)
-                .setTxns(new MempoolTransactionPayload[]{txnPayload})
+        InventoryVector invVec = InventoryVector.Builder.builder()
+                .setType(InventoryType.MSG_TX)
+                .setHash(mempoolTxn.getTxnHash())
+                .build();
+        InventoryMessage txnPayload = InventoryMessage.Builder.builder()
+                .setInventory(new InventoryVector[]{invVec})
                 .build();
         Message txnMsg = Message.Builder.newBuilder()
                 .setNetwork(nodeConfig.getNetwork())
                 .setRequestType(CommandType.INVENTORY_PAYLOAD)
-                .setMessagePayload(txnMessage)
-                .setPayloadSize(BigInteger.valueOf(GraphLayout.parseInstance(txnMessage).totalSize()))
-                .setChecksum(CryptoHasher.hash(txnMessage))
+                .setMessagePayload(txnPayload)
+                .setPayloadSize(BigInteger.valueOf(GraphLayout.parseInstance(txnPayload).totalSize()))
+                .setChecksum(CryptoHasher.hash(txnPayload))
                 .build();
         this.messenger.sendBroadcastMessage(txnMsg);
     }

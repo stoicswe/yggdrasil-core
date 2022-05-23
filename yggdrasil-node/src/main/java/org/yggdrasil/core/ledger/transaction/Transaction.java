@@ -200,24 +200,6 @@ public class Transaction implements LedgerHashableItem {
         public Transaction build() throws NoSuchAlgorithmException {
             return new Transaction(this);
         }
-
-        public Transaction buildFromMessage(TransactionPayload transactionMessage) throws NoSuchAlgorithmException, InvalidKeySpecException, NoSuchProviderException {
-            this.timestamp = DateTimeUtil.fromMessageTimestamp(transactionMessage.getTimestamp());
-            this.origin = CryptoKeyGenerator.readPublicKeyFromBytes(transactionMessage.getOriginAddress());
-            this.destinationAddress = String.valueOf(transactionMessage.getDestinationAddress());
-            Transaction txn = new Transaction(this);
-            txn.signature = transactionMessage.getSignature();
-            return txn;
-        }
-
-        public Transaction buildFromMessage(MempoolTransactionPayload transactionMessage) throws NoSuchAlgorithmException, InvalidKeySpecException, NoSuchProviderException {
-            this.timestamp = DateTimeUtil.fromMessageTimestamp(transactionMessage.getTimestamp());
-            this.origin = CryptoKeyGenerator.readPublicKeyFromBytes(CryptoHasher.hashByteArray(String.valueOf(transactionMessage.getOriginAddress())));
-            this.destinationAddress = String.valueOf(transactionMessage.getDestinationAddress());
-            Transaction txn = new Transaction(this);
-            txn.signature = transactionMessage.getSignature();
-            return txn;
-        }
     }
 
 }

@@ -1,4 +1,4 @@
-package org.yggdrasil.node.network.messages.handlers;
+package org.yggdrasil.node.network.messages.handlers.request;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -10,6 +10,7 @@ import org.yggdrasil.node.network.exceptions.InvalidMessageException;
 import org.yggdrasil.node.network.messages.MessagePayload;
 import org.yggdrasil.node.network.messages.MessagePool;
 import org.yggdrasil.node.network.messages.enums.GetDataType;
+import org.yggdrasil.node.network.messages.handlers.MessageHandler;
 import org.yggdrasil.node.network.messages.payloads.*;
 import org.yggdrasil.node.network.messages.requests.BlockMessageRequest;
 import org.yggdrasil.node.network.runners.NodeConnection;
@@ -21,7 +22,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 @Component
-public class GetDataMessageHandler implements MessageHandler<BlockMessageRequest> {
+public class BlockRequestHandler implements MessageHandler<BlockMessageRequest> {
 
     @Autowired
     private Mempool mempool;
@@ -36,7 +37,7 @@ public class GetDataMessageHandler implements MessageHandler<BlockMessageRequest
         MessagePayload messagePayload = null;
 
         List<BlockHeaderPayload> headers;
-        switch (Objects.requireNonNull(GetDataType.getByValue(blockMessageRequest.getType()))) {
+        switch (Objects.requireNonNull(blockMessageRequest.getType())) {
             case BLOCK:
                 if(blockMessageRequest.getHashCount() > 0 || blockMessageRequest.getObjectHashes().length > 0){
                     throw new InvalidMessageException("Message received is invalid for this type of data.");
@@ -51,12 +52,14 @@ public class GetDataMessageHandler implements MessageHandler<BlockMessageRequest
                         for(Object txnObj : txns) {
                             Transaction txn = (Transaction) txnObj;
                             txnps.add(TransactionPayload.Builder.builder()
-                                    .setTimestamp((int) txn.getTimestamp().toEpochSecond())
-                                    .setDestinationAddress(txn.getDestinationAddress().toCharArray())
-                                    .setOriginAddress(txn.getOrigin().getEncoded())
-                                    .setBlockHash(b.getBlockHash())
-                                    .setSignature(txn.getSignature())
-                                    .build());
+                                            .setVersion(Blockchain._VERSION)
+                                    // TODO: Fix setting TXNs
+                                            .setWitnessFlag(false)
+                                            .setTxIns(new TransactionIn[0])
+                                            .setTxOuts(new TransactionOut[0])
+                                            .setWitnesses(new TransactionWitness[0])
+                                            .setLockTime(0)
+                                            .build());
                         }
                         messagePayload = BlockMessage.Builder.builder()
                                 .setVersion(b.getHeader().getVersion())
@@ -71,54 +74,8 @@ public class GetDataMessageHandler implements MessageHandler<BlockMessageRequest
                     }
                 }
                 break;
-            case BLOCKCHAIN:
-                if(blockMessageRequest.getHashCount() != blockMessageRequest.getObjectHashes().length) {
-                    throw new InvalidMessageException("Message received reported wrong hash count versus data provided.");
-                }
-                headers = new ArrayList<>();
-                for (byte[] blockHash : blockMessageRequest.getObjectHashes()) {
-                    Optional<Block> bs = blockchain.getBlock(blockHash);
-                    if(bs.isPresent()) {
-                        Block b = bs.get();
-                        BlockHeaderPayload hp = BlockHeaderPayload.Builder.newBuilder()
-                                .setVersion(b.getHeader().getVersion())
-                                .setPreviousHash(b.getHeader().getPreviousBlockHash())
-                                .setMerkleRoot(b.getHeader().getMerkleRoot())
-                                .setTimestamp((int) b.getHeader().getEpochTime())
-                                .setDiff(b.getHeader().getDiff())
-                                .setNonce(b.getHeader().getNonce())
-                                .setTxnCount(b.getTxnCount())
-                                .build();
-                        headers.add(hp);
-                    }
-                }
-                messagePayload = BlockHeaderResponsePayload.Builder.newBuilder()
-                        .setHeaderCount(headers.size())
-                        .setHeaders(headers.toArray(BlockHeaderPayload[]::new))
-                        .build();
-                break;
             case TRANSACTION:
-                if(blockMessageRequest.getHashCount() > 0 || blockMessageRequest.getObjectHashes().length > 0) {
-                    throw new InvalidMessageException("Message received reported requested too many items for the type.");
-                }
-                Optional<Block> txnOpBlock = blockchain.getBlock(blockMessageRequest.getStopHash());
-                if(txnOpBlock.isPresent()){
-                    Block b = txnOpBlock.get();
-                    Optional<Transaction> txnObj = b.getTransaction(blockMessageRequest.getStopHash());
-                    if(txnObj.isPresent()) {
-                        Transaction txn = txnObj.get();
-                        TransactionPayload txnPayload = TransactionPayload.Builder.newBuilder()
-                                .buildFromTransaction(txn)
-                                .setBlockHash(b.getBlockHash())
-                                .build();
-                        // make a transaction message
-                        messagePayload = TransactionMessage.Builder.newBuilder()
-                                .setTxnCount(1)
-                                .setTxns(new TransactionPayload[]{txnPayload})
-                                .build();
-                    }
-                }
-                break;
+
             case MEMPOOL:
                 // make an array of transaction payloads and put into a
                 // transaction message

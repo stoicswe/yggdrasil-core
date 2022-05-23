@@ -91,6 +91,10 @@ public enum CommandType {
         return null;
     }
 
+    public boolean isEqual(CommandType commandType) {
+        return new String(this.value).contentEquals(new String(commandType.value));
+    }
+
     @Override
     public String toString() {
         return this.label;

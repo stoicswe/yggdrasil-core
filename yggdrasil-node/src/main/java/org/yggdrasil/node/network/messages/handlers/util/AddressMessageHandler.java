@@ -1,12 +1,11 @@
-package org.yggdrasil.node.network.messages.handlers;
+package org.yggdrasil.node.network.messages.handlers.util;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.yggdrasil.core.utils.CryptoHasher;
-import org.yggdrasil.node.network.Node;
 import org.yggdrasil.node.network.NodeConfig;
 import org.yggdrasil.node.network.messages.MessagePayload;
-import org.yggdrasil.node.network.messages.MessagePool;
+import org.yggdrasil.node.network.messages.handlers.MessageHandler;
 import org.yggdrasil.node.network.messages.payloads.AcknowledgeMessage;
 import org.yggdrasil.node.network.messages.payloads.AddressMessage;
 import org.yggdrasil.node.network.messages.payloads.AddressPayload;
@@ -17,7 +16,7 @@ import org.yggdrasil.node.network.runners.NodeConnection;
 import java.security.NoSuchAlgorithmException;
 
 @Component
-public class AddressResponseMessageHandler implements MessageHandler<AddressMessage> {
+public class AddressMessageHandler implements MessageHandler<AddressMessage> {
 
     @Autowired
     private PeerRecordIndexer peerRecordIndexer;

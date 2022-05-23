@@ -14,20 +14,20 @@ public class BlockTransactionsRequest implements MessagePayload {
 
     @NotNull
     @JsonSerialize(using = HashSerializer.class)
-    private byte[] header;
+    private byte[] hash;
     @NotNull
     private int indexesCount;
     @NotNull
     private int[] indexes;
 
     private BlockTransactionsRequest(Builder builder) {
-        this.header = builder.header;
+        this.hash = builder.header;
         this.indexesCount = builder.indexesCount;
         this.indexes = builder.indexes;
     }
 
-    public byte[] getHeader() {
-        return header;
+    public byte[] getHash() {
+        return hash;
     }
 
     public int getIndexesCount() {
@@ -41,7 +41,7 @@ public class BlockTransactionsRequest implements MessagePayload {
     @Override
     public byte[] getDataBytes() {
         byte[] messageBytes = new byte[0];
-        messageBytes = DataUtil.appendBytes(messageBytes, header);
+        messageBytes = DataUtil.appendBytes(messageBytes, hash);
         messageBytes = DataUtil.appendBytes(messageBytes, SerializationUtils.serialize(indexesCount));
         messageBytes = DataUtil.appendBytes(messageBytes, SerializationUtils.serialize(indexes));
         return messageBytes;

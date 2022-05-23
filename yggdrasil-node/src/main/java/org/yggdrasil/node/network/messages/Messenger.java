@@ -7,6 +7,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.yggdrasil.core.utils.CryptoHasher;
 import org.yggdrasil.node.network.Node;
+import org.yggdrasil.node.network.messages.handlers.util.AddressRequestHandler;
+import org.yggdrasil.node.network.messages.handlers.request.BlockRequestHandler;
+import org.yggdrasil.node.network.messages.handlers.util.AddressMessageHandler;
+import org.yggdrasil.node.network.messages.handlers.response.BlockHeaderMessageHandler;
+import org.yggdrasil.node.network.messages.handlers.response.BlockMessageHandler;
+import org.yggdrasil.node.network.messages.handlers.util.PingMessageHandler;
 import org.yggdrasil.node.network.messages.requests.BlockMessageRequest;
 import org.yggdrasil.node.network.runners.MessagePoolRunner;
 import org.yggdrasil.node.network.runners.NodeConnection;
@@ -45,11 +51,11 @@ public class Messenger {
     @Autowired
     private MessageValidator validator;
     @Autowired
-    private GetDataMessageHandler getDataMessageHandler;
+    private BlockRequestHandler blockRequestHandler;
     @Autowired
     private BlockMessageHandler blockMessageHandler;
     @Autowired
-    private BlockchainMessageHandler blockchainMessageHandler;
+    private BlockHeaderMessageHandler blockHeaderMessageHandler;
     @Autowired
     private MempoolTransactionMessageHandler basicTransactionMessageHandler;
     @Autowired
@@ -57,9 +63,9 @@ public class Messenger {
     @Autowired
     private PingMessageHandler pingMessageHandler;
     @Autowired
-    private AddressResponseMessageHandler addressResponseHandler;
+    private AddressMessageHandler addressResponseHandler;
     @Autowired
-    private GetAddressMessageHandler getAddressMessageHandler;
+    private AddressRequestHandler addressRequestHandler;
 
     @PostConstruct
     private void init() {
@@ -125,7 +131,7 @@ public class Messenger {
             switch (Objects.requireNonNull(CommandType.getByValue(message.getCommand()))) {
                 case REQUEST_BLOCK_HEADER:
                     logger.info("Handling {} message.", CommandType.REQUEST_BLOCK_HEADER);
-                    messagePayload = this.getDataMessageHandler.handleMessagePayload((BlockMessageRequest) message.getPayload(), nodeConnection);
+                    messagePayload = this.blockRequestHandler.handleMessagePayload((BlockMessageRequest) message.getPayload(), nodeConnection);
                     returnMessage = Message.Builder.newBuilder()
                             .setNetwork(NetworkType.getByValue(message.getNetwork()))
                             .setRequestType(CommandType.INVENTORY_PAYLOAD)
@@ -138,7 +144,7 @@ public class Messenger {
                     logger.info("Handling {} message.", CommandType.INVENTORY_PAYLOAD);
                     if (message.getPayload() instanceof BlockHeaderResponsePayload) {
                         logger.info("{} message is a BlockchainMessage.", CommandType.INVENTORY_PAYLOAD);
-                        this.blockchainMessageHandler.handleMessagePayload((BlockHeaderResponsePayload) message.getPayload(), nodeConnection);
+                        this.blockHeaderMessageHandler.handleMessagePayload((BlockHeaderResponsePayload) message.getPayload(), nodeConnection);
                         messagePayload = AcknowledgeMessage.Builder.newBuilder()
                                 .setAcknowledgeChecksum(message.getChecksum())
                                 .build();
@@ -196,7 +202,7 @@ public class Messenger {
                 case REQUEST_ADDRESS:
                     logger.info("Handling {} message.", CommandType.REQUEST_ADDRESS);
                     // Return an AddressMessage, with AddressPayloads
-                    messagePayload = this.getAddressMessageHandler.handleMessagePayload((AddressMessage) message.getPayload(), nodeConnection);
+                    messagePayload = this.addressRequestHandler.handleMessagePayload((AddressMessage) message.getPayload(), nodeConnection);
                     returnMessage = Message.Builder.newBuilder()
                             .setNetwork(NetworkType.getByValue(message.getNetwork()))
                             .setRequestType(CommandType.ADDRESS_PAYLOAD)

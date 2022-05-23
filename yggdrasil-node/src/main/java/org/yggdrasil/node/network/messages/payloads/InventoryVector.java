@@ -53,6 +53,11 @@ public class InventoryVector implements MessagePayload {
             return this;
         }
 
+        public Builder setHash(byte[] hash) {
+            this.hash = hash;
+            return this;
+        }
+
         public InventoryVector build() {
             return new InventoryVector(this);
         }

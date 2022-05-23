@@ -1,10 +1,9 @@
 package org.yggdrasil.node.network.messages.requests;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.apache.commons.lang3.SerializationUtils;
-import org.yggdrasil.core.serialization.HashArraySerializer;
 import org.yggdrasil.node.network.messages.MessagePayload;
+import org.yggdrasil.node.network.messages.payloads.InventoryVector;
 import org.yggdrasil.node.network.messages.util.DataUtil;
 
 import javax.validation.constraints.NotNull;
@@ -15,28 +14,27 @@ public class DataMessageRequest implements MessagePayload {
     @NotNull
     private int requestCount;
     @NotNull
-    @JsonSerialize(using = HashArraySerializer.class)
-    private byte[][] requestedTransactions;
+    private InventoryVector[] requestedData;
 
     private DataMessageRequest(Builder builder) {
         this.requestCount = builder.requestCount;
-        this.requestedTransactions = builder.requestedTransactions;
+        this.requestedData = builder.requestedData;
     }
 
     public int getRequestCount() {
         return requestCount;
     }
 
-    public byte[][] getRequestedTransactions() {
-        return requestedTransactions;
+    public InventoryVector[] getRequestedData() {
+        return requestedData;
     }
 
     @Override
     public byte[] getDataBytes() {
         byte[] messageBytes = new byte[0];
         messageBytes = DataUtil.appendBytes(messageBytes, SerializationUtils.serialize(requestCount));
-        for(byte[] t : requestedTransactions) {
-            messageBytes = DataUtil.appendBytes(messageBytes, t);
+        for(InventoryVector v : requestedData) {
+            messageBytes = DataUtil.appendBytes(messageBytes, v.getDataBytes());
         }
         return messageBytes;
     }
@@ -44,15 +42,15 @@ public class DataMessageRequest implements MessagePayload {
     public static class Builder {
 
         private int requestCount;
-        private byte[][] requestedTransactions;
+        private InventoryVector[] requestedData;
 
         public static Builder builder() {
             return new Builder();
         }
 
-        public Builder setRequestedTransactions(byte[][] requestedTransactions) {
-            this.requestCount = requestedTransactions.length;
-            this.requestedTransactions = requestedTransactions;
+        public Builder setRequestedTransactions(InventoryVector[] requestedData) {
+            this.requestCount = requestedData.length;
+            this.requestedData = requestedData;
             return this;
         }
 
