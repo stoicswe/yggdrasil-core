@@ -15,11 +15,14 @@ public class NotFoundResponsePayload implements MessagePayload {
     @NotNull
     private int missingCount;
     @NotNull
+    private byte[] checksum;
+    @NotNull
     @JsonSerialize(using = HashArraySerializer.class)
     private byte[][] missingTransactions;
 
     private NotFoundResponsePayload(Builder builder) {
         this.missingCount = builder.missingCount;
+        this.checksum = builder.checksum;
         this.missingTransactions = builder.missingTransactions;
     }
 
@@ -29,6 +32,11 @@ public class NotFoundResponsePayload implements MessagePayload {
 
     public byte[][] getMissingTransactions() {
         return missingTransactions;
+    }
+
+
+    public byte[] getChecksum() {
+        return checksum;
     }
 
     @Override
@@ -44,6 +52,7 @@ public class NotFoundResponsePayload implements MessagePayload {
     public static class Builder {
 
         private int missingCount;
+        private byte[] checksum;
         private byte[][] missingTransactions;
 
         public static Builder builder() {
@@ -53,6 +62,11 @@ public class NotFoundResponsePayload implements MessagePayload {
         public Builder setMissingTransactions(byte[][] missingTransactions) {
             this.missingCount = missingTransactions.length;
             this.missingTransactions = missingTransactions;
+            return this;
+        }
+
+        public Builder setChecksum(byte[] checksum) {
+            this.checksum = checksum;
             return this;
         }
 

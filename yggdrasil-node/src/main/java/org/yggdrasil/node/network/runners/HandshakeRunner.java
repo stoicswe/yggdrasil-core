@@ -11,7 +11,6 @@ import org.yggdrasil.node.network.NodeConfig;
 import org.yggdrasil.node.network.exceptions.HandshakeInitializeException;
 import org.yggdrasil.node.network.messages.Message;
 import org.yggdrasil.node.network.messages.Messenger;
-import org.yggdrasil.node.network.messages.enums.NetworkType;
 import org.yggdrasil.node.network.messages.enums.CommandType;
 import org.yggdrasil.node.network.messages.payloads.*;
 import org.yggdrasil.node.network.peer.PeerRecordIndexer;
@@ -69,7 +68,7 @@ public class HandshakeRunner implements Runnable {
                         .setReceiverPort(this.nodeConnection.getNodeSocket().getPort())
                         .build();
                 // build the message
-                sentMessage = Message.Builder.newBuilder()
+                sentMessage = Message.Builder.builder()
                         .setNetwork(nodeConfig.getNetwork())
                         .setRequestType(CommandType.HANDSHAKE_OFFR)
                         .setPayloadSize(BigInteger.valueOf(GraphLayout.parseInstance(offerHandshake).totalSize()))
@@ -114,8 +113,8 @@ public class HandshakeRunner implements Runnable {
                             AcknowledgeMessage ackPayload = AcknowledgeMessage.Builder.newBuilder()
                                     .setAcknowledgeChecksum(receivedMessage.getChecksum())
                                     .build();
-                            Message ackMessage = Message.Builder.newBuilder()
-                                    .setNetwork(NetworkType.getByValue(receivedMessage.getNetwork()))
+                            Message ackMessage = Message.Builder.builder()
+                                    .setNetwork(receivedMessage.getNetwork())
                                     .setRequestType(CommandType.ACKNOWLEDGE_PAYLOAD)
                                     .setPayloadSize(BigInteger.valueOf(GraphLayout.parseInstance(ackPayload).totalSize()))
                                     .setMessagePayload(ackPayload)
@@ -131,7 +130,7 @@ public class HandshakeRunner implements Runnable {
                                         .setIpAddressCount(nodeConfig.getPeerRecordLimit() - peerRecordIndexer.getPeerRecordCount())
                                         .setIpAddresses(new AddressPayload[0])
                                         .build();
-                                Message message = Message.Builder.newBuilder()
+                                Message message = Message.Builder.builder()
                                         .setRequestType(CommandType.REQUEST_ADDRESS)
                                         .setNetwork(nodeConfig.getNetwork())
                                         .setMessagePayload(am)
@@ -192,7 +191,7 @@ public class HandshakeRunner implements Runnable {
                                     .setReceiverPort(this.nodeConnection.getNodeSocket().getPort())
                                     .build();
                             // build the message
-                            sentMessage = Message.Builder.newBuilder()
+                            sentMessage = Message.Builder.builder()
                                     .setNetwork(nodeConfig.getNetwork())
                                     .setRequestType(CommandType.HANDSHAKE_RESP)
                                     .setPayloadSize(BigInteger.valueOf(GraphLayout.parseInstance(offerHandshake).totalSize()))

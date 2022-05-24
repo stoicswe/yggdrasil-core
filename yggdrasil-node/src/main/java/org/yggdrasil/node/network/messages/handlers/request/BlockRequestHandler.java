@@ -38,6 +38,8 @@ public class BlockRequestHandler implements MessageHandler<BlockMessageRequest> 
 
         List<BlockHeaderPayload> headers;
         switch (Objects.requireNonNull(blockMessageRequest.getType())) {
+
+            /*
             case BLOCK:
                 if(blockMessageRequest.getHashCount() > 0 || blockMessageRequest.getObjectHashes().length > 0){
                     throw new InvalidMessageException("Message received is invalid for this type of data.");
@@ -97,6 +99,7 @@ public class BlockRequestHandler implements MessageHandler<BlockMessageRequest> 
                 break;
             default:
                 throw new InvalidMessageException("Message received reported unknown type.");
+             */
         }
         return messagePayload;
     }

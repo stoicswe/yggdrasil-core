@@ -154,7 +154,7 @@ public class BlockchainService {
         InventoryMessage txnPayload = InventoryMessage.Builder.builder()
                 .setInventory(new InventoryVector[]{invVec})
                 .build();
-        Message txnMsg = Message.Builder.newBuilder()
+        Message txnMsg = Message.Builder.builder()
                 .setNetwork(nodeConfig.getNetwork())
                 .setRequestType(CommandType.INVENTORY_PAYLOAD)
                 .setMessagePayload(txnPayload)
@@ -237,7 +237,7 @@ public class BlockchainService {
     // test code for testing messaging connections
     public void sendMessage() throws NoSuchAlgorithmException, IOException {
         PingPongMessage pingPongMessage = PingPongMessage.Builder.newBuilder().setNonce(25).build();
-        Message message = Message.Builder.newBuilder()
+        Message message = Message.Builder.builder()
                 .setNetwork(NetworkType.MAIN_NET)
                 .setRequestType(CommandType.PING)
                 .setPayloadSize(BigInteger.valueOf(GraphLayout.parseInstance(pingPongMessage).totalSize()))

@@ -1,5 +1,6 @@
 package org.yggdrasil.node.network.messages;
 
+import org.openjdk.jol.info.GraphLayout;
 import org.yggdrasil.node.network.messages.enums.NetworkType;
 import org.yggdrasil.node.network.messages.enums.CommandType;
 
@@ -35,8 +36,8 @@ public class Message implements Serializable {
         this.checksum = builder.checksum;
     }
 
-    public char[] getNetwork() {
-        return network;
+    public NetworkType getNetwork() {
+        return NetworkType.getByValue(network);
     }
 
     public CommandType getCommand() {
@@ -83,7 +84,7 @@ public class Message implements Serializable {
 
         private Builder(){}
 
-        public static Builder newBuilder() {
+        public static Builder builder() {
             return new Builder();
         }
 
@@ -97,12 +98,8 @@ public class Message implements Serializable {
             return this;
         }
 
-        public Builder setPayloadSize(BigInteger payloadSize) {
-            this.payloadSize = payloadSize;
-            return this;
-        }
-
         public Builder setMessagePayload(MessagePayload payload) {
+            this.payloadSize = BigInteger.valueOf(GraphLayout.parseInstance(payload).totalSize());
             this.payload = payload;
             return this;
         }

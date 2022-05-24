@@ -32,11 +32,12 @@ public class BlockTxnRequestHandler implements MessageHandler<BlockTransactionsR
             for(Transaction txn : block.get().getData()) {
                 blockTxns.add(TransactionPayload.Builder.builder()
                                 .setVersion(Blockchain._VERSION)
-                                .setWitnessFlag()
-                                .setTxIns()
-                                .setTxOuts()
-                                .setWitnesses()
-                                .setLockTime()
+                        // TODO: Implement the txn properly
+                        //        .setWitnessFlag()
+                        //        .setTxIns()
+                        //        .setTxOuts()
+                        //        .setWitnesses()
+                        //       .setLockTime()
                         .build());
             }
             blockTransactions = BlockTransactions.Builder.builder()

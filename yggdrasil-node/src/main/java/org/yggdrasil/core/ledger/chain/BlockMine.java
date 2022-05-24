@@ -222,7 +222,7 @@ public class BlockMine {
                 .setTxnCount(newBlock.getTxnCount())
                 .setTxnPayloads(txnMessagePayloads.toArray(TransactionPayload[]::new))
                 .build();
-        Message message = Message.Builder.newBuilder()
+        Message message = Message.Builder.builder()
                 .setNetwork(nodeConfig.getNetwork())
                 .setRequestType(CommandType.INVENTORY_PAYLOAD)
                 .setMessagePayload(blockMessage)

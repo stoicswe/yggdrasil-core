@@ -14,7 +14,7 @@ public class RejectMessagePayload implements MessagePayload {
     @NotNull
     private final int rejectCode;
     @NotNull
-    private final char[] data;
+    private final byte[] data;
     
     private RejectMessagePayload(Builder builder) {
         this.message = builder.message;
@@ -30,7 +30,7 @@ public class RejectMessagePayload implements MessagePayload {
         return RejectCodeType.getByValue(this.rejectCode);
     }
 
-    public char[] getData() {
+    public byte[] getData() {
         return data;
     }
 
@@ -48,9 +48,9 @@ public class RejectMessagePayload implements MessagePayload {
 
         private char[] message;
         private int rejectCode;
-        private char[] data;
+        private byte[] data;
 
-        public Builder builder() {
+        public static Builder builder() {
             return new Builder();
         }
 
@@ -64,7 +64,7 @@ public class RejectMessagePayload implements MessagePayload {
             return this;
         }
 
-        public Builder setData(char[] data) {
+        public Builder setData(byte[] data) {
             this.data = data;
             return this;
         }
