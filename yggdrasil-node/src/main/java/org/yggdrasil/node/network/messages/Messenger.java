@@ -98,7 +98,7 @@ public class Messenger {
         }
     }
 
-    public void handleMessage(Message message, NodeConnection nodeConnection) {
+    public void handleMessage(Message message, NodeConnection nodeConnection) throws NoSuchAlgorithmException {
         logger.info("In handleMessage.");
         Message returnMessage = null;
         MessagePayload messagePayload = null;
@@ -132,7 +132,7 @@ public class Messenger {
                 case REQUEST_ADDRESS:
                     logger.info("Handling {} message.", CommandType.REQUEST_ADDRESS);
                     // Return an AddressMessage, with AddressPayloads
-                    messagePayload = handle.handleMessagePayload((AddressMessage) message.getPayload(), nodeConnection);
+                    handle.handleMessagePayload((AddressMessage) message.getPayload(), nodeConnection);
                     returnMessage = Message.Builder.builder()
                             .setNetwork(message.getNetwork())
                             .setRequestType(CommandType.ADDRESS_PAYLOAD)
@@ -235,6 +235,7 @@ public class Messenger {
                     break;
                 case NOT_FOUND_PAYLOAD:
                     // Do some more error handling here, since there needs to be better handling if there is no data found
+                    // add logic to be able to search out a different peer for data
                     NotFoundResponsePayload nfr = (NotFoundResponsePayload) message.getPayload();
                     ExpiringMessageRecord em_nfr = this.messagePool.getMessage(nfr.getChecksum());
                     if(em_nfr != null) {
@@ -261,7 +262,7 @@ public class Messenger {
                     break;
                 case PING:
                     logger.info("Handling {} message.", CommandType.PING);
-                    messagePayload = handle.handleMessagePayload((PingPongMessage) message.getPayload(), nodeConnection);
+                    handle.handleMessagePayload((PingPongMessage) message.getPayload(), nodeConnection);
                     returnMessage = Message.Builder.builder()
                             .setNetwork(message.getNetwork())
                             .setRequestType(CommandType.PONG)
@@ -300,12 +301,24 @@ public class Messenger {
             }
         } catch (Exception e) {
             logger.warn("Error while processing message: [{}] -> [{}].", message.toString(), e.getMessage());
+            messagePayload = RejectMessagePayload.Builder.builder()
+                    .setRejectCode(RejectCodeType.REJECT_INVALID)
+                    .setMessage(e.getMessage())
+                    .setData(message.getChecksum())
+                    .build();
+            returnMessage = Message.Builder.builder()
+                    .setNetwork(message.getNetwork())
+                    .setRequestType(CommandType.REJECT_PAYLOAD)
+                    .setMessagePayload(messagePayload)
+                    .setChecksum(CryptoHasher.hash(messagePayload))
+                    .build();
         }
 
         if(returnMessage != null) {
             try {
                 // write the return message back to the nodeconnection
                 this.validator.isValidMessage(returnMessage);
+                logger.info("Sending message with checksum: {}", CryptoHasher.humanReadableHash(returnMessage.getChecksum()));
                 this.sendTargetMessage(returnMessage, nodeConnection);
                 this.messagePool.putMessage(returnMessage, nodeConnection);
             } catch (IOException | NoSuchAlgorithmException e) {

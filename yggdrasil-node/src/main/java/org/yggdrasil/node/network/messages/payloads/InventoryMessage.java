@@ -14,10 +14,13 @@ public class InventoryMessage implements MessagePayload {
     private int count;
     @NotNull
     private InventoryVector[] inventory;
+    @NotNull
+    private byte[] requestChecksum;
 
     private InventoryMessage(Builder builder) {
         this.count = builder.count;
         this.inventory = builder.inventory;
+        this.requestChecksum = builder.requestChecksum;
     }
 
     public int getCount() {
@@ -28,6 +31,10 @@ public class InventoryMessage implements MessagePayload {
         return inventory;
     }
 
+    public byte[] getRequestChecksum() {
+        return requestChecksum;
+    }
+
     @Override
     public byte[] getDataBytes() {
         byte[] messageBytes = new byte[0];
@@ -35,13 +42,15 @@ public class InventoryMessage implements MessagePayload {
         for(InventoryVector v : inventory) {
             messageBytes = DataUtil.appendBytes(messageBytes, v.getDataBytes());
         }
-        return new byte[0];
+        messageBytes = DataUtil.appendBytes(messageBytes, requestChecksum);
+        return messageBytes;
     }
 
     public static class Builder {
 
         private int count;
         private InventoryVector[] inventory;
+        private byte[] requestChecksum;
 
         public static Builder builder() {
             return new Builder();
@@ -50,6 +59,11 @@ public class InventoryMessage implements MessagePayload {
         public Builder setInventory(InventoryVector[] inventory) {
             this.count = inventory.length;
             this.inventory = inventory;
+            return this;
+        }
+
+        public Builder setRequestChecksum(byte[] requestChecksum) {
+            this.requestChecksum = requestChecksum;
             return this;
         }
 

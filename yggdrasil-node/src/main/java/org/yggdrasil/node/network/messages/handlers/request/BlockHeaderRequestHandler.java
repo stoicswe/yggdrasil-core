@@ -16,6 +16,7 @@ import org.yggdrasil.node.network.messages.enums.CommandType;
 import org.yggdrasil.node.network.messages.handlers.MessageHandler;
 import org.yggdrasil.node.network.messages.payloads.BlockHeaderPayload;
 import org.yggdrasil.node.network.messages.payloads.BlockHeaderResponsePayload;
+import org.yggdrasil.node.network.messages.payloads.InventoryVector;
 import org.yggdrasil.node.network.messages.requests.BlockHeaderMessageRequest;
 import org.yggdrasil.node.network.runners.NodeConnection;
 
@@ -39,30 +40,71 @@ public class BlockHeaderRequestHandler implements MessageHandler<BlockHeaderMess
     public void handleMessagePayload(BlockHeaderMessageRequest blockHeaderRequest, NodeConnection nodeConnection) throws Exception {
 
         MessagePayload messagePayload;
-        List<BlockHeaderPayload> headers;
+
+        List<InventoryVector> missingHashes = new ArrayList<>();
+        List<BlockHeaderPayload> headers = new ArrayList<>();
 
         if(blockHeaderRequest.getHashCount() != blockHeaderRequest.getObjectHashes().length) {
             throw new InvalidMessageException("Message received reported wrong hash count versus data provided.");
         }
-        headers = new ArrayList<>();
+
+        if(blockHeaderRequest.getHashCount() <= 0) {
+            throw new InvalidMessageException("Message received requested wrong hash count.");
+        }
+
+        Optional<Block> block = null;
+        Optional<Block> last = null;
+
         for (byte[] blockHash : blockHeaderRequest.getObjectHashes()) {
-            Optional<Block> bs = blockchain.getBlock(blockHash);
-            if(bs.isPresent()) {
-                Block b = bs.get();
-                BlockHeaderPayload hp = BlockHeaderPayload.Builder.newBuilder()
-                        .setVersion(b.getHeader().getVersion())
-                        .setPreviousHash(b.getHeader().getPreviousBlockHash())
-                        .setMerkleRoot(b.getHeader().getMerkleRoot())
-                        .setTimestamp((int) b.getHeader().getEpochTime())
-                        .setDiff(b.getHeader().getDiff())
-                        .setNonce(b.getHeader().getNonce())
-                        .setTxnCount(b.getTxnCount())
+            block = blockchain.getBlock(blockHash);
+            if(block.isPresent()) {
+                BlockHeaderPayload hp = BlockHeaderPayload.Builder.builder()
+                        .setVersion(block.get().getHeader().getVersion())
+                        .setPreviousHash(block.get().getHeader().getPreviousBlockHash())
+                        .setMerkleRoot(block.get().getHeader().getMerkleRoot())
+                        .setTimestamp((int) block.get().getHeader().getEpochTime())
+                        .setDiff(block.get().getHeader().getDiff())
+                        .setNonce(block.get().getHeader().getNonce())
+                        .setTxnCount(block.get().getTxnCount())
                         .build();
                 headers.add(hp);
+                last = block;
             }
+        }
+        if(last != null) {
+            do {
+                block = blockchain.getBlock(block.get().getHeader().getPreviousBlockHash());
+                if(block.isPresent()) {
+                    if(!block.get().compareBlockHash(blockHeaderRequest.getStopHash())) {
+                        headers.add(BlockHeaderPayload.Builder.builder()
+                                .setVersion(block.get().getHeader().getVersion())
+                                .setPreviousHash(block.get().getHeader().getPreviousBlockHash())
+                                .setMerkleRoot(block.get().getHeader().getMerkleRoot())
+                                .setTimestamp((int) block.get().getHeader().getEpochTime())
+                                .setDiff(block.get().getHeader().getDiff())
+                                .setNonce(block.get().getHeader().getNonce())
+                                .setTxnCount(block.get().getTxnCount())
+                                .build());
+                    } else {
+                        headers.add(BlockHeaderPayload.Builder.builder()
+                                .setVersion(block.get().getHeader().getVersion())
+                                .setPreviousHash(block.get().getHeader().getPreviousBlockHash())
+                                .setMerkleRoot(block.get().getHeader().getMerkleRoot())
+                                .setTimestamp((int) block.get().getHeader().getEpochTime())
+                                .setDiff(block.get().getHeader().getDiff())
+                                .setNonce(block.get().getHeader().getNonce())
+                                .setTxnCount(block.get().getTxnCount())
+                                .build());
+                        break;
+                    }
+                } else {
+                    break;
+                }
+            } while (headers.size() < 2500);
         }
         messagePayload = BlockHeaderResponsePayload.Builder.builder()
                 .setHeaders(headers.toArray(BlockHeaderPayload[]::new))
+                .setRequestChecksum(CryptoHasher.hash(blockHeaderRequest))
                 .build();
         Message message = Message.Builder.builder()
                 .setNetwork(nodeConfig.getNetwork())

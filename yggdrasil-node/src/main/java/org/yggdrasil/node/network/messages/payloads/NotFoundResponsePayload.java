@@ -17,10 +17,13 @@ public class NotFoundResponsePayload implements MessagePayload {
     @NotNull
     @JsonSerialize(using = HashArraySerializer.class)
     private InventoryVector[] missingItems;
+    @NotNull
+    private byte[] checksum;
 
     private NotFoundResponsePayload(Builder builder) {
         this.missingCount = builder.missingCount;
         this.missingItems = builder.missingItems;
+        this.checksum = builder.checksum;
     }
 
     public int getMissingCount() {
@@ -31,6 +34,10 @@ public class NotFoundResponsePayload implements MessagePayload {
         return missingItems;
     }
 
+    public byte[] getChecksum() {
+        return checksum;
+    }
+
     @Override
     public byte[] getDataBytes() {
         byte[] messageBytes = new byte[0];
@@ -38,6 +45,7 @@ public class NotFoundResponsePayload implements MessagePayload {
         for(InventoryVector item : missingItems){
             messageBytes = DataUtil.appendBytes(messageBytes, item.getDataBytes());
         }
+        messageBytes = DataUtil.appendBytes(messageBytes, checksum);
         return messageBytes;
     }
 
@@ -45,6 +53,7 @@ public class NotFoundResponsePayload implements MessagePayload {
 
         private int missingCount;
         private InventoryVector[] missingItems;
+        private byte[] checksum;
 
         public static Builder builder() {
             return new Builder();
@@ -53,6 +62,11 @@ public class NotFoundResponsePayload implements MessagePayload {
         public Builder setMissingItems(InventoryVector[] missingItems) {
             this.missingCount = missingItems.length;
             this.missingItems = missingItems;
+            return this;
+        }
+
+        public Builder setChecksum(byte[] checksum) {
+            this.checksum = checksum;
             return this;
         }
 

@@ -19,11 +19,14 @@ public class BlockTransactions implements MessagePayload {
     private int transactionsLength;
     @NotNull
     private TransactionPayload[] transactions;
+    @NotNull
+    private byte[] requestChecksum;
 
     private BlockTransactions(Builder builder) {
         this.blockHash = builder.blockHash;
         this.transactionsLength = builder.transactionsLength;
         this.transactions = builder.transactions;
+        this.requestChecksum = builder.requestChecksum;
     }
 
     public byte[] getBlockHash() {
@@ -38,6 +41,10 @@ public class BlockTransactions implements MessagePayload {
         return transactions;
     }
 
+    public byte[] getRequestChecksum() {
+        return requestChecksum;
+    }
+
     @Override
     public byte[] getDataBytes() {
         byte[] messageBytes = new byte[0];
@@ -46,6 +53,7 @@ public class BlockTransactions implements MessagePayload {
         for(TransactionPayload t : this.transactions) {
             messageBytes = DataUtil.appendBytes(messageBytes, t.getDataBytes());
         }
+        messageBytes = DataUtil.appendBytes(messageBytes, requestChecksum);
         return messageBytes;
     }
 
@@ -54,6 +62,7 @@ public class BlockTransactions implements MessagePayload {
         private byte[] blockHash;
         private int transactionsLength;
         private TransactionPayload[] transactions;
+        private byte[] requestChecksum;
 
         public static Builder builder() {
             return new Builder();
@@ -67,6 +76,11 @@ public class BlockTransactions implements MessagePayload {
         public Builder setTransactions(TransactionPayload[] transactions) {
             this.transactionsLength = transactions.length;
             this.transactions = transactions;
+            return this;
+        }
+
+        public Builder setRequestChecksum(byte[] requestChecksum) {
+            this.requestChecksum = requestChecksum;
             return this;
         }
 

@@ -2,14 +2,12 @@ package org.yggdrasil.node.network.messages.payloads;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.SerializationUtils;
 import org.yggdrasil.core.serialization.HashSerializer;
 import org.yggdrasil.node.network.messages.MessagePayload;
 import org.yggdrasil.node.network.messages.util.DataUtil;
 
 import javax.validation.constraints.NotNull;
-import java.math.BigInteger;
 
 /**
  * The Header Payload message contains the headers of either blocks or transactions.
@@ -103,7 +101,7 @@ public class BlockHeaderPayload implements MessagePayload {
 
         private Builder(){}
 
-        public static Builder newBuilder() {
+        public static Builder builder() {
             return new Builder();
         }
 

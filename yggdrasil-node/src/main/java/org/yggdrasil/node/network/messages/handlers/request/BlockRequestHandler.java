@@ -49,100 +49,79 @@ public class BlockRequestHandler implements MessageHandler<BlockMessageRequest> 
         List<InventoryVector> missingHashes = new ArrayList<>();
         List<InventoryVector> invs = new ArrayList<>();
 
-        if(blockMessageRequest.getHashCount() == blockMessageRequest.getObjectHashes().length) {
-            if(blockMessageRequest.getHashCount() > 0) {
-                Optional<Block> block = null;
-                int blockMessageRequestIndex = 0;
-                for(int i = 0; i < blockMessageRequest.getHashCount(); i++) {
-                    byte[] reqHash = blockMessageRequest.getObjectHashes()[i];
-                    block = blockchain.getBlock(reqHash);
-                    if(block.isPresent()) {
-                        blockMessageRequestIndex = i;
-                        break;
-                    } else {
-                        missingHashes.add(InventoryVector.Builder.builder().setType(InventoryType.MSG_BLOCK).setHash(reqHash).build());
-                    }
-                }
+        if(blockMessageRequest.getHashCount() != blockMessageRequest.getObjectHashes().length) {
+            throw new InvalidMessageException("Message received reported wrong hash count versus data provided.");
+        }
 
-                if(block.isPresent()) {
-                    do {
-                        if(block.isPresent()) {
-                            InventoryVector v = InventoryVector.Builder.builder()
-                                    .setType(InventoryType.MSG_BLOCK)
-                                    .setHash(block.get().getBlockHash())
-                                    .build();
-                            invs.add(v);
-                            missingHashes.remove(block.get().getBlockHash());
-                            block = blockchain.getBlock(block.get().getHeader().getPreviousBlockHash());
-                        } else {
-                            if(blockMessageRequestIndex < blockMessageRequest.getHashCount()){
-                                blockMessageRequestIndex++;
-                            }
-                            block = blockchain.getBlock(blockMessageRequest.getObjectHashes()[blockMessageRequestIndex]);
-                            if(block.isEmpty()) missingHashes.add(InventoryVector.Builder.builder().setType(InventoryType.MSG_BLOCK).setHash(blockMessageRequest.getObjectHashes()[blockMessageRequestIndex]).build());
-                        }
-                    } while(invs.size() < 500);
+        if(blockMessageRequest.getHashCount() <= 0) {
+            throw new InvalidMessageException("Message received requested wrong hash count.");
+        }
 
-                    messagePayload = InventoryMessage.Builder.builder()
-                            .setInventory(invs.toArray(InventoryVector[]::new))
-                            .build();
-                    message = Message.Builder.builder()
-                            .setNetwork(nodeConfig.getNetwork())
-                            .setRequestType(CommandType.INVENTORY_PAYLOAD)
-                            .setMessagePayload(messagePayload)
-                            .setChecksum(CryptoHasher.hash(messagePayload))
-                            .build();
-                    logger.info("Sending message with checksum: {}", CryptoHasher.humanReadableHash(message.getChecksum()));
-                    messenger.sendTargetMessage(message, nodeConnection);
-                }
-
-                if(missingHashes.size() > 0) {
-                    messagePayload = NotFoundResponsePayload.Builder.builder()
-                            .setMissingItems(missingHashes.toArray(InventoryVector[]::new))
-                            .build();
-                    message = Message.Builder.builder()
-                            .setNetwork(nodeConfig.getNetwork())
-                            .setRequestType(CommandType.INVENTORY_PAYLOAD)
-                            .setMessagePayload(messagePayload)
-                            .setChecksum(CryptoHasher.hash(messagePayload))
-                            .build();
-                    logger.info("Sending message with checksum: {}", CryptoHasher.humanReadableHash(message.getChecksum()));
-                    messenger.sendTargetMessage(message, nodeConnection);
-                }
+        Optional<Block> block = null;
+        Optional<Block> last = null;
+        for(byte[] rhash : blockMessageRequest.getObjectHashes()) {
+            block = blockchain.getBlock(rhash);
+            if(block.isPresent()) {
+                invs.add(InventoryVector.Builder.builder()
+                                .setHash(block.get().getBlockHash())
+                                .setType(InventoryType.MSG_BLOCK)
+                        .build());
+                last = block;
             } else {
-                // return error msg
-                messagePayload = RejectMessagePayload.Builder.builder()
-                        .setRejectCode(RejectCodeType.REJECT_INVALID)
-                        .setMessage("Requested block messages was empty.")
-                        .setData(CryptoHasher.hash(blockMessageRequest))
-                        .build();
-                message = Message.Builder.builder()
-                        .setNetwork(nodeConfig.getNetwork())
-                        .setRequestType(CommandType.REJECT_PAYLOAD)
-                        .setMessagePayload(messagePayload)
-                        .setChecksum(CryptoHasher.hash(messagePayload))
-                        .build();
-                logger.info("Sending message with checksum: {}", CryptoHasher.humanReadableHash(message.getChecksum()));
-                messenger.sendTargetMessage(message, nodeConnection);
+                missingHashes.add(InventoryVector.Builder.builder()
+                                .setHash(rhash)
+                                .setType(InventoryType.MSG_BLOCK)
+                        .build());
             }
-        } else {
-            // return error msg
-            messagePayload = RejectMessagePayload.Builder.builder()
-                    .setRejectCode(RejectCodeType.REJECT_INVALID)
-                    .setMessage("Lied about number of items.")
-                    .setData(CryptoHasher.hash(blockMessageRequest))
+        }
+        if(last != null) {
+            do {
+                block = blockchain.getBlock(block.get().getHeader().getPreviousBlockHash());
+                if(block.isPresent()){
+                    if(!block.get().compareBlockHash(blockMessageRequest.getStopHash())){
+                        invs.add(InventoryVector.Builder.builder()
+                                        .setHash(block.get().getBlockHash())
+                                        .setType(InventoryType.MSG_BLOCK)
+                                .build());
+                    } else {
+                        invs.add(InventoryVector.Builder.builder()
+                                .setHash(block.get().getBlockHash())
+                                .setType(InventoryType.MSG_BLOCK)
+                                .build());
+                        break;
+                    }
+                } else {
+                    break;
+                }
+            } while (invs.size() < 500);
+        }
+
+        messagePayload = InventoryMessage.Builder.builder()
+                .setInventory(invs.toArray(InventoryVector[]::new))
+                .setRequestChecksum(CryptoHasher.hash(blockMessageRequest))
+                .build();
+        message = Message.Builder.builder()
+                .setNetwork(nodeConfig.getNetwork())
+                .setRequestType(CommandType.INVENTORY_PAYLOAD)
+                .setMessagePayload(messagePayload)
+                .setChecksum(CryptoHasher.hash(messagePayload))
+                .build();
+        logger.info("Sending message with checksum: {}", CryptoHasher.humanReadableHash(message.getChecksum()));
+        messenger.sendTargetMessage(message, nodeConnection);
+
+        if(missingHashes.size() > 0) {
+            messagePayload = NotFoundResponsePayload.Builder.builder()
+                    .setMissingItems(missingHashes.toArray(InventoryVector[]::new))
                     .build();
             message = Message.Builder.builder()
                     .setNetwork(nodeConfig.getNetwork())
-                    .setRequestType(CommandType.REJECT_PAYLOAD)
+                    .setRequestType(CommandType.INVENTORY_PAYLOAD)
                     .setMessagePayload(messagePayload)
                     .setChecksum(CryptoHasher.hash(messagePayload))
                     .build();
             logger.info("Sending message with checksum: {}", CryptoHasher.humanReadableHash(message.getChecksum()));
             messenger.sendTargetMessage(message, nodeConnection);
         }
-
-
     }
 
 }

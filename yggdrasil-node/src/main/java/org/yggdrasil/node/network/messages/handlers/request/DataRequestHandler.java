@@ -6,8 +6,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.yggdrasil.core.ledger.Mempool;
 import org.yggdrasil.core.ledger.chain.Blockchain;
+import org.yggdrasil.core.utils.CryptoHasher;
 import org.yggdrasil.node.network.NodeConfig;
+import org.yggdrasil.node.network.messages.Message;
 import org.yggdrasil.node.network.messages.MessagePayload;
+import org.yggdrasil.node.network.messages.MessagePool;
 import org.yggdrasil.node.network.messages.Messenger;
 import org.yggdrasil.node.network.messages.handlers.MessageHandler;
 import org.yggdrasil.node.network.messages.payloads.InventoryVector;
@@ -28,10 +31,13 @@ public class DataRequestHandler implements MessageHandler<DataMessageRequest> {
     private NodeConfig nodeConfig;
     @Autowired
     private Messenger messenger;
+    @Autowired
+    private MessagePool messagePool;
 
     @Override
-    public MessagePayload handleMessagePayload(DataMessageRequest dataMessageRequest, NodeConnection nodeConnection) throws Exception {
+    public void handleMessagePayload(DataMessageRequest dataMessageRequest, NodeConnection nodeConnection) throws Exception {
 
+        Message message;
         MessagePayload response;
 
         if(dataMessageRequest.getRequestCount() == dataMessageRequest.getRequestedData().length) {
@@ -67,7 +73,8 @@ public class DataRequestHandler implements MessageHandler<DataMessageRequest> {
             }
         }
 
-        return null;
+        logger.info("Sending message with checksum: {}", CryptoHasher.humanReadableHash(message.getChecksum()));
+        messenger.sendTargetMessage(message, nodeConnection);
     }
 
 }

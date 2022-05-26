@@ -22,10 +22,13 @@ public class BlockHeaderResponsePayload implements MessagePayload {
     private final int headerCount;
     @NotNull
     private final BlockHeaderPayload[] headers;
+    @NotNull
+    private final byte[] requestChecksum;
 
     private BlockHeaderResponsePayload(Builder builder) {
         this.headerCount = builder.headerCount;
         this.headers = builder.headers;
+        this.requestChecksum = builder.requestChecksum;
     }
 
     public int getHeaderCount() {
@@ -36,6 +39,10 @@ public class BlockHeaderResponsePayload implements MessagePayload {
         return headers;
     }
 
+    public byte[] requestChecksum() {
+        return requestChecksum;
+    }
+
     @Override
     public byte[] getDataBytes() {
         byte[] messageBytes = new byte[0];
@@ -43,15 +50,15 @@ public class BlockHeaderResponsePayload implements MessagePayload {
         for(BlockHeaderPayload hp : headers) {
             messageBytes = DataUtil.appendBytes(messageBytes, hp.getDataBytes());
         }
+        messageBytes = DataUtil.appendBytes(messageBytes, requestChecksum);
         return messageBytes;
     }
 
     public static class Builder {
 
         private int headerCount;
-        private char[] headerType;
         private BlockHeaderPayload[] headers;
-        private byte[] headerHash;
+        private byte[] requestChecksum;
 
         private Builder(){}
 
@@ -62,6 +69,11 @@ public class BlockHeaderResponsePayload implements MessagePayload {
         public Builder setHeaders(BlockHeaderPayload[] headers) {
             this.headerCount = headers.length;
             this.headers = headers;
+            return this;
+        }
+
+        public Builder setRequestChecksum(byte[] requestChecksum) {
+            this.requestChecksum = requestChecksum;
             return this;
         }
 
