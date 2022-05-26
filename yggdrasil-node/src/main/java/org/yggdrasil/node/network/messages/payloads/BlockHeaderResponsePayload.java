@@ -55,16 +55,12 @@ public class BlockHeaderResponsePayload implements MessagePayload {
 
         private Builder(){}
 
-        public static Builder newBuilder() {
+        public static Builder builder() {
             return new Builder();
         }
 
-        public Builder setHeaderCount(int headerCount) {
-            this.headerCount = headerCount;
-            return this;
-        }
-
         public Builder setHeaders(BlockHeaderPayload[] headers) {
+            this.headerCount = headers.length;
             this.headers = headers;
             return this;
         }

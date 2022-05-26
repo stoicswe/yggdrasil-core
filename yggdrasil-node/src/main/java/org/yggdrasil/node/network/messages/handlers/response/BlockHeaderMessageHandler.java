@@ -8,6 +8,7 @@ import org.yggdrasil.core.ledger.chain.Block;
 import org.yggdrasil.core.ledger.chain.Blockchain;
 import org.yggdrasil.core.utils.CryptoHasher;
 import org.yggdrasil.node.network.messages.MessagePayload;
+import org.yggdrasil.node.network.messages.Messenger;
 import org.yggdrasil.node.network.messages.handlers.MessageHandler;
 import org.yggdrasil.node.network.messages.payloads.AcknowledgeMessage;
 import org.yggdrasil.node.network.messages.payloads.BlockHeaderResponsePayload;
@@ -20,11 +21,13 @@ import java.util.List;
 
 @Component
 public class BlockHeaderMessageHandler implements MessageHandler<BlockHeaderResponsePayload> {
-
-    Logger logger = LoggerFactory.getLogger(BlockHeaderMessageHandler.class);
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Autowired
     Blockchain blockchain;
+
+    @Autowired
+    private Messenger messenger;
 
     @Override
     public MessagePayload handleMessagePayload(BlockHeaderResponsePayload blockHeaderResponsePayload, NodeConnection nodeConnection) throws NoSuchAlgorithmException {
@@ -48,7 +51,7 @@ public class BlockHeaderMessageHandler implements MessageHandler<BlockHeaderResp
             }
         }
 
-        return AcknowledgeMessage.Builder.newBuilder()
+        return AcknowledgeMessage.Builder.builder()
                 .setAcknowledgeChecksum(CryptoHasher.hash(blockHeaderResponsePayload))
                 .build();
 

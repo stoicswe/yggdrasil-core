@@ -145,12 +145,8 @@ public class BlockMessage implements MessagePayload {
         }
 
         public Builder setTxnPayloads(TransactionPayload[] txnPayloads) {
+            this.txnCount = txnPayloads.length;
             this.txnPayloads = txnPayloads;
-            return this;
-        }
-
-        public Builder setTxnCount(int txnCount) {
-            this.txnCount = txnCount;
             return this;
         }
 

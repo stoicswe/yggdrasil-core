@@ -3,6 +3,7 @@ package org.yggdrasil.node.network.messages.handlers.util;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.yggdrasil.node.network.messages.MessagePayload;
+import org.yggdrasil.node.network.messages.Messenger;
 import org.yggdrasil.node.network.messages.handlers.MessageHandler;
 import org.yggdrasil.node.network.messages.payloads.AddressMessage;
 import org.yggdrasil.node.network.messages.payloads.AddressPayload;
@@ -17,6 +18,9 @@ public class AddressRequestHandler implements MessageHandler<AddressMessage> {
 
     @Autowired
     private PeerRecordIndexer peerRecordIndexer;
+
+    @Autowired
+    private Messenger messenger;
 
     @Override
     public MessagePayload handleMessagePayload(AddressMessage addressMessage, NodeConnection nodeConnection) {

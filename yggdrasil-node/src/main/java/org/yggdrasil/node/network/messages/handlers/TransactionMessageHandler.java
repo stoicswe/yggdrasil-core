@@ -54,7 +54,7 @@ public class TransactionMessageHandler implements MessageHandler<TransactionMess
             }
         }
 
-        return AcknowledgeMessage.Builder.newBuilder()
+        return AcknowledgeMessage.Builder.builder()
                 .setAcknowledgeChecksum(CryptoHasher.hash(transactionMessage))
                 .build();
 

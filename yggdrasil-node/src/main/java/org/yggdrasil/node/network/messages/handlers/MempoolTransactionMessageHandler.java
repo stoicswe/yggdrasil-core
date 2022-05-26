@@ -29,7 +29,7 @@ public class MempoolTransactionMessageHandler implements MessageHandler<MempoolT
             }
         }
 
-        return AcknowledgeMessage.Builder.newBuilder()
+        return AcknowledgeMessage.Builder.builder()
                 .setAcknowledgeChecksum(CryptoHasher.hash(basicTransactionMessage))
                 .build();
     }

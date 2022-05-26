@@ -15,36 +15,28 @@ public class NotFoundResponsePayload implements MessagePayload {
     @NotNull
     private int missingCount;
     @NotNull
-    private byte[] checksum;
-    @NotNull
     @JsonSerialize(using = HashArraySerializer.class)
-    private byte[][] missingTransactions;
+    private InventoryVector[] missingItems;
 
     private NotFoundResponsePayload(Builder builder) {
         this.missingCount = builder.missingCount;
-        this.checksum = builder.checksum;
-        this.missingTransactions = builder.missingTransactions;
+        this.missingItems = builder.missingItems;
     }
 
     public int getMissingCount() {
         return missingCount;
     }
 
-    public byte[][] getMissingTransactions() {
-        return missingTransactions;
-    }
-
-
-    public byte[] getChecksum() {
-        return checksum;
+    public InventoryVector[] getMissingItems() {
+        return missingItems;
     }
 
     @Override
     public byte[] getDataBytes() {
         byte[] messageBytes = new byte[0];
         messageBytes = DataUtil.appendBytes(messageBytes, SerializationUtils.serialize(missingCount));
-        for(byte[] txn : missingTransactions){
-            messageBytes = DataUtil.appendBytes(messageBytes, txn);
+        for(InventoryVector item : missingItems){
+            messageBytes = DataUtil.appendBytes(messageBytes, item.getDataBytes());
         }
         return messageBytes;
     }
@@ -52,21 +44,15 @@ public class NotFoundResponsePayload implements MessagePayload {
     public static class Builder {
 
         private int missingCount;
-        private byte[] checksum;
-        private byte[][] missingTransactions;
+        private InventoryVector[] missingItems;
 
         public static Builder builder() {
             return new Builder();
         }
 
-        public Builder setMissingTransactions(byte[][] missingTransactions) {
-            this.missingCount = missingTransactions.length;
-            this.missingTransactions = missingTransactions;
-            return this;
-        }
-
-        public Builder setChecksum(byte[] checksum) {
-            this.checksum = checksum;
+        public Builder setMissingItems(InventoryVector[] missingItems) {
+            this.missingCount = missingItems.length;
+            this.missingItems = missingItems;
             return this;
         }
 

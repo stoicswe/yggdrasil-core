@@ -48,7 +48,7 @@ public class DataMessageRequest implements MessagePayload {
             return new Builder();
         }
 
-        public Builder setRequestedTransactions(InventoryVector[] requestedData) {
+        public Builder setRequestedData(InventoryVector[] requestedData) {
             this.requestCount = requestedData.length;
             this.requestedData = requestedData;
             return this;

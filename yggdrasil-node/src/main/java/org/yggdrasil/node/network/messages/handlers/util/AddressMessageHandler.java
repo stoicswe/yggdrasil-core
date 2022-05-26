@@ -5,6 +5,7 @@ import org.springframework.stereotype.Component;
 import org.yggdrasil.core.utils.CryptoHasher;
 import org.yggdrasil.node.network.NodeConfig;
 import org.yggdrasil.node.network.messages.MessagePayload;
+import org.yggdrasil.node.network.messages.Messenger;
 import org.yggdrasil.node.network.messages.handlers.MessageHandler;
 import org.yggdrasil.node.network.messages.payloads.AcknowledgeMessage;
 import org.yggdrasil.node.network.messages.payloads.AddressMessage;
@@ -23,6 +24,9 @@ public class AddressMessageHandler implements MessageHandler<AddressMessage> {
     @Autowired
     private NodeConfig nodeConfig;
 
+    @Autowired
+    private Messenger messenger;
+
     @Override
     public MessagePayload handleMessagePayload(AddressMessage addressMessage, NodeConnection nodeConnection) throws NoSuchAlgorithmException {
         // if the count of IPs does not match the length of addressMessages in the message
@@ -36,7 +40,7 @@ public class AddressMessageHandler implements MessageHandler<AddressMessage> {
             }
         }
 
-        return AcknowledgeMessage.Builder.newBuilder()
+        return AcknowledgeMessage.Builder.builder()
                 .setAcknowledgeChecksum(CryptoHasher.hash(addressMessage))
                 .build();
     }

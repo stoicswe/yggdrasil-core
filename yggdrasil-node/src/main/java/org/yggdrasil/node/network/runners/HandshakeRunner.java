@@ -71,7 +71,6 @@ public class HandshakeRunner implements Runnable {
                 sentMessage = Message.Builder.builder()
                         .setNetwork(nodeConfig.getNetwork())
                         .setRequestType(CommandType.HANDSHAKE_OFFR)
-                        .setPayloadSize(BigInteger.valueOf(GraphLayout.parseInstance(offerHandshake).totalSize()))
                         .setMessagePayload(offerHandshake)
                         .setChecksum(CryptoHasher.hash(offerHandshake))
                         .build();
@@ -110,13 +109,12 @@ public class HandshakeRunner implements Runnable {
                             this.node.getConnectedNodes().put(nodeConnection.getNodeIdentifier(), nodeConnection);
                             // make and send acknowledgement message
                             logger.info("Build an acknowledgement to send to {}", nodeConnection.getNodeIdentifier());
-                            AcknowledgeMessage ackPayload = AcknowledgeMessage.Builder.newBuilder()
+                            AcknowledgeMessage ackPayload = AcknowledgeMessage.Builder.builder()
                                     .setAcknowledgeChecksum(receivedMessage.getChecksum())
                                     .build();
                             Message ackMessage = Message.Builder.builder()
                                     .setNetwork(receivedMessage.getNetwork())
                                     .setRequestType(CommandType.ACKNOWLEDGE_PAYLOAD)
-                                    .setPayloadSize(BigInteger.valueOf(GraphLayout.parseInstance(ackPayload).totalSize()))
                                     .setMessagePayload(ackPayload)
                                     .setChecksum(CryptoHasher.hash(ackPayload))
                                     .build();
@@ -134,7 +132,6 @@ public class HandshakeRunner implements Runnable {
                                         .setRequestType(CommandType.REQUEST_ADDRESS)
                                         .setNetwork(nodeConfig.getNetwork())
                                         .setMessagePayload(am)
-                                        .setPayloadSize(BigInteger.valueOf(GraphLayout.parseInstance(am).totalSize()))
                                         .setChecksum(CryptoHasher.hash(am))
                                         .build();
                                 messenger.sendTargetMessage(message, this.nodeConnection);
@@ -194,7 +191,6 @@ public class HandshakeRunner implements Runnable {
                             sentMessage = Message.Builder.builder()
                                     .setNetwork(nodeConfig.getNetwork())
                                     .setRequestType(CommandType.HANDSHAKE_RESP)
-                                    .setPayloadSize(BigInteger.valueOf(GraphLayout.parseInstance(offerHandshake).totalSize()))
                                     .setMessagePayload(offerHandshake)
                                     .setChecksum(CryptoHasher.hash(offerHandshake))
                                     .build();

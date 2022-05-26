@@ -8,6 +8,7 @@ import org.yggdrasil.core.ledger.chain.Block;
 import org.yggdrasil.core.ledger.chain.Blockchain;
 import org.yggdrasil.core.utils.CryptoHasher;
 import org.yggdrasil.node.network.messages.MessagePayload;
+import org.yggdrasil.node.network.messages.Messenger;
 import org.yggdrasil.node.network.messages.handlers.MessageHandler;
 import org.yggdrasil.node.network.messages.payloads.AcknowledgeMessage;
 import org.yggdrasil.node.network.messages.payloads.BlockMessage;
@@ -19,11 +20,13 @@ import java.security.spec.InvalidKeySpecException;
 
 @Component
 public class BlockMessageHandler implements MessageHandler<BlockMessage> {
-
-    Logger logger = LoggerFactory.getLogger(BlockMessageHandler.class);
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Autowired
     Blockchain blockchain;
+
+    @Autowired
+    private Messenger messenger;
 
     @Override
     public MessagePayload handleMessagePayload(BlockMessage blockMessage, NodeConnection nodeConnection) throws NoSuchAlgorithmException, InvalidKeySpecException, NoSuchProviderException {
@@ -36,7 +39,7 @@ public class BlockMessageHandler implements MessageHandler<BlockMessage> {
             logger.debug("Exception while trying to insert a new block! Exception: {}", e.getMessage());
         }
 
-        return AcknowledgeMessage.Builder.newBuilder()
+        return AcknowledgeMessage.Builder.builder()
                 .setAcknowledgeChecksum(CryptoHasher.hash(blockMessage))
                 .build();
     }

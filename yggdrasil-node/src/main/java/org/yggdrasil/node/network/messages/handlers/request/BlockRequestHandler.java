@@ -1,107 +1,148 @@
 package org.yggdrasil.node.network.messages.handlers.request;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.yggdrasil.core.ledger.chain.Block;
 import org.yggdrasil.core.ledger.chain.Blockchain;
 import org.yggdrasil.core.ledger.Mempool;
 import org.yggdrasil.core.ledger.transaction.Transaction;
+import org.yggdrasil.core.utils.CryptoHasher;
+import org.yggdrasil.node.network.NodeConfig;
 import org.yggdrasil.node.network.exceptions.InvalidMessageException;
+import org.yggdrasil.node.network.messages.Message;
 import org.yggdrasil.node.network.messages.MessagePayload;
 import org.yggdrasil.node.network.messages.MessagePool;
+import org.yggdrasil.node.network.messages.Messenger;
+import org.yggdrasil.node.network.messages.enums.CommandType;
 import org.yggdrasil.node.network.messages.enums.GetDataType;
+import org.yggdrasil.node.network.messages.enums.InventoryType;
+import org.yggdrasil.node.network.messages.enums.RejectCodeType;
 import org.yggdrasil.node.network.messages.handlers.MessageHandler;
 import org.yggdrasil.node.network.messages.payloads.*;
 import org.yggdrasil.node.network.messages.requests.BlockMessageRequest;
 import org.yggdrasil.node.network.runners.NodeConnection;
 
+import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 @Component
 public class BlockRequestHandler implements MessageHandler<BlockMessageRequest> {
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    @Autowired
-    private Mempool mempool;
-    @Autowired
-    private MessagePool messagePool;
     @Autowired
     private Blockchain blockchain;
 
-    @Override
-    public MessagePayload handleMessagePayload(BlockMessageRequest blockMessageRequest, NodeConnection nodeConnection) throws NoSuchAlgorithmException {
+    @Autowired
+    private NodeConfig nodeConfig;
+    @Autowired
+    private Messenger messenger;
 
+    @Override
+    public void handleMessagePayload(BlockMessageRequest blockMessageRequest, NodeConnection nodeConnection) throws NoSuchAlgorithmException, IOException {
+
+        Message message = null;
         MessagePayload messagePayload = null;
 
-        List<BlockHeaderPayload> headers;
-        switch (Objects.requireNonNull(blockMessageRequest.getType())) {
+        List<InventoryVector> missingHashes = new ArrayList<>();
+        List<InventoryVector> invs = new ArrayList<>();
 
-            /*
-            case BLOCK:
-                if(blockMessageRequest.getHashCount() > 0 || blockMessageRequest.getObjectHashes().length > 0){
-                    throw new InvalidMessageException("Message received is invalid for this type of data.");
+        if(blockMessageRequest.getHashCount() == blockMessageRequest.getObjectHashes().length) {
+            if(blockMessageRequest.getHashCount() > 0) {
+                Optional<Block> block = null;
+                int blockMessageRequestIndex = 0;
+                for(int i = 0; i < blockMessageRequest.getHashCount(); i++) {
+                    byte[] reqHash = blockMessageRequest.getObjectHashes()[i];
+                    block = blockchain.getBlock(reqHash);
+                    if(block.isPresent()) {
+                        blockMessageRequestIndex = i;
+                        break;
+                    } else {
+                        missingHashes.add(InventoryVector.Builder.builder().setType(InventoryType.MSG_BLOCK).setHash(reqHash).build());
+                    }
                 }
-                Optional<Block> opBlock = blockchain.getBlock(blockMessageRequest.getStopHash());
-                if (opBlock.isPresent()) {
-                    Block b = opBlock.get();
-                    BlockMessage bm;
-                    List<TransactionPayload> txnps = new ArrayList<>();
-                    if(b.getData() instanceof List) {
-                        List<Transaction> txns = b.getData();
-                        for(Object txnObj : txns) {
-                            Transaction txn = (Transaction) txnObj;
-                            txnps.add(TransactionPayload.Builder.builder()
-                                            .setVersion(Blockchain._VERSION)
-                                    // TODO: Fix setting TXNs
-                                            .setWitnessFlag(false)
-                                            .setTxIns(new TransactionIn[0])
-                                            .setTxOuts(new TransactionOut[0])
-                                            .setWitnesses(new TransactionWitness[0])
-                                            .setLockTime(0)
-                                            .build());
+
+                if(block.isPresent()) {
+                    do {
+                        if(block.isPresent()) {
+                            InventoryVector v = InventoryVector.Builder.builder()
+                                    .setType(InventoryType.MSG_BLOCK)
+                                    .setHash(block.get().getBlockHash())
+                                    .build();
+                            invs.add(v);
+                            missingHashes.remove(block.get().getBlockHash());
+                            block = blockchain.getBlock(block.get().getHeader().getPreviousBlockHash());
+                        } else {
+                            if(blockMessageRequestIndex < blockMessageRequest.getHashCount()){
+                                blockMessageRequestIndex++;
+                            }
+                            block = blockchain.getBlock(blockMessageRequest.getObjectHashes()[blockMessageRequestIndex]);
+                            if(block.isEmpty()) missingHashes.add(InventoryVector.Builder.builder().setType(InventoryType.MSG_BLOCK).setHash(blockMessageRequest.getObjectHashes()[blockMessageRequestIndex]).build());
                         }
-                        messagePayload = BlockMessage.Builder.builder()
-                                .setVersion(b.getHeader().getVersion())
-                                .setPreviousBlock(b.getHeader().getPreviousBlockHash())
-                                .setMerkleRoot(b.getHeader().getMerkleRoot())
-                                .setTimestamp((int) b.getHeader().getEpochTime())
-                                .setDiff(b.getHeader().getDiff())
-                                .setNonce(b.getHeader().getNonce())
-                                .setTxnCount(txnps.size())
-                                .setTxnPayloads(txnps.toArray(TransactionPayload[]::new))
-                                .build();
-                    }
-                }
-                break;
-            case TRANSACTION:
+                    } while(invs.size() < 500);
 
-            case MEMPOOL:
-                // make an array of transaction payloads and put into a
-                // transaction message
-                if(blockMessageRequest.getHashCount() > 0) {
-                    List<Transaction> transactions = mempool.peekTransaction(blockMessageRequest.getHashCount());
-                    List<MempoolTransactionPayload> txnPayloads = new ArrayList<>();
-                    for(Transaction txn : transactions) {
-                        MempoolTransactionPayload txnp = MempoolTransactionPayload.Builder.builder()
-                                .buildFromMempool(txn);
-                        txnPayloads.add(txnp);
-                    }
-                    messagePayload = MempoolTransactionMessage.Builder.builder()
-                            .setTxnCount(txnPayloads.size())
-                            .setTxns(txnPayloads.toArray(MempoolTransactionPayload[]::new))
+                    messagePayload = InventoryMessage.Builder.builder()
+                            .setInventory(invs.toArray(InventoryVector[]::new))
                             .build();
-                } else {
-                    throw new InvalidMessageException("Message received reported requested no items for the type.");
+                    message = Message.Builder.builder()
+                            .setNetwork(nodeConfig.getNetwork())
+                            .setRequestType(CommandType.INVENTORY_PAYLOAD)
+                            .setMessagePayload(messagePayload)
+                            .setChecksum(CryptoHasher.hash(messagePayload))
+                            .build();
+                    logger.info("Sending message with checksum: {}", CryptoHasher.humanReadableHash(message.getChecksum()));
+                    messenger.sendTargetMessage(message, nodeConnection);
                 }
-                break;
-            default:
-                throw new InvalidMessageException("Message received reported unknown type.");
-             */
+
+                if(missingHashes.size() > 0) {
+                    messagePayload = NotFoundResponsePayload.Builder.builder()
+                            .setMissingItems(missingHashes.toArray(InventoryVector[]::new))
+                            .build();
+                    message = Message.Builder.builder()
+                            .setNetwork(nodeConfig.getNetwork())
+                            .setRequestType(CommandType.INVENTORY_PAYLOAD)
+                            .setMessagePayload(messagePayload)
+                            .setChecksum(CryptoHasher.hash(messagePayload))
+                            .build();
+                    logger.info("Sending message with checksum: {}", CryptoHasher.humanReadableHash(message.getChecksum()));
+                    messenger.sendTargetMessage(message, nodeConnection);
+                }
+            } else {
+                // return error msg
+                messagePayload = RejectMessagePayload.Builder.builder()
+                        .setRejectCode(RejectCodeType.REJECT_INVALID)
+                        .setMessage("Requested block messages was empty.")
+                        .setData(CryptoHasher.hash(blockMessageRequest))
+                        .build();
+                message = Message.Builder.builder()
+                        .setNetwork(nodeConfig.getNetwork())
+                        .setRequestType(CommandType.REJECT_PAYLOAD)
+                        .setMessagePayload(messagePayload)
+                        .setChecksum(CryptoHasher.hash(messagePayload))
+                        .build();
+                logger.info("Sending message with checksum: {}", CryptoHasher.humanReadableHash(message.getChecksum()));
+                messenger.sendTargetMessage(message, nodeConnection);
+            }
+        } else {
+            // return error msg
+            messagePayload = RejectMessagePayload.Builder.builder()
+                    .setRejectCode(RejectCodeType.REJECT_INVALID)
+                    .setMessage("Lied about number of items.")
+                    .setData(CryptoHasher.hash(blockMessageRequest))
+                    .build();
+            message = Message.Builder.builder()
+                    .setNetwork(nodeConfig.getNetwork())
+                    .setRequestType(CommandType.REJECT_PAYLOAD)
+                    .setMessagePayload(messagePayload)
+                    .setChecksum(CryptoHasher.hash(messagePayload))
+                    .build();
+            logger.info("Sending message with checksum: {}", CryptoHasher.humanReadableHash(message.getChecksum()));
+            messenger.sendTargetMessage(message, nodeConnection);
         }
-        return messagePayload;
+
+
     }
 
 }

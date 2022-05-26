@@ -1,6 +1,5 @@
 package org.yggdrasil.node.network.messages;
 
-import org.openjdk.jol.info.GraphLayout;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,9 +7,7 @@ import org.springframework.stereotype.Component;
 import org.yggdrasil.core.utils.CryptoHasher;
 import org.yggdrasil.node.network.Node;
 import org.yggdrasil.node.network.messages.enums.RejectCodeType;
-import org.yggdrasil.node.network.messages.requests.BlockMessageRequest;
 import org.yggdrasil.node.network.messages.requests.BlockTransactionsRequest;
-import org.yggdrasil.node.network.messages.requests.DataMessageRequest;
 import org.yggdrasil.node.network.messages.requests.MempoolRequest;
 import org.yggdrasil.node.network.runners.MessagePoolRunner;
 import org.yggdrasil.node.network.runners.NodeConnection;
@@ -22,7 +19,6 @@ import org.yggdrasil.node.network.messages.validators.MessageValidator;
 
 import javax.annotation.PostConstruct;
 import java.io.IOException;
-import java.math.BigInteger;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
 
@@ -118,38 +114,17 @@ public class Messenger {
             logger.info("Handling {} message.", message.getCommand());
             switch (Objects.requireNonNull(message.getCommand())) {
                 case REQUEST_BLOCK_HEADER:
-                    messagePayload = handle.handleMessagePayload((BlockMessageRequest) message.getPayload(), nodeConnection);
-                    returnMessage = Message.Builder.builder()
-                            .setNetwork(message.getNetwork())
-                            .setRequestType(CommandType.BLOCK_HEADER_PAYLOAD)
-                            .setMessagePayload(messagePayload)
-                            .setChecksum(CryptoHasher.hash(messagePayload))
-                            .build();
-                    break;
                 case REQUEST_BLOCK:
-                    messagePayload = handle.handleMessagePayload((BlockMessageRequest) message.getPayload(), nodeConnection);
-                    returnMessage = Message.Builder.builder()
-                            .setNetwork(message.getNetwork())
-                            .setRequestType(CommandType.BLOCK_PAYLOAD)
-                            .setMessagePayload(messagePayload)
-                            .setChecksum(CryptoHasher.hash(messagePayload))
-                            .build();
-                    break;
                 case REQUEST_BLOCK_TXNS:
-                    messagePayload = handle.handleMessagePayload((BlockTransactionsRequest) message.getPayload(), nodeConnection);
-                    returnMessage = Message.Builder.builder()
-                            .setNetwork(message.getNetwork())
-                            .setRequestType(CommandType.BLOCK_TXN_PAYLOAD)
-                            .setMessagePayload(messagePayload)
-                            .setChecksum(CryptoHasher.hash(messagePayload))
-                            .build();
-                    break;
                 case REQUEST_MEMPOOL_TXNS:
                 case REQUEST_MEMPOOL_LATEST:
-                    messagePayload = handle.handleMessagePayload((MempoolRequest) message.getPayload(), nodeConnection);
+                    handle.handleMessagePayload(message.getPayload(), nodeConnection);
+                    messagePayload = AcknowledgeMessage.Builder.builder()
+                            .setAcknowledgeChecksum(message.getChecksum())
+                            .build();
                     returnMessage = Message.Builder.builder()
                             .setNetwork(message.getNetwork())
-                            .setRequestType(CommandType.INVENTORY_PAYLOAD)
+                            .setRequestType(CommandType.ACKNOWLEDGE_PAYLOAD)
                             .setMessagePayload(messagePayload)
                             .setChecksum(CryptoHasher.hash(messagePayload))
                             .build();
@@ -182,7 +157,7 @@ public class Messenger {
                 case ADDRESS_PAYLOAD:
                     logger.info("Handling {} message.", CommandType.ADDRESS_PAYLOAD);
                     handle.handleMessagePayload((AddressMessage) message.getPayload(), nodeConnection);
-                    messagePayload = AcknowledgeMessage.Builder.newBuilder()
+                    messagePayload = AcknowledgeMessage.Builder.builder()
                             .setAcknowledgeChecksum(message.getChecksum())
                             .build();
                     returnMessage = Message.Builder.builder()
@@ -194,7 +169,7 @@ public class Messenger {
                     break;
                 case BLOCK_HEADER_PAYLOAD:
                     handle.handleMessagePayload((BlockHeaderPayload) message.getPayload(), nodeConnection);
-                    messagePayload = AcknowledgeMessage.Builder.newBuilder()
+                    messagePayload = AcknowledgeMessage.Builder.builder()
                             .setAcknowledgeChecksum(message.getChecksum())
                             .build();
                     returnMessage = Message.Builder.builder()
@@ -206,7 +181,7 @@ public class Messenger {
                     break;
                 case BLOCK_PAYLOAD:
                     handle.handleMessagePayload((BlockMessage) message.getPayload(), nodeConnection);
-                    messagePayload = AcknowledgeMessage.Builder.newBuilder()
+                    messagePayload = AcknowledgeMessage.Builder.builder()
                             .setAcknowledgeChecksum(message.getChecksum())
                             .build();
                     returnMessage = Message.Builder.builder()
@@ -218,7 +193,7 @@ public class Messenger {
                     break;
                 case BLOCK_TXN_PAYLOAD:
                     handle.handleMessagePayload((BlockTransactions) message.getPayload(), nodeConnection);
-                    messagePayload = AcknowledgeMessage.Builder.newBuilder()
+                    messagePayload = AcknowledgeMessage.Builder.builder()
                             .setAcknowledgeChecksum(message.getChecksum())
                             .build();
                     returnMessage = Message.Builder.builder()
@@ -229,14 +204,23 @@ public class Messenger {
                             .build();
                     break;
                 case INVENTORY_PAYLOAD:
-
+                    handle.handleMessagePayload((InventoryMessage) message.getPayload(), nodeConnection);
+                    messagePayload = AcknowledgeMessage.Builder.builder()
+                            .setAcknowledgeChecksum(message.getChecksum())
+                            .build();
+                    returnMessage = Message.Builder.builder()
+                            .setNetwork(message.getNetwork())
+                            .setRequestType(CommandType.ACKNOWLEDGE_PAYLOAD)
+                            .setMessagePayload(messagePayload)
+                            .setChecksum(CryptoHasher.hash(messagePayload))
+                            .build();
                     break;
                 case PREFILLED_TXN_PAYLOAD:
                     // Not used.
                     break;
                 case TRANSACTION_PAYLOAD:
                     handle.handleMessagePayload((TransactionPayload) message.getPayload(), nodeConnection);
-                    messagePayload = AcknowledgeMessage.Builder.newBuilder()
+                    messagePayload = AcknowledgeMessage.Builder.builder()
                             .setAcknowledgeChecksum(message.getChecksum())
                             .build();
                     returnMessage = Message.Builder.builder()
@@ -287,7 +271,7 @@ public class Messenger {
                     break;
                 case PONG:
                     logger.info("Handling {} message.", CommandType.PONG);
-                    messagePayload = AcknowledgeMessage.Builder.newBuilder()
+                    messagePayload = AcknowledgeMessage.Builder.builder()
                             .setAcknowledgeChecksum(message.getChecksum())
                             .build();
                     returnMessage = Message.Builder.builder()
@@ -313,72 +297,6 @@ public class Messenger {
                     break;
                 default:
                     break;
-                /*
-                case INVENTORY_PAYLOAD:
-                    // In response to this, multiple getData requests will be generated
-
-
-
-                    // delete the impl below, since it is now invalid
-                    logger.info("Handling {} message.", CommandType.INVENTORY_PAYLOAD);
-                    if (message.getPayload() instanceof BlockHeaderResponsePayload) {
-                        logger.info("{} message is a BlockchainMessage.", CommandType.INVENTORY_PAYLOAD);
-                        handle.handleMessagePayload((BlockHeaderResponsePayload) message.getPayload(), nodeConnection);
-                        messagePayload = AcknowledgeMessage.Builder.newBuilder()
-                                .setAcknowledgeChecksum(message.getChecksum())
-                                .build();
-                        returnMessage = Message.Builder.newBuilder()
-                                .setNetwork(NetworkType.getByValue(message.getNetwork()))
-                                .setRequestType(CommandType.ACKNOWLEDGE_PAYLOAD)
-                                .setMessagePayload(messagePayload)
-                                .setPayloadSize(BigInteger.valueOf(GraphLayout.parseInstance(messagePayload).totalSize()))
-                                .setChecksum(CryptoHasher.hash(messagePayload))
-                                .build();
-                    }
-                    if (message.getPayload() instanceof BlockMessage) {
-                        logger.info("{} message is a BlockMessage", CommandType.INVENTORY_PAYLOAD);
-                        handle.handleMessagePayload((BlockMessage) message.getPayload(), nodeConnection);
-                        messagePayload = AcknowledgeMessage.Builder.newBuilder()
-                                .setAcknowledgeChecksum(message.getChecksum())
-                                .build();
-                        returnMessage = Message.Builder.newBuilder()
-                                .setNetwork(NetworkType.getByValue(message.getNetwork()))
-                                .setRequestType(CommandType.ACKNOWLEDGE_PAYLOAD)
-                                .setMessagePayload(messagePayload)
-                                .setPayloadSize(BigInteger.valueOf(GraphLayout.parseInstance(messagePayload).totalSize()))
-                                .setChecksum(CryptoHasher.hash(messagePayload))
-                                .build();
-                    }
-                    if (message.getPayload() instanceof DataMessageRequest) {
-                        logger.info("{} message is a BasicTransactionMessage.", CommandType.INVENTORY_PAYLOAD);
-                        handle.handleMessagePayload((DataMessageRequest) message.getPayload(), nodeConnection);
-                        messagePayload = AcknowledgeMessage.Builder.newBuilder()
-                                .setAcknowledgeChecksum(message.getChecksum())
-                                .build();
-                        returnMessage = Message.Builder.newBuilder()
-                                .setNetwork(NetworkType.getByValue(message.getNetwork()))
-                                .setRequestType(CommandType.ACKNOWLEDGE_PAYLOAD)
-                                .setMessagePayload(messagePayload)
-                                .setPayloadSize(BigInteger.valueOf(GraphLayout.parseInstance(messagePayload).totalSize()))
-                                .setChecksum(CryptoHasher.hash(messagePayload))
-                                .build();
-                    }
-                    if (message.getPayload() instanceof TransactionMessage) {
-                        logger.info("{} message is a TransactionMessage.", CommandType.INVENTORY_PAYLOAD);
-                        handle.handleMessagePayload((TransactionMessage) message.getPayload(), nodeConnection);
-                        messagePayload = AcknowledgeMessage.Builder.newBuilder()
-                                .setAcknowledgeChecksum(message.getChecksum())
-                                .build();
-                        returnMessage = Message.Builder.newBuilder()
-                                .setNetwork(NetworkType.getByValue(message.getNetwork()))
-                                .setRequestType(CommandType.ACKNOWLEDGE_PAYLOAD)
-                                .setMessagePayload(messagePayload)
-                                .setPayloadSize(BigInteger.valueOf(GraphLayout.parseInstance(messagePayload).totalSize()))
-                                .setChecksum(CryptoHasher.hash(messagePayload))
-                                .build();
-                    }
-                    break;
-                 */
             }
         } catch (Exception e) {
             logger.warn("Error while processing message: [{}] -> [{}].", message.toString(), e.getMessage());

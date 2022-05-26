@@ -1,10 +1,15 @@
 package org.yggdrasil.node.network.messages.handlers.request;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import org.yggdrasil.core.ledger.chain.Block;
 import org.yggdrasil.core.ledger.chain.Blockchain;
 import org.yggdrasil.core.ledger.transaction.Transaction;
+import org.yggdrasil.node.network.NodeConfig;
 import org.yggdrasil.node.network.messages.MessagePayload;
+import org.yggdrasil.node.network.messages.Messenger;
 import org.yggdrasil.node.network.messages.handlers.MessageHandler;
 import org.yggdrasil.node.network.messages.payloads.BlockTransactions;
 import org.yggdrasil.node.network.messages.payloads.TransactionPayload;
@@ -15,10 +20,17 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+@Component
 public class BlockTxnRequestHandler implements MessageHandler<BlockTransactionsRequest> {
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Autowired
     private Blockchain blockchain;
+
+    @Autowired
+    private NodeConfig nodeConfig;
+    @Autowired
+    private Messenger messenger;
 
     @Override
     public MessagePayload handleMessagePayload(BlockTransactionsRequest blockTxnRequest, NodeConnection nodeConnection) throws Exception {
