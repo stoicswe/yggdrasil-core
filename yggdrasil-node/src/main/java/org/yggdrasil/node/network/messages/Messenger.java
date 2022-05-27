@@ -7,8 +7,6 @@ import org.springframework.stereotype.Component;
 import org.yggdrasil.core.utils.CryptoHasher;
 import org.yggdrasil.node.network.Node;
 import org.yggdrasil.node.network.messages.enums.RejectCodeType;
-import org.yggdrasil.node.network.messages.requests.BlockTransactionsRequest;
-import org.yggdrasil.node.network.messages.requests.MempoolRequest;
 import org.yggdrasil.node.network.runners.MessagePoolRunner;
 import org.yggdrasil.node.network.runners.NodeConnection;
 import org.yggdrasil.node.network.exceptions.NodeDisconnectException;
@@ -116,8 +114,6 @@ public class Messenger {
                 case REQUEST_BLOCK_HEADER:
                 case REQUEST_BLOCK:
                 case REQUEST_BLOCK_TXNS:
-                case REQUEST_MEMPOOL_TXNS:
-                case REQUEST_MEMPOOL_LATEST:
                     handle.handleMessagePayload(message.getPayload(), nodeConnection);
                     messagePayload = AcknowledgeMessage.Builder.builder()
                             .setAcknowledgeChecksum(message.getChecksum())
@@ -128,6 +124,10 @@ public class Messenger {
                             .setMessagePayload(messagePayload)
                             .setChecksum(CryptoHasher.hash(messagePayload))
                             .build();
+                    break;
+                case REQUEST_MEMPOOL_TXNS:
+                case REQUEST_MEMPOOL_LATEST:
+                    // do some logic to get the messages from the mempool
                     break;
                 case REQUEST_ADDRESS:
                     logger.info("Handling {} message.", CommandType.REQUEST_ADDRESS);

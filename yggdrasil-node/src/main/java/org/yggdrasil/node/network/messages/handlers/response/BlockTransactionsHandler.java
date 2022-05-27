@@ -20,7 +20,6 @@ public class BlockTransactionsHandler implements MessageHandler<BlockTransaction
     @Override
     public MessagePayload handleMessagePayload(BlockTransactions blockTransactions, NodeConnection nodeConnection) throws Exception {
 
-
         return null;
     }
 
