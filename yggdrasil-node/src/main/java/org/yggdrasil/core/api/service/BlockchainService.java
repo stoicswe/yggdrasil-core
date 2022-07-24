@@ -158,7 +158,6 @@ public class BlockchainService {
                 .setNetwork(nodeConfig.getNetwork())
                 .setRequestType(CommandType.INVENTORY_PAYLOAD)
                 .setMessagePayload(txnPayload)
-                .setPayloadSize(BigInteger.valueOf(GraphLayout.parseInstance(txnPayload).totalSize()))
                 .setChecksum(CryptoHasher.hash(txnPayload))
                 .build();
         this.messenger.sendBroadcastMessage(txnMsg);
@@ -240,7 +239,6 @@ public class BlockchainService {
         Message message = Message.Builder.builder()
                 .setNetwork(NetworkType.MAIN_NET)
                 .setRequestType(CommandType.PING)
-                .setPayloadSize(BigInteger.valueOf(GraphLayout.parseInstance(pingPongMessage).totalSize()))
                 .setMessagePayload(pingPongMessage)
                 .setChecksum(CryptoHasher.hash(pingPongMessage)).build();
         messenger.sendBroadcastMessage(message);

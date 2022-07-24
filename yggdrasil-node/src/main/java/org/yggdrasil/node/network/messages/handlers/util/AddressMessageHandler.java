@@ -28,7 +28,7 @@ public class AddressMessageHandler implements MessageHandler<AddressMessage> {
     private Messenger messenger;
 
     @Override
-    public MessagePayload handleMessagePayload(AddressMessage addressMessage, NodeConnection nodeConnection) throws NoSuchAlgorithmException {
+    public void handleMessagePayload(AddressMessage addressMessage, NodeConnection nodeConnection) throws NoSuchAlgorithmException {
         // if the count of IPs does not match the length of addressMessages in the message
         // then send an acknowledgement and ignore the payload data
         if(addressMessage.getIpAddressCount() == addressMessage.getIpAddresses().length) {
@@ -39,10 +39,6 @@ public class AddressMessageHandler implements MessageHandler<AddressMessage> {
                 this.peerRecordIndexer.addPeerRecord(peerRecord);
             }
         }
-
-        return AcknowledgeMessage.Builder.builder()
-                .setAcknowledgeChecksum(CryptoHasher.hash(addressMessage))
-                .build();
     }
 
 }

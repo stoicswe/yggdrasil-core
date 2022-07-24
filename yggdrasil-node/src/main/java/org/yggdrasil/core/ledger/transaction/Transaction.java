@@ -10,14 +10,11 @@ import org.yggdrasil.core.serialization.HashSerializer;
 import org.yggdrasil.core.serialization.TxnInputSerializer;
 import org.yggdrasil.core.serialization.TxnOutputSerializer;
 import org.yggdrasil.core.utils.CryptoHasher;
-import org.yggdrasil.core.utils.CryptoKeyGenerator;
-import org.yggdrasil.core.utils.DateTimeUtil;
+import org.yggdrasil.node.network.messages.payloads.TransactionPayload;
 
 import java.math.BigDecimal;
 import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
 import java.security.PublicKey;
-import java.security.spec.InvalidKeySpecException;
 import java.time.ZonedDateTime;
 
 /**
@@ -199,6 +196,11 @@ public class Transaction implements LedgerHashableItem {
 
         public Transaction build() throws NoSuchAlgorithmException {
             return new Transaction(this);
+        }
+
+        public Transaction buildFromMessage(TransactionPayload txnPayload) {
+            // TODO: Implement once txns are implemented
+            return null;
         }
     }
 

@@ -18,7 +18,8 @@ public class PrefilledTransactionHandler implements MessageHandler<PrefilledTran
     private Messenger messenger;
 
     @Override
-    public MessagePayload handleMessagePayload(PrefilledTransactionPayload prefilledTransactionPayload, NodeConnection nodeConnection) throws Exception {
-        return null;
+    public void handleMessagePayload(PrefilledTransactionPayload prefilledTransactionPayload, NodeConnection nodeConnection) throws Exception {
+        // not implemented
+        return;
     }
 }

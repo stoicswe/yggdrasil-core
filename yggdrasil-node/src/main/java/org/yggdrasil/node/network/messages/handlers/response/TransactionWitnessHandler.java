@@ -18,7 +18,8 @@ public class TransactionWitnessHandler implements MessageHandler<TransactionWitn
     private Messenger messenger;
 
     @Override
-    public MessagePayload handleMessagePayload(TransactionWitness transactionWitness, NodeConnection nodeConnection) throws Exception {
-        return null;
+    public void handleMessagePayload(TransactionWitness transactionWitness, NodeConnection nodeConnection) throws Exception {
+        // not implemented
+        return;
     }
 }

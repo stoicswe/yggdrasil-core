@@ -11,6 +11,7 @@ import org.yggdrasil.node.network.peer.PeerRecord;
 import java.io.*;
 import java.math.BigInteger;
 import java.net.Socket;
+import java.security.NoSuchAlgorithmException;
 
 /**
  * The node connection is a thread that reacts to incoming messages.
@@ -104,7 +105,7 @@ public class NodeConnection implements Runnable {
                     logger.info("Received message: {} from: {}", m.toString(), this.getNodeIdentifier());
                     this.messenger.handleMessage(m, this);
                 }
-            } catch (IOException | ClassNotFoundException e) {
+            } catch (IOException | ClassNotFoundException | NoSuchAlgorithmException e) {
                 logger.error("Socket input stream read failed with exception: {}", e.getLocalizedMessage());
                 break;
             }
