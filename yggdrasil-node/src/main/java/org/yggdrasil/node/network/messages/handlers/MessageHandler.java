@@ -1,10 +1,7 @@
 package org.yggdrasil.node.network.messages.handlers;
 
-import org.yggdrasil.node.network.messages.Message;
 import org.yggdrasil.node.network.messages.MessagePayload;
 import org.yggdrasil.node.network.runners.NodeConnection;
-
-import java.security.NoSuchAlgorithmException;
 
 /**
  * The message handler interface ensures that all message handlers
@@ -16,6 +13,6 @@ import java.security.NoSuchAlgorithmException;
  */
 public interface MessageHandler<MessagePayload> {
 
-    public org.yggdrasil.node.network.messages.MessagePayload handleMessagePayload(MessagePayload payload, NodeConnection nodeConnection) throws Exception;
+    public void handleMessagePayload(MessagePayload payload, NodeConnection nodeConnection) throws Exception;
 
 }

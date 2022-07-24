@@ -18,7 +18,7 @@ import org.yggdrasil.core.utils.DateTimeUtil;
 import org.yggdrasil.node.network.NodeConfig;
 import org.yggdrasil.node.network.messages.Message;
 import org.yggdrasil.node.network.messages.Messenger;
-import org.yggdrasil.node.network.messages.enums.RequestType;
+import org.yggdrasil.node.network.messages.enums.CommandType;
 import org.yggdrasil.node.network.messages.payloads.BlockMessage;
 import org.yggdrasil.node.network.messages.payloads.TransactionPayload;
 
@@ -160,9 +160,8 @@ public class BlockMine {
             if(txnIsValid) {
                 logger.info("Txn: {} is valid.", txn);
                 // Once the txn is validated, add to the transactionPayload
-                TransactionPayload txnP = TransactionPayload.Builder.newBuilder()
-                        .buildFromTransaction(txn)
-                        .build();
+                TransactionPayload txnP = TransactionPayload.Builder.builder()
+                        .buildFromTxn(txn);
                 txnMessagePayloads.add(txnP);
             } else {
                 bTxnsInvalid.add(txn);
@@ -186,20 +185,22 @@ public class BlockMine {
         // Merkle root variable for including in the block
         // as part of generating the merkleRoot, find a way to add merkle branch
         // to each txn to connect it back to the block
-        byte[] merkleRoot = generateMerkleTree(new ArrayList<>(bTxnCandidates));
+        byte[] merkleRoot = CryptoHasher.generateMerkleTree(new ArrayList<>(bTxnCandidates));
         // Compile the block
-        Block newBlock = Block.Builder.newBuilder()
-                .setBlockHeight(lastBlock.getBlockHeight().add(BigInteger.ONE))
-                .setPreviousBlock(lastBlock.getBlockHash())
-                .setData(new ArrayList<>(bTxnCandidates))
+        BlockHeader header = BlockHeader.Builder.builder()
+                .setVersion(Blockchain._VERSION)
+                .setPreviousBlockHash(lastBlock.getBlockHash())
                 .setMerkleRoot(merkleRoot)
+                .setTime(DateTimeUtil.getCurrentTimestamp())
+                .setDiff(lastBlock.getHeader().getDiff())
+                .setNonce(0)
                 .build();
-        // Sign the block to validate it came from a real address of a miner
-        // signatures are actually signing the merkleRoot, since that never
-        // changes even after re-hashing the block
-        this.walletIndexer.getCurrentWallet().signBlock(newBlock);
+        Block newBlock = Block.Builder.builder()
+                .setBlockHeader(header)
+                .setData(new ArrayList<>(bTxnCandidates))
+                .build();
         // Perform the proof of work
-        newBlock = this.proofOfWork(newBlock, this.blockchain.calculateDifficulty());
+        newBlock = this.proofOfWork(newBlock, lastBlock.getHeader().getDiff());
         // add the block to the blockchain after performing PoW
         this.blockchain.addBlock(newBlock);
         // Now that the work is done, we can remove the txns included in the block
@@ -211,48 +212,23 @@ public class BlockMine {
         logger.info("Added new block to the chain: {}", newBlock);
         // the new block can now be transmitted to the other nodes
         // when receiving these, other noes can validate the new block
-        BlockMessage blockMessage = BlockMessage.Builder.newBuilder()
-                .setTimestamp((int) newBlock.getTimestamp().toEpochSecond())
-                .setBlockHeight(newBlock.getBlockHeight())
-                .setBlockHash(newBlock.getBlockHash())
-                .setPreviousBlockHash(newBlock.getPreviousBlockHash())
+        BlockMessage blockMessage = BlockMessage.Builder.builder()
+                .setVersion(Blockchain._VERSION)
+                .setPreviousBlock(newBlock.getHeader().getPreviousBlockHash())
+                .setMerkleRoot(newBlock.getHeader().getMerkleRoot())
+                .setTimestamp((int) newBlock.getHeader().getEpochTime())
+                .setDiff(newBlock.getHeader().getDiff())
+                .setNonce(newBlock.getHeader().getNonce())
                 .setTxnPayloads(txnMessagePayloads.toArray(TransactionPayload[]::new))
-                .setMerkleRoot(newBlock.getMerkleRoot())
-                .setSignature(newBlock.getSignature())
                 .build();
-        Message message = Message.Builder.newBuilder()
+        Message message = Message.Builder.builder()
                 .setNetwork(nodeConfig.getNetwork())
-                .setRequestType(RequestType.DATA_RESP)
+                .setRequestType(CommandType.INVENTORY_PAYLOAD)
                 .setMessagePayload(blockMessage)
-                .setPayloadSize(BigInteger.valueOf(GraphLayout.parseInstance(blockMessage).totalSize()))
                 .setChecksum(CryptoHasher.hash(blockMessage))
                 .build();
         this.messenger.sendBroadcastMessage(message);
         logger.info("New block {} has been forwarded to other nodes.", newBlock);
-    }
-
-    private byte[] generateMerkleTree(List<Transaction> txns) throws NoSuchAlgorithmException {
-        if(txns.size()%2 != 0) {
-            // duplicate the last item in the list
-            // for adding to the merkle tree to ensure
-            // there is not an issue with the recursive call
-            txns.add(txns.get(txns.size()-1));
-        }
-        byte[] temp = new byte[0];
-        if(txns.size() == 2) {
-            temp = appendBytes(temp, txns.get(0).getTxnHash());
-            temp = appendBytes(temp, txns.get(1).getTxnHash());
-            return CryptoHasher.dhash(temp);
-        }
-        if(txns.size() == 1) {
-            temp = appendBytes(temp, txns.get(0).getTxnHash());
-            temp = appendBytes(temp, txns.get(0).getTxnHash());
-            return CryptoHasher.dhash(temp);
-        }
-        // pass first 1/2 and second 1/2
-        // need to test to make sure this never has issues
-        // or misses any txns...
-        return CryptoHasher.dhash(appendBytes(generateMerkleTree(txns.subList(0, (txns.size()/2)-1)), generateMerkleTree(txns.subList((txns.size()/2), txns.size()-1))));
     }
 
     private Block proofOfWork(Block currentBlock, int difficulty) throws Exception {
@@ -263,10 +239,16 @@ public class BlockMine {
         // then we want to move the coinbase txn to the top of the new block
         blockTransactions.sort(Comparator.comparing(Transaction::isCoinbase));
         // Rebuild the block
-        Block sortedBlock = Block.Builder.newBuilder()
-                .setPreviousBlock(currentBlock.getPreviousBlockHash())
-                .setBlockHeight(currentBlock.getBlockHeight())
-                .setMerkleRoot(currentBlock.getMerkleRoot())
+        BlockHeader header = BlockHeader.Builder.builder()
+                .setVersion(Blockchain._VERSION)
+                .setPreviousBlockHash(currentBlock.getHeader().getPreviousBlockHash())
+                .setMerkleRoot(currentBlock.getHeader().getMerkleRoot())
+                .setTime(DateTimeUtil.getCurrentTimestamp())
+                .setDiff(currentBlock.getHeader().getDiff())
+                .setNonce(currentBlock.getHeader().getNonce())
+                .build();
+        Block sortedBlock = Block.Builder.builder()
+                .setBlockHeader(header)
                 .setData(blockTransactions)
                 .build();
         // This output is mostly for testing, was curious about adding bytes together *shrugs*
@@ -278,15 +260,15 @@ public class BlockMine {
         while (!sortedBlock.toString().substring(0, difficulty).equals(prefixString)) {
             // Every 100 nonce updates, we want to output a progress log
             // so that the miner can see something happening in their computer
-            if(sortedBlock.getNonce() % 500 == 0) {
+            if(sortedBlock.getHeader().getNonce() % 500 == 0) {
                 logger.info("Working block hash: {}", sortedBlock);
             }
             // move that nonce!
             // there is a chance I might need to add a
             // nonce to the coinbase txn as well to allow
             // for more creative solving, but maybe later
-            sortedBlock.incrementNonce();
-            sortedBlock.setBlockHash(CryptoHasher.hash(sortedBlock));
+            // TODO: Make a new block by copying data / create a new header
+            //sortedBlock.incrementNonce();
         }
         // Ooooo shiny new block, much wow!
         return sortedBlock;

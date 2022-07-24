@@ -1,7 +1,8 @@
 package org.yggdrasil.node.network.messages;
 
+import org.openjdk.jol.info.GraphLayout;
 import org.yggdrasil.node.network.messages.enums.NetworkType;
-import org.yggdrasil.node.network.messages.enums.RequestType;
+import org.yggdrasil.node.network.messages.enums.CommandType;
 
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
@@ -19,28 +20,28 @@ public class Message implements Serializable {
     @NotNull
     private final char[] network;
     @NotNull
-    private final char[] request;
+    private final char[] command;
     @NotNull
     private final BigInteger payloadSize;
     @NotNull
-    private final MessagePayload payload;
-    @NotNull
     private final byte[] checksum;
+    @NotNull
+    private final MessagePayload payload;
 
     private Message(Builder builder) {
         this.network = builder.network;
-        this.request = builder.requestType;
+        this.command = builder.requestType;
         this.payloadSize = builder.payloadSize;
         this.payload = builder.payload;
         this.checksum = builder.checksum;
     }
 
-    public char[] getNetwork() {
-        return network;
+    public NetworkType getNetwork() {
+        return NetworkType.getByValue(network);
     }
 
-    public char[] getRequest() {
-        return request;
+    public CommandType getCommand() {
+        return CommandType.getByValue(command);
     }
 
     public BigInteger getPayloadSize() {
@@ -65,13 +66,12 @@ public class Message implements Serializable {
         } catch (IndexOutOfBoundsException e) {
             return false;
         }
-
         return true;
     }
 
     @Override
     public String toString() {
-        return String.format("Network: [%s], Request; [%s], Checksum: [%s]", String.copyValueOf(network), String.valueOf(request), String.valueOf(checksum));
+        return String.format("Network: [%s], Request; [%s], Checksum: [%s]", String.copyValueOf(network), String.valueOf(command), String.valueOf(checksum));
     }
 
     public static class Builder {
@@ -84,7 +84,7 @@ public class Message implements Serializable {
 
         private Builder(){}
 
-        public static Builder newBuilder() {
+        public static Builder builder() {
             return new Builder();
         }
 
@@ -93,17 +93,13 @@ public class Message implements Serializable {
             return this;
         }
 
-        public Builder setRequestType(RequestType requestType) {
-            this.requestType = requestType.getMessageValue();
-            return this;
-        }
-
-        public Builder setPayloadSize(BigInteger payloadSize) {
-            this.payloadSize = payloadSize;
+        public Builder setRequestType(CommandType commandType) {
+            this.requestType = commandType.getValue();
             return this;
         }
 
         public Builder setMessagePayload(MessagePayload payload) {
+            this.payloadSize = BigInteger.valueOf(GraphLayout.parseInstance(payload).totalSize());
             this.payload = payload;
             return this;
         }

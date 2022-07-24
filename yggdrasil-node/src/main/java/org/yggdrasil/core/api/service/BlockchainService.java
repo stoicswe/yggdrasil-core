@@ -22,10 +22,11 @@ import org.springframework.stereotype.Service;
 import org.yggdrasil.node.network.NodeConfig;
 import org.yggdrasil.node.network.messages.Message;
 import org.yggdrasil.node.network.messages.Messenger;
+import org.yggdrasil.node.network.messages.enums.InventoryType;
 import org.yggdrasil.node.network.messages.enums.NetworkType;
-import org.yggdrasil.node.network.messages.enums.RequestType;
-import org.yggdrasil.node.network.messages.payloads.MempoolTransactionMessage;
-import org.yggdrasil.node.network.messages.payloads.MempoolTransactionPayload;
+import org.yggdrasil.node.network.messages.enums.CommandType;
+import org.yggdrasil.node.network.messages.payloads.InventoryMessage;
+import org.yggdrasil.node.network.messages.payloads.InventoryVector;
 import org.yggdrasil.node.network.messages.payloads.PingPongMessage;
 import org.yggdrasil.ui.MainFrame;
 
@@ -146,18 +147,18 @@ public class BlockchainService {
         // add the newly created txn to the mempool
         this.mempool.putTransaction(mempoolTxn);
         // need to broadcast the mempool transaction.
-        MempoolTransactionPayload txnPayload = MempoolTransactionPayload.Builder.builder()
-                .buildFromMempool(mempoolTxn);
-        MempoolTransactionMessage txnMessage = MempoolTransactionMessage.Builder.builder()
-                .setTxnCount(1)
-                .setTxns(new MempoolTransactionPayload[]{txnPayload})
+        InventoryVector invVec = InventoryVector.Builder.builder()
+                .setType(InventoryType.MSG_TX)
+                .setHash(mempoolTxn.getTxnHash())
                 .build();
-        Message txnMsg = Message.Builder.newBuilder()
+        InventoryMessage txnPayload = InventoryMessage.Builder.builder()
+                .setInventory(new InventoryVector[]{invVec})
+                .build();
+        Message txnMsg = Message.Builder.builder()
                 .setNetwork(nodeConfig.getNetwork())
-                .setRequestType(RequestType.DATA_RESP)
-                .setMessagePayload(txnMessage)
-                .setPayloadSize(BigInteger.valueOf(GraphLayout.parseInstance(txnMessage).totalSize()))
-                .setChecksum(CryptoHasher.hash(txnMessage))
+                .setRequestType(CommandType.INVENTORY_PAYLOAD)
+                .setMessagePayload(txnPayload)
+                .setChecksum(CryptoHasher.hash(txnPayload))
                 .build();
         this.messenger.sendBroadcastMessage(txnMsg);
     }
@@ -235,10 +236,9 @@ public class BlockchainService {
     // test code for testing messaging connections
     public void sendMessage() throws NoSuchAlgorithmException, IOException {
         PingPongMessage pingPongMessage = PingPongMessage.Builder.newBuilder().setNonce(25).build();
-        Message message = Message.Builder.newBuilder()
+        Message message = Message.Builder.builder()
                 .setNetwork(NetworkType.MAIN_NET)
-                .setRequestType(RequestType.PING)
-                .setPayloadSize(BigInteger.valueOf(GraphLayout.parseInstance(pingPongMessage).totalSize()))
+                .setRequestType(CommandType.PING)
                 .setMessagePayload(pingPongMessage)
                 .setChecksum(CryptoHasher.hash(pingPongMessage)).build();
         messenger.sendBroadcastMessage(message);

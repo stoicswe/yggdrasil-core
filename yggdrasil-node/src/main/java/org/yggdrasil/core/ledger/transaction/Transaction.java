@@ -10,16 +10,11 @@ import org.yggdrasil.core.serialization.HashSerializer;
 import org.yggdrasil.core.serialization.TxnInputSerializer;
 import org.yggdrasil.core.serialization.TxnOutputSerializer;
 import org.yggdrasil.core.utils.CryptoHasher;
-import org.yggdrasil.core.utils.CryptoKeyGenerator;
-import org.yggdrasil.core.utils.DateTimeUtil;
-import org.yggdrasil.node.network.messages.payloads.MempoolTransactionPayload;
 import org.yggdrasil.node.network.messages.payloads.TransactionPayload;
 
 import java.math.BigDecimal;
 import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
 import java.security.PublicKey;
-import java.security.spec.InvalidKeySpecException;
 import java.time.ZonedDateTime;
 
 /**
@@ -203,22 +198,9 @@ public class Transaction implements LedgerHashableItem {
             return new Transaction(this);
         }
 
-        public Transaction buildFromMessage(TransactionPayload transactionMessage) throws NoSuchAlgorithmException, InvalidKeySpecException, NoSuchProviderException {
-            this.timestamp = DateTimeUtil.fromMessageTimestamp(transactionMessage.getTimestamp());
-            this.origin = CryptoKeyGenerator.readPublicKeyFromBytes(transactionMessage.getOriginAddress());
-            this.destinationAddress = String.valueOf(transactionMessage.getDestinationAddress());
-            Transaction txn = new Transaction(this);
-            txn.signature = transactionMessage.getSignature();
-            return txn;
-        }
-
-        public Transaction buildFromMessage(MempoolTransactionPayload transactionMessage) throws NoSuchAlgorithmException, InvalidKeySpecException, NoSuchProviderException {
-            this.timestamp = DateTimeUtil.fromMessageTimestamp(transactionMessage.getTimestamp());
-            this.origin = CryptoKeyGenerator.readPublicKeyFromBytes(CryptoHasher.hashByteArray(String.valueOf(transactionMessage.getOriginAddress())));
-            this.destinationAddress = String.valueOf(transactionMessage.getDestinationAddress());
-            Transaction txn = new Transaction(this);
-            txn.signature = transactionMessage.getSignature();
-            return txn;
+        public Transaction buildFromMessage(TransactionPayload txnPayload) {
+            // TODO: Implement once txns are implemented
+            return null;
         }
     }
 

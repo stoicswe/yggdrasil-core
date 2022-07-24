@@ -1,6 +1,7 @@
 package org.yggdrasil.node.network.peer;
 
 import org.yggdrasil.core.utils.DateTimeUtil;
+import org.yggdrasil.node.network.messages.enums.ServicesType;
 import org.yggdrasil.node.network.messages.payloads.AddressPayload;
 
 import java.io.Serializable;
@@ -12,7 +13,7 @@ public class PeerRecord implements Serializable {
 
     private final UUID nodeIdentifier;
     private ZonedDateTime timeStamp;
-    private final BigInteger supportedServices;
+    private final ServicesType supportedServices;
     private final String ipAddress;
     private final int port;
 
@@ -32,7 +33,7 @@ public class PeerRecord implements Serializable {
         return timeStamp;
     }
 
-    public BigInteger getSupportedServices() {
+    public ServicesType getSupportedServices() {
         return supportedServices;
     }
 
@@ -58,7 +59,7 @@ public class PeerRecord implements Serializable {
 
         private UUID nodeIdentifier;
         private ZonedDateTime timeStamp;
-        private BigInteger supportedServices;
+        private ServicesType supportedServices;
         private String ipAddress;
         private int port;
 
@@ -83,7 +84,7 @@ public class PeerRecord implements Serializable {
             return this;
         }
 
-        public Builder setSupportedServices(BigInteger supportedServices) {
+        public Builder setSupportedServices(ServicesType supportedServices) {
             this.supportedServices = supportedServices;
             return this;
         }

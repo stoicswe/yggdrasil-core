@@ -1,9 +1,12 @@
 package org.yggdrasil.node.network.messages.payloads;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.SerializationUtils;
 import org.springframework.lang.NonNull;
 import org.yggdrasil.node.network.messages.MessagePayload;
+import org.yggdrasil.node.network.messages.enums.ServicesType;
+import org.yggdrasil.node.network.messages.util.DataUtil;
 
 import javax.validation.constraints.NotNull;
 import java.math.BigInteger;
@@ -15,12 +18,13 @@ import java.math.BigInteger;
  * @since 0.0.10
  * @author nathanielbunch
  */
+@JsonInclude
 public class HandshakeMessage implements MessagePayload {
 
     @NotNull
     private final int version;
     @NotNull
-    private final BigInteger services;
+    private final int services;
     @NotNull
     private final int timestamp;
     @NotNull
@@ -34,6 +38,12 @@ public class HandshakeMessage implements MessagePayload {
     @NotNull
     private final int senderPort;
     @NotNull
+    private final char[] userAgent;
+    @NotNull
+    private final int startHeight;
+    @NotNull
+    private final int nonce;
+    @NotNull
     private final char[] senderIdentifier;
 
     private HandshakeMessage(Builder builder) {
@@ -45,6 +55,9 @@ public class HandshakeMessage implements MessagePayload {
         this.senderAddress = builder.senderAddress;
         this.senderListeningPort = builder.senderListeningPort;
         this.senderPort = builder.senderPort;
+        this.userAgent = builder.userAgent;
+        this.startHeight = builder.startHeight;
+        this.nonce = builder.nonce;
         this.senderIdentifier = builder.senderIdentifier;
     }
 
@@ -52,8 +65,8 @@ public class HandshakeMessage implements MessagePayload {
         return version;
     }
 
-    public BigInteger getServices() {
-        return services;
+    public ServicesType getServices() {
+        return ServicesType.getByValue(services);
     }
 
     public int getTimestamp() {
@@ -80,6 +93,18 @@ public class HandshakeMessage implements MessagePayload {
         return senderPort;
     }
 
+    public char[] getUserAgent() {
+        return userAgent;
+    }
+
+    public int getStartHeight() {
+        return startHeight;
+    }
+
+    public int getNonce() {
+        return nonce;
+    }
+
     public char[] getSenderIdentifier() {
         return senderIdentifier;
     }
@@ -87,32 +112,34 @@ public class HandshakeMessage implements MessagePayload {
     @Override
     public byte[] getDataBytes() {
         byte[] messageBytes = new byte[0];
-        messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(version));
-        messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(services));
-        messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(timestamp));
-        messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(receiverAddress));
-        messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(receiverPort));
-        messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(senderAddress));
-        messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(senderIdentifier));
-        messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(senderListeningPort));
-        messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(senderPort));
+        messageBytes = DataUtil.appendBytes(messageBytes, SerializationUtils.serialize(version));
+        messageBytes = DataUtil.appendBytes(messageBytes, SerializationUtils.serialize(services));
+        messageBytes = DataUtil.appendBytes(messageBytes, SerializationUtils.serialize(timestamp));
+        messageBytes = DataUtil.appendBytes(messageBytes, SerializationUtils.serialize(receiverAddress));
+        messageBytes = DataUtil.appendBytes(messageBytes, SerializationUtils.serialize(receiverPort));
+        messageBytes = DataUtil.appendBytes(messageBytes, SerializationUtils.serialize(senderAddress));
+        messageBytes = DataUtil.appendBytes(messageBytes, SerializationUtils.serialize(senderListeningPort));
+        messageBytes = DataUtil.appendBytes(messageBytes, SerializationUtils.serialize(senderPort));
+        messageBytes = DataUtil.appendBytes(messageBytes, SerializationUtils.serialize(userAgent));
+        messageBytes = DataUtil.appendBytes(messageBytes, SerializationUtils.serialize(startHeight));
+        messageBytes = DataUtil.appendBytes(messageBytes, SerializationUtils.serialize(nonce));
+        messageBytes = DataUtil.appendBytes(messageBytes, SerializationUtils.serialize(senderIdentifier));
         return messageBytes;
-    }
-
-    private static byte[] appendBytes(byte[] base, byte[] extension) {
-        return ArrayUtils.addAll(base, extension);
     }
 
     public static class Builder {
 
         private int version;
-        private BigInteger services;
+        private int services;
         private int timestamp;
         private char[] receiverAddress;
         private int receiverPort;
         private char[] senderAddress;
         private int senderListeningPort;
         private int senderPort;
+        private char[] userAgent;
+        private int startHeight;
+        private int nonce;
         private char[] senderIdentifier;
 
         public static Builder newBuilder() {
@@ -124,8 +151,8 @@ public class HandshakeMessage implements MessagePayload {
             return this;
         }
 
-        public Builder setServices(BigInteger services) {
-            this.services = services;
+        public Builder setServices(ServicesType services) {
+            this.services = services.getValue();
             return this;
         }
 
@@ -156,6 +183,21 @@ public class HandshakeMessage implements MessagePayload {
 
         public Builder setSenderPort(int senderPort) {
             this.senderPort = senderPort;
+            return this;
+        }
+
+        public Builder setUserAgent(char[] userAgent) {
+            this.userAgent = userAgent;
+            return this;
+        }
+
+        public Builder setStartHeight(int startHeight) {
+            this.startHeight = startHeight;
+            return this;
+        }
+
+        public Builder setNonce(int nonce) {
+            this.nonce = nonce;
             return this;
         }
 

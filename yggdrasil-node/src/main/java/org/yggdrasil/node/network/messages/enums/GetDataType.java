@@ -14,7 +14,12 @@ public enum GetDataType {
     MEMPOOL("MMPL");
 
     private String value;
-    private static final GetDataType[] values = new GetDataType[]{BLOCKCHAIN, BLOCK, TRANSACTION, MEMPOOL};
+    private static final GetDataType[] values = new GetDataType[]{
+            BLOCKCHAIN,
+            BLOCK,
+            TRANSACTION,
+            MEMPOOL
+    };
 
     GetDataType(String value) {
         this.value = value;

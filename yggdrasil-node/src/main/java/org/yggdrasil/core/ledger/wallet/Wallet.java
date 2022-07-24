@@ -119,11 +119,10 @@ public class Wallet implements LedgerHashableItem {
         txn.rehash();
     }
 
-    public void signBlock(Block block) throws InvalidKeyException, SignatureException, NoSuchAlgorithmException {
+    public byte[] signData(byte[] data) throws InvalidKeyException, SignatureException, NoSuchAlgorithmException {
         signature.initSign(privateKey);
-        byte[] merkleRoot = block.getMerkleRoot();
-        signature.update(merkleRoot, 0, merkleRoot.length);
-        block.setSignature(signature.sign());
+        signature.update(data, 0, data.length);
+        return signature.sign();
     }
 
     public PublicKey getPublicKey() {

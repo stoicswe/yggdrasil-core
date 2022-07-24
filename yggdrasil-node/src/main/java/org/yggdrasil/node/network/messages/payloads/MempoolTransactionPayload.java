@@ -1,134 +1,74 @@
 package org.yggdrasil.node.network.messages.payloads;
 
-import org.yggdrasil.core.ledger.transaction.Transaction;
-import org.yggdrasil.core.ledger.transaction.TransactionInput;
-import org.yggdrasil.core.ledger.transaction.TransactionOutput;
-import org.yggdrasil.core.utils.CryptoHasher;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import org.apache.commons.lang3.SerializationUtils;
+import org.yggdrasil.node.network.messages.MessagePayload;
+import org.yggdrasil.node.network.messages.util.DataUtil;
 
 import javax.validation.constraints.NotNull;
 
-public class MempoolTransactionPayload {
+@JsonInclude
+public class MempoolTransactionPayload implements MessagePayload {
 
     @NotNull
-    private final int timestamp;
+    private int transactionsLength;
     @NotNull
-    private final char[] originAddress;
+    private TransactionPayload[] transactions;
     @NotNull
-    private final char[] originPublicKey;
-    @NotNull
-    private final char[] destinationAddress;
-    @NotNull
-    private final TransactionInput[] txnIn;
-    @NotNull
-    private final TransactionOutput[] txnOut;
-    @NotNull
-    private final byte[] txnHash;
-    @NotNull
-    private final byte[] signature;
+    private byte[] requestChecksum;
 
-    public MempoolTransactionPayload(Builder builder) {
-        this.timestamp = builder.timestamp;
-        this.originAddress = builder.originAddress;
-        this.originPublicKey = builder.originPublicKey;
-        this.destinationAddress = builder.destinationAddress;
-        this.txnIn = builder.txnIn;
-        this.txnOut = builder.txnOut;
-        this.signature = builder.signature;
-        this.txnHash = builder.txnHash;
+    private MempoolTransactionPayload(Builder builder) {
+        this.transactionsLength = builder.transactionsLength;
+        this.transactions = builder.transactions;
+        this.requestChecksum = builder.requestChecksum;
     }
 
-    public int getTimestamp() {
-        return timestamp;
+    public int getTransactionsLength() {
+        return transactionsLength;
     }
 
-    public char[] getOriginAddress() {
-        return originAddress;
+    public TransactionPayload[] getTransactions() {
+        return transactions;
     }
 
-    public char[] getOriginPublicKey() {
-        return originPublicKey;
+    public byte[] getRequestChecksum() {
+        return requestChecksum;
     }
 
-    public char[] getDestinationAddress() {
-        return destinationAddress;
-    }
-
-    public byte[] getSignature() {
-        return signature;
-    }
-
-    public byte[] getTxnHash() {
-        return txnHash;
+    @Override
+    public byte[] getDataBytes() {
+        byte[] messageBytes = new byte[0];
+        messageBytes = DataUtil.appendBytes(messageBytes, SerializationUtils.serialize(transactionsLength));
+        for (TransactionPayload t : this.transactions) {
+            messageBytes = DataUtil.appendBytes(messageBytes, t.getDataBytes());
+        }
+        messageBytes = DataUtil.appendBytes(messageBytes, requestChecksum);
+        return messageBytes;
     }
 
     public static class Builder {
-        protected int timestamp;
-        protected char[] originAddress;
-        protected char[] originPublicKey;
-        protected char[] destinationAddress;
-        protected TransactionInput[] txnIn;
-        protected TransactionOutput[] txnOut;
-        protected byte[] signature;
-        protected byte[] txnHash;
-
-        private Builder() {}
+        private int transactionsLength;
+        private TransactionPayload[] transactions;
+        private byte[] requestChecksum;
 
         public static Builder builder() {
             return new Builder();
         }
 
-        public Builder setTimestamp(int timestamp) {
-            this.timestamp = timestamp;
+        public Builder setTransactions(TransactionPayload[] transactions) {
+            this.transactionsLength = transactions.length;
+            this.transactions = transactions;
             return this;
         }
 
-        public Builder setOriginAddress(char[] originAddress) {
-            this.originAddress = originAddress;
+        public Builder setRequestChecksum(byte[] requestChecksum) {
+            this.requestChecksum = requestChecksum;
             return this;
-        }
-
-        public Builder setOriginPublicKey(char[] originPublicKey) {
-            this.originPublicKey = originPublicKey;
-            return this;
-        }
-
-        public Builder setDestinationAddress(char[] destinationAddress) {
-            this.destinationAddress = destinationAddress;
-            return this;
-        }
-
-        public Builder setTxnIn(TransactionInput[] txnIn) {
-            this.txnIn = txnIn;
-            return this;
-        }
-
-        public Builder setTxnOut(TransactionOutput[] txnOut) {
-            this.txnOut = txnOut;
-            return this;
-        }
-
-        public Builder setSignature(byte[] signature) {
-            this.signature = signature;
-            return this;
-        }
-
-        public Builder setTxnHash(byte[] txnHash) {
-            this.txnHash = txnHash;
-            return this;
-        }
-
-        public MempoolTransactionPayload buildFromMempool(Transaction txn) {
-            this.timestamp = (int) txn.getTimestamp().toEpochSecond();
-            this.originAddress = txn.getOriginAddress().toCharArray();
-            this.originPublicKey = CryptoHasher.humanReadableHash(txn.getOrigin().getEncoded()).toCharArray();
-            this.destinationAddress = txn.getDestinationAddress().toCharArray();
-            this.signature = txn.getSignature();
-            this.txnHash = txn.getTxnHash();
-            return new MempoolTransactionPayload(this);
         }
 
         public MempoolTransactionPayload build() {
             return new MempoolTransactionPayload(this);
         }
+
     }
 }

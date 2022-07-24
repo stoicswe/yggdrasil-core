@@ -1,8 +1,9 @@
 package org.yggdrasil.node.network.messages.payloads;
 
-import org.apache.commons.lang3.ArrayUtils;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import org.apache.commons.lang3.SerializationUtils;
 import org.yggdrasil.node.network.messages.MessagePayload;
+import org.yggdrasil.node.network.messages.util.DataUtil;
 
 import javax.validation.constraints.NotNull;
 
@@ -14,16 +15,20 @@ import javax.validation.constraints.NotNull;
  * @since 0.0.10
  * @author nathanielbunch
  */
-public class BlockchainMessage implements MessagePayload {
+@JsonInclude
+public class BlockHeaderResponsePayload implements MessagePayload {
 
     @NotNull
     private final int headerCount;
     @NotNull
     private final BlockHeaderPayload[] headers;
+    @NotNull
+    private final byte[] requestChecksum;
 
-    private BlockchainMessage(Builder builder) {
+    private BlockHeaderResponsePayload(Builder builder) {
         this.headerCount = builder.headerCount;
         this.headers = builder.headers;
+        this.requestChecksum = builder.requestChecksum;
     }
 
     public int getHeaderCount() {
@@ -34,45 +39,46 @@ public class BlockchainMessage implements MessagePayload {
         return headers;
     }
 
+    public byte[] requestChecksum() {
+        return requestChecksum;
+    }
+
     @Override
     public byte[] getDataBytes() {
         byte[] messageBytes = new byte[0];
-        messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(headerCount));
+        messageBytes = DataUtil.appendBytes(messageBytes, SerializationUtils.serialize(headerCount));
         for(BlockHeaderPayload hp : headers) {
-            messageBytes = appendBytes(messageBytes, hp.getDataBytes());
+            messageBytes = DataUtil.appendBytes(messageBytes, hp.getDataBytes());
         }
+        messageBytes = DataUtil.appendBytes(messageBytes, requestChecksum);
         return messageBytes;
-    }
-
-    private static byte[] appendBytes(byte[] base, byte[] extension) {
-        return ArrayUtils.addAll(base, extension);
     }
 
     public static class Builder {
 
         private int headerCount;
-        private char[] headerType;
         private BlockHeaderPayload[] headers;
-        private byte[] headerHash;
+        private byte[] requestChecksum;
 
         private Builder(){}
 
-        public static Builder newBuilder() {
+        public static Builder builder() {
             return new Builder();
         }
 
-        public Builder setHeaderCount(int headerCount) {
-            this.headerCount = headerCount;
-            return this;
-        }
-
         public Builder setHeaders(BlockHeaderPayload[] headers) {
+            this.headerCount = headers.length;
             this.headers = headers;
             return this;
         }
 
-        public BlockchainMessage build() {
-            return new BlockchainMessage(this);
+        public Builder setRequestChecksum(byte[] requestChecksum) {
+            this.requestChecksum = requestChecksum;
+            return this;
+        }
+
+        public BlockHeaderResponsePayload build() {
+            return new BlockHeaderResponsePayload(this);
         }
 
     }

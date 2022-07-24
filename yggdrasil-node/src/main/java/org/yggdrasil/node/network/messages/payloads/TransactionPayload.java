@@ -1,191 +1,142 @@
 package org.yggdrasil.node.network.messages.payloads;
 
-import org.apache.commons.lang3.ArrayUtils;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import org.apache.commons.lang3.SerializationUtils;
 import org.yggdrasil.core.ledger.transaction.Transaction;
-import org.yggdrasil.core.ledger.transaction.TransactionInput;
-import org.yggdrasil.core.ledger.transaction.TransactionOutput;
 import org.yggdrasil.node.network.messages.MessagePayload;
+import org.yggdrasil.node.network.messages.util.DataUtil;
 
 import javax.validation.constraints.NotNull;
 
-/**
- * The Transaction Message contains the full information of a transaction.
- *
- * @since 0.0.15
- * @author nathanielbunch
- */
+@JsonInclude
 public class TransactionPayload implements MessagePayload {
 
     @NotNull
-    private final int timestamp;
+    private final int version;
     @NotNull
-    private final byte[] originAddress;
+    private final boolean isWitness;
     @NotNull
-    private final byte[] originPublicKey;
+    private final int txInCount;
     @NotNull
-    private final char[] destinationAddress;
+    private final TransactionIn[] txnIn;
     @NotNull
-    private final TransactionInput[] txnIn;
+    private final int txOutCount;
     @NotNull
-    private final TransactionOutput[] txnOut;
+    private final TransactionOut[] txOut;
+    // TODO: Fully implement the witness
     @NotNull
-    private final byte[] transactionHash;
+    private final TransactionWitness[] witnesses;
     @NotNull
-    private final byte[] signature;
-    @NotNull
-    private final byte[] merkleRoot;
-    @NotNull
-    private final byte[] blockHash;
+    private final int lockTime;
 
-    private TransactionPayload(Builder builder){
-        this.timestamp = builder.timestamp;
-        this.originAddress = builder.originAddress;
-        this.originPublicKey = builder.originPublicKey;
-        this.destinationAddress = builder.destinationAddress;
+    public TransactionPayload(Builder builder) {
+        this.version = builder.version;
+        this.isWitness = builder.isWitness;
+        this.txInCount = builder.txInCount;
         this.txnIn = builder.txnIn;
-        this.txnOut = builder.txnOut;
-        this.merkleRoot = builder.merkleRoot;
-        this.transactionHash = builder.transactionHash;
-        this.signature = builder.signature;
-        this.blockHash = builder.blockHash;
+        this.txOutCount = builder.txOutCount;
+        this.txOut = builder.txOut;
+        this.witnesses = builder.witnesses;
+        this.lockTime = builder.lockTime;
     }
 
-    public int getTimestamp() {
-        return timestamp;
+    public int getVersion() {
+        return version;
     }
 
-    public byte[] getOriginAddress() {
-        return originAddress;
+    public boolean isWitness() {
+        return isWitness;
     }
 
-    public char[] getDestinationAddress() {
-        return destinationAddress;
+    public int getTxInCount() {
+        return txInCount;
     }
 
-    public byte[] getOriginPublicKey() {
-        return originPublicKey;
-    }
-
-    public TransactionInput[] getTxnIn() {
+    public TransactionIn[] getTxnIn() {
         return txnIn;
     }
 
-    public TransactionOutput[] getTxnOut() {
-        return txnOut;
+    public int getTxOutCount() {
+        return txOutCount;
     }
 
-    public byte[] getMerkleRoot() {
-        return merkleRoot;
+    public TransactionOut[] getTxOut() {
+        return txOut;
     }
 
-    public byte[] getTransactionHash() {
-        return transactionHash;
+    /*
+    public TransactionWitness[] getWitnesses() {
+        return witnesses;
     }
+    */
 
-    public byte[] getSignature() {
-        return this.signature;
-    }
-
-    public byte[] getBlockHash() {
-        return blockHash;
+    public int getLockTime() {
+        return lockTime;
     }
 
     @Override
     public byte[] getDataBytes() {
         byte[] messageBytes = new byte[0];
-        messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(timestamp));
-        messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(originAddress));
-        messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(originPublicKey));
-        messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(destinationAddress));
-        messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(txnIn));
-        messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(txnOut));
-        messageBytes = appendBytes(messageBytes, SerializationUtils.serialize(merkleRoot));
-        messageBytes = appendBytes(messageBytes, transactionHash);
-        messageBytes = appendBytes(messageBytes, signature);
-        messageBytes = appendBytes(messageBytes, blockHash);
+        messageBytes = DataUtil.appendBytes(messageBytes, SerializationUtils.serialize(version));
+        messageBytes = DataUtil.appendBytes(messageBytes, SerializationUtils.serialize(isWitness));
+        messageBytes = DataUtil.appendBytes(messageBytes, SerializationUtils.serialize(txInCount));
+        for(TransactionIn txin : txnIn) {
+            messageBytes = DataUtil.appendBytes(messageBytes, txin.getDataBytes());
+        }
+        messageBytes = DataUtil.appendBytes(messageBytes, SerializationUtils.serialize(txOutCount));
+        for(TransactionOut txOut : txOut) {
+            messageBytes = DataUtil.appendBytes(messageBytes, txOut.getDataBytes());
+        }
+        for(TransactionWitness witness : witnesses) {
+            messageBytes = DataUtil.appendBytes(messageBytes, witness.getDataBytes());
+        }
+        messageBytes = DataUtil.appendBytes(messageBytes, SerializationUtils.serialize(lockTime));
         return messageBytes;
     }
 
-    private static byte[] appendBytes(byte[] base, byte[] extension) {
-        return ArrayUtils.addAll(base, extension);
-    }
-
     public static class Builder {
+        private int version;
+        private boolean isWitness;
+        private int txInCount;
+        private TransactionIn[] txnIn;
+        private int txOutCount;
+        private TransactionOut[] txOut;
+        private TransactionWitness[] witnesses;
+        private int lockTime;
 
-        private int timestamp;
-        private byte[] originAddress;
-        private byte[] originPublicKey;
-        private char[] destinationAddress;
-        private TransactionInput[] txnIn;
-        private TransactionOutput[] txnOut;
-        private byte[] merkleRoot;
-        private byte[] transactionHash;
-        private byte[] signature;
-        private byte[] blockHash;
-
-        private Builder(){}
-
-        public static Builder newBuilder() {
+        public static Builder builder() {
             return new Builder();
         }
 
-        public Builder setTimestamp(int timestamp) {
-            this.timestamp = timestamp;
+        public Builder setVersion(int version){
+            this.version = version;
             return this;
         }
 
-        public Builder setOriginAddress(byte[] originAddress) {
-            this.originAddress = originAddress;
+        public Builder setWitnessFlag(boolean isWitness) {
+            this.isWitness = false;
             return this;
         }
 
-        public Builder setOriginPublicKey(byte[] originPublicKey) {
-            this.originPublicKey = originPublicKey;
+        public Builder setTxIns(TransactionIn[] txIn) {
+            this.txInCount = txIn.length;
+            this.txnIn = txIn;
             return this;
         }
 
-        public Builder setDestinationAddress(char[] destinationAddress) {
-            this.destinationAddress = destinationAddress;
+        public Builder setTxOuts(TransactionOut[] txOut) {
+            this.txOutCount = txOut.length;
+            this.txOut = txOut;
             return this;
         }
 
-        public Builder setTransactionInput(TransactionInput[] txnIn) {
-            this.txnIn = txnIn;
+        public Builder setWitnesses(TransactionWitness[] witnesses) {
+            this.witnesses = witnesses;
             return this;
         }
 
-        public Builder setTransactionOutput(TransactionOutput[] txnOut) {
-            this.txnOut = txnOut;
-            return this;
-        }
-
-        public Builder setMerkleRoot(byte[] merkleRoot) {
-            this.merkleRoot = merkleRoot;
-            return this;
-        }
-
-        public Builder setTransactionHash(byte[] transactionHash) {
-            this.transactionHash = transactionHash;
-            return this;
-        }
-
-        public Builder setSignature(byte[] signature) {
-            this.signature = signature;
-            return this;
-        }
-
-        public Builder setBlockHash(byte[] blockHash) {
-            this.blockHash = blockHash;
-            return this;
-        }
-
-        public Builder buildFromTransaction(Transaction txn) {
-            this.timestamp = (int) txn.getTimestamp().toEpochSecond();
-            this.originAddress = txn.getOrigin().getEncoded();
-            this.destinationAddress = txn.getDestinationAddress().toCharArray();
-            this.transactionHash = txn.getTxnHash();
-            this.signature = txn.getSignature();
+        public Builder setLockTime(int lockTime) {
+            this.lockTime = lockTime;
             return this;
         }
 
@@ -193,6 +144,9 @@ public class TransactionPayload implements MessagePayload {
             return new TransactionPayload(this);
         }
 
+        public TransactionPayload buildFromTxn(Transaction txn) {
+            //TODO: Fix this
+            return null;
+        }
     }
-
 }

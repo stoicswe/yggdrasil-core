@@ -14,7 +14,10 @@ public enum NetworkType {
     TEST_NET("TEST");
 
     private final String value;
-    private static final NetworkType[] values = new NetworkType[]{MAIN_NET, TEST_NET};
+    private static final NetworkType[] values = new NetworkType[]{
+            MAIN_NET,
+            TEST_NET
+    };
 
     NetworkType(String value) {
         this.value = value;

@@ -3,11 +3,14 @@ package org.yggdrasil.core.utils;
 import org.bouncycastle.crypto.digests.RIPEMD160Digest;
 import org.apache.tomcat.util.buf.HexUtils;
 import org.yggdrasil.core.ledger.LedgerHashableItem;
+import org.yggdrasil.core.ledger.transaction.Transaction;
 import org.yggdrasil.node.network.messages.MessagePayload;
+import org.yggdrasil.node.network.messages.util.DataUtil;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
+import java.util.List;
 
 /**
  * The CryptoHasher provides useful tooling for hashing transactions and blocks using
@@ -143,6 +146,30 @@ public class CryptoHasher {
             }
         }
         return 0;
+    }
+
+    public static byte[] generateMerkleTree(List<Transaction> txns) throws NoSuchAlgorithmException {
+        if(txns.size()%2 != 0) {
+            // duplicate the last item in the list
+            // for adding to the merkle tree to ensure
+            // there is not an issue with the recursive call
+            txns.add(txns.get(txns.size()-1));
+        }
+        byte[] temp = new byte[0];
+        if(txns.size() == 2) {
+            temp = DataUtil.appendBytes(temp, txns.get(0).getTxnHash());
+            temp = DataUtil.appendBytes(temp, txns.get(1).getTxnHash());
+            return dhash(temp);
+        }
+        if(txns.size() == 1) {
+            temp = DataUtil.appendBytes(temp, txns.get(0).getTxnHash());
+            temp = DataUtil.appendBytes(temp, txns.get(0).getTxnHash());
+            return dhash(temp);
+        }
+        // pass first 1/2 and second 1/2
+        // need to test to make sure this never has issues
+        // or misses any txns...
+        return dhash(DataUtil.appendBytes(generateMerkleTree(txns.subList(0, (txns.size()/2)-1)), generateMerkleTree(txns.subList((txns.size()/2), txns.size()-1))));
     }
 
 }
