@@ -53,7 +53,7 @@ public class BlockTransactionsRequest implements MessagePayload {
         private int indexesCount;
         private int[] indexes;
 
-        public Builder builder() {
+        public static Builder builder() {
             return new Builder();
         }
 

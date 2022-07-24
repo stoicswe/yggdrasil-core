@@ -29,19 +29,14 @@ public class BlockMessageHandler implements MessageHandler<BlockMessage> {
     private Messenger messenger;
 
     @Override
-    public MessagePayload handleMessagePayload(BlockMessage blockMessage, NodeConnection nodeConnection) throws NoSuchAlgorithmException, InvalidKeySpecException, NoSuchProviderException {
-
+    public void handleMessagePayload(BlockMessage blockMessage, NodeConnection nodeConnection) throws NoSuchAlgorithmException, InvalidKeySpecException, NoSuchProviderException {
         logger.trace("Handling block message");
-        Block blck = Block.Builder.newBuilder().buildFromBlockMessage(blockMessage);
+        Block blck = Block.Builder.builder().buildFromBlockMessage(blockMessage);
         try {
             this.blockchain.addBlock(blck);
         } catch (Exception e) {
             logger.debug("Exception while trying to insert a new block! Exception: {}", e.getMessage());
         }
-
-        return AcknowledgeMessage.Builder.builder()
-                .setAcknowledgeChecksum(CryptoHasher.hash(blockMessage))
-                .build();
     }
 
 }

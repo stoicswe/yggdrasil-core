@@ -14,6 +14,7 @@ import org.yggdrasil.core.utils.CryptoHasher;
 import org.yggdrasil.core.utils.DateTimeUtil;
 import org.yggdrasil.node.network.messages.payloads.BlockHeaderPayload;
 import org.yggdrasil.node.network.messages.payloads.BlockMessage;
+import org.yggdrasil.node.network.messages.payloads.TransactionPayload;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -202,7 +203,7 @@ public final class Block {
 
         private Builder(){}
 
-        public static Builder newBuilder(){
+        public static Builder builder(){
             return new Builder();
         }
 

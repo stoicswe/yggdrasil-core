@@ -185,7 +185,7 @@ public class BlockMine {
         // Merkle root variable for including in the block
         // as part of generating the merkleRoot, find a way to add merkle branch
         // to each txn to connect it back to the block
-        byte[] merkleRoot = generateMerkleTree(new ArrayList<>(bTxnCandidates));
+        byte[] merkleRoot = CryptoHasher.generateMerkleTree(new ArrayList<>(bTxnCandidates));
         // Compile the block
         BlockHeader header = BlockHeader.Builder.builder()
                 .setVersion(Blockchain._VERSION)
@@ -195,7 +195,7 @@ public class BlockMine {
                 .setDiff(lastBlock.getHeader().getDiff())
                 .setNonce(0)
                 .build();
-        Block newBlock = Block.Builder.newBuilder()
+        Block newBlock = Block.Builder.builder()
                 .setBlockHeader(header)
                 .setData(new ArrayList<>(bTxnCandidates))
                 .build();
@@ -233,30 +233,6 @@ public class BlockMine {
         logger.info("New block {} has been forwarded to other nodes.", newBlock);
     }
 
-    private byte[] generateMerkleTree(List<Transaction> txns) throws NoSuchAlgorithmException {
-        if(txns.size()%2 != 0) {
-            // duplicate the last item in the list
-            // for adding to the merkle tree to ensure
-            // there is not an issue with the recursive call
-            txns.add(txns.get(txns.size()-1));
-        }
-        byte[] temp = new byte[0];
-        if(txns.size() == 2) {
-            temp = appendBytes(temp, txns.get(0).getTxnHash());
-            temp = appendBytes(temp, txns.get(1).getTxnHash());
-            return CryptoHasher.dhash(temp);
-        }
-        if(txns.size() == 1) {
-            temp = appendBytes(temp, txns.get(0).getTxnHash());
-            temp = appendBytes(temp, txns.get(0).getTxnHash());
-            return CryptoHasher.dhash(temp);
-        }
-        // pass first 1/2 and second 1/2
-        // need to test to make sure this never has issues
-        // or misses any txns...
-        return CryptoHasher.dhash(appendBytes(generateMerkleTree(txns.subList(0, (txns.size()/2)-1)), generateMerkleTree(txns.subList((txns.size()/2), txns.size()-1))));
-    }
-
     private Block proofOfWork(Block currentBlock, int difficulty) throws Exception {
         // Get the txn data for sorting
         List<Transaction> blockTransactions = currentBlock.getData();
@@ -273,7 +249,7 @@ public class BlockMine {
                 .setDiff(currentBlock.getHeader().getDiff())
                 .setNonce(currentBlock.getHeader().getNonce())
                 .build();
-        Block sortedBlock = Block.Builder.newBuilder()
+        Block sortedBlock = Block.Builder.builder()
                 .setBlockHeader(header)
                 .setData(blockTransactions)
                 .build();
