@@ -1,0 +1,11 @@
+{
+  "Version": 1,
+  "Hash": "vaWdtDNcqhzdS2y9vyCptPjI6gJv+k8x2Koh6blx5h0=",
+  "Source": "yggdrasil-core",
+  "BasePath": "_content/yggdrasil-core",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [],
+  "Assets": []
+}
